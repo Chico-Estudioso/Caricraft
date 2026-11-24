@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "caricraft",
+  "version": "${version}",
+  "name": "Caricraft Mod",
+  "description": "CariPhone, Carins, misiones cooperativas y crónicas para el dúo de Caricraft 2.",
+  "authors": ["Chico-Estudioso"],
+  "contact": {
+    "sources": "https://github.com/Chico-Estudioso/Caricraft"
+  },
+  "license": "All-Rights-Reserved",
+  "icon": "assets/caricraft/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["com.chicoestudioso.caricraft.CaricraftMod"],
+    "client": ["com.chicoestudioso.caricraft.client.CaricraftClient"]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21",
+    "fabric-api": ">=${fabric_api_version}"
+  },
+  "suggests": {
+    "cobblemon": ">=1.8.4"
+  }
+}

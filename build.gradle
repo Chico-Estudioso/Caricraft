@@ -1,0 +1,98 @@
+plugins {
+    id 'fabric-loom' version "${loom_version}"
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+repositories {
+    // Cobblemon (solo compileOnly para el adaptador opcional)
+    maven {
+        name = 'ImpactDev'
+        url = 'https://maven.impactdev.net/repository/development/'
+        content { includeGroup 'com.cobblemon' }
+    }
+    mavenCentral()
+}
+
+loom {
+    splitEnvironmentSourceSets()
+
+    mods {
+        caricraft {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+configurations {
+    // Mods que solo se cargan en ejecuciones de desarrollo con -PwithCobblemon
+    devCobblemon
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    // Integración Cobblemon: SOLO en compilación. El core funciona sin Cobblemon.
+    modCompileOnly("com.cobblemon:fabric:${project.cobblemon_version}") { transitive = false }
+    compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_stdlib_version}"
+
+    if (project.hasProperty('withCobblemon')) {
+        modLocalRuntime("com.cobblemon:fabric:${project.cobblemon_version}") { transitive = false }
+        modLocalRuntime "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
+    }
+
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events 'failed'
+        exceptionFormat 'full'
+    }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'minecraft_version', project.minecraft_version
+    inputs.property 'loader_version', project.loader_version
+    inputs.property 'fabric_api_version', project.fabric_api_version
+    filteringCharset 'UTF-8'
+
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version,
+                'minecraft_version': project.minecraft_version,
+                'loader_version': project.loader_version,
+                'fabric_api_version': project.fabric_api_version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
+    it.options.encoding = 'UTF-8'
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+jar {
+    inputs.property 'archivesName', project.base.archivesName
+    from('LICENSE') {
+        rename { "${it}_${inputs.properties.archivesName}" }
+    }
+}
