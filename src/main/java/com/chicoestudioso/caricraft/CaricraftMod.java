@@ -1,5 +1,6 @@
 package com.chicoestudioso.caricraft;
 
+import com.chicoestudioso.caricraft.integration.cobblemon.CobblemonCompat;
 import com.chicoestudioso.caricraft.item.ModItems;
 import com.chicoestudioso.caricraft.network.CaricraftNetworking;
 import com.chicoestudioso.caricraft.server.CaricraftCommands;
@@ -20,6 +21,7 @@ public final class CaricraftMod implements ModInitializer {
         PhoneActionHandler.register();
         ServerEvents.register();
         CaricraftCommands.register();
+        CobblemonCompat.init();
         LOGGER.info("{} inicializado (protocolo {}).", CaricraftConstants.MOD_NAME, CaricraftConstants.PROTOCOL_VERSION);
     }
 }

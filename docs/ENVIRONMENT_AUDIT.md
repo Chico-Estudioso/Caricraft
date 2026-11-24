@@ -44,7 +44,20 @@ CobbleDollars 2.0.0-Beta-5.1, cobblenav 2.4.2, Xaero's Minimap 26.6.0 y World Ma
 - [H] Fabric API 0.116.18: `PayloadTypeRegistry.playC2S()/playS2C()` y `ServerPlayNetworking.PlayPayloadHandler`, cuyo javadoc garantiza ejecución **en el hilo del servidor**.
 - [H] `ItemStack.onCraftedBy(Level, Player, int)` existe y se usa para el objetivo de fabricar.
 
+## Prueba real con COBBLEVERSE 1.8.0 (servidor)
+
+Se montó un servidor de producción (Fabric Server Launcher, sin entorno de desarrollo) con los 94 mods de servidor del índice, las carpetas `config/` y `datapacks/` del modpack y el JAR de Caricraft Mod. Script: `tools/cobbleverse_server_test.py`.
+
+- [H] Arranca con **251 mods** (contando los anidados) y llega a `Done`.
+- [H] `Caricraft Mod listo: … 26 misiones` e `Integración con Cobblemon 1.8.4+1.21.1 activa.`
+- [H] `/caricraft reload` funciona desde consola.
+- [H] **Java:** Cobblemon 1.8.4 exige exactamente Java 21. C2ME incluye un submódulo (`c2me-opts-natives-math`) que pide Java 25; con Java 21 se omite y el servidor arranca bien. Con Java 25, Cobblemon se niega a cargar. **El servidor debe usar Java 21.**
+- [H] `athena` y `fusion` figuran como "solo cliente" en el índice, pero CobbleFurnies y Rechiseled los requieren también en el servidor. Un servidor montado a mano tiene que incluirlos.
+- [H] La tecla por defecto del CariPhone (`O`) no está asignada en `config/defaultoptions/keybindings.txt` del modpack.
+- [H] Cobblemon no arranca en el entorno de desarrollo de Loom (mappings de Mojang + reflexión de Kotlin: `ClassNotFoundException: net.minecraft.class_2960`). Las pruebas con Cobblemon se hacen en un servidor de producción.
+
 ## Dudas abiertas
 
 - [D] Si el servidor real de Caricraft 2 añade mods fuera del modpack. Si es así, revisar conflictos de teclas y de red.
 - [D] Si Cobbreeding dispara `HATCH_EGG_POST` de Cobblemon al eclosionar huevos (no se usa todavía).
+- [D] No se ha probado un cliente con el modpack completo (requiere GPU); el cliente del CariPhone se probó con Minecraft + Fabric API.

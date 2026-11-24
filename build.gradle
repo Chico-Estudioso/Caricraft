@@ -79,10 +79,8 @@ dependencies {
     modCompileOnly("com.cobblemon:fabric:${project.cobblemon_version}") { transitive = false }
     compileOnly "org.jetbrains.kotlin:kotlin-stdlib:${project.kotlin_stdlib_version}"
 
-    if (project.hasProperty('withCobblemon')) {
-        modLocalRuntime("com.cobblemon:fabric:${project.cobblemon_version}") { transitive = false }
-        modLocalRuntime "net.fabricmc:fabric-language-kotlin:${project.fabric_kotlin_version}"
-    }
+    // Cobblemon no arranca en el entorno de desarrollo (mappings de Mojang + reflexión de Kotlin).
+    // La compatibilidad real se prueba con tools/cobbleverse_server_test.py.
 
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter'
