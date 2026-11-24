@@ -25,7 +25,7 @@
 | `WIN_BATTLE` | Cobblemon `BATTLE_VICTORY` | `wild`, `npc` o cualquiera (no PvP) |
 
 ## Definición
-Las misiones por defecto están en `caricraft/default_missions.json` dentro del JAR (26 misiones, 14 de ellas usan Cobblemon). Un servidor puede sustituirlas con `config/caricraft_missions.json` (mismo formato). Las misiones que requieren Cobblemon (`requiresMod`) se ocultan si no está cargado, y también las que dependen de ellas.
+Las misiones por defecto están en `caricraft/default_missions.json` dentro del JAR (26 misiones, 13 de ellas usan Cobblemon). Un servidor puede sustituirlas con `config/caricraft_missions.json` (mismo formato). Las misiones que requieren Cobblemon (`requiresMod`) se ocultan si no está cargado, y también las que dependen de ellas.
 
 Formato de cada misión:
 

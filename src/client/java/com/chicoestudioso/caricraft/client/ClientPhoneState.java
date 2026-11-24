@@ -4,7 +4,12 @@ import com.chicoestudioso.caricraft.CaricraftConstants;
 import com.chicoestudioso.caricraft.CaricraftMod;
 import com.chicoestudioso.caricraft.network.PhoneNotifyPayload;
 import com.chicoestudioso.caricraft.network.PhoneSnapshot;
+import com.chicoestudioso.caricraft.client.phone.PhoneScreen;
+import com.chicoestudioso.caricraft.client.phone.PhoneText;
 import com.google.gson.JsonParseException;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.network.chat.Component;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -41,6 +46,12 @@ public final class ClientPhoneState {
         NOTIFICATIONS.addFirst(new Notification(payload.success(), payload.key(), payload.args(), System.currentTimeMillis()));
         while (NOTIFICATIONS.size() > MAX_NOTIFICATIONS) {
             NOTIFICATIONS.removeLast();
+        }
+        Minecraft minecraft = Minecraft.getInstance();
+        // Con el teléfono cerrado, los avisos de eventos se muestran como notificación emergente.
+        if (!(minecraft.screen instanceof PhoneScreen) && payload.key().startsWith("caricraft.notify.")) {
+            SystemToast.add(minecraft.getToasts(), new SystemToast.SystemToastId(5000L),
+                    Component.translatable("screen.caricraft.phone"), PhoneText.format(snapshot, payload.key(), payload.args()));
         }
     }
 
