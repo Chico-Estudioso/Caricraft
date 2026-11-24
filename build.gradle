@@ -22,18 +22,51 @@ repositories {
 
 loom {
     splitEnvironmentSourceSets()
+}
 
+// Herramienta de QA visual (solo desarrollo, no va en el JAR).
+sourceSets {
+    devtools {
+        compileClasspath += sourceSets.main.compileClasspath + sourceSets.client.compileClasspath
+        compileClasspath += sourceSets.main.output + sourceSets.client.output
+        runtimeClasspath += sourceSets.main.runtimeClasspath + sourceSets.client.runtimeClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.client.output
+    }
+}
+
+loom {
     mods {
         caricraft {
             sourceSet sourceSets.main
             sourceSet sourceSets.client
         }
+        // Herramienta de QA visual: nunca se empaqueta en el JAR.
+        caricraft_devtools {
+            sourceSet sourceSets.devtools
+        }
     }
-}
 
-configurations {
-    // Mods que solo se cargan en ejecuciones de desarrollo con -PwithCobblemon
-    devCobblemon
+    runs {
+        // Clientes de QA automatizados contra `runServer` (ver docs/TESTING.md).
+        qaClientA {
+            client()
+            name = 'QA Client A'
+            source sourceSets.devtools
+            runDir 'run-qa-a'
+            ideConfigGenerated false
+            vmArg '-Dcaricraft.qa.role=A'
+            programArgs '--username', 'Dev1', '--quickPlayMultiplayer', 'localhost:25565', '--width', '1280', '--height', '720'
+        }
+        qaClientB {
+            client()
+            name = 'QA Client B'
+            source sourceSets.devtools
+            runDir 'run-qa-b'
+            ideConfigGenerated false
+            vmArg '-Dcaricraft.qa.role=B'
+            programArgs '--username', 'Dev2', '--quickPlayMultiplayer', 'localhost:25565', '--width', '1280', '--height', '720'
+        }
+    }
 }
 
 dependencies {

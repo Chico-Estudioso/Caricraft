@@ -43,6 +43,10 @@ public final class CaricraftClient implements ClientModInitializer {
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> ClientPhoneState.clear());
     }
 
+    public static KeyMapping openPhoneKey() {
+        return openPhoneKey;
+    }
+
     public static void openPhone() {
         Minecraft minecraft = Minecraft.getInstance();
         minecraft.setScreen(new PhoneScreen());

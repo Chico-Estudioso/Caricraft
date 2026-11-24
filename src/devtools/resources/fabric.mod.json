@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "id": "caricraft_devtools",
+  "version": "0.0.0",
+  "name": "Caricraft Mod (QA, solo desarrollo)",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.chicoestudioso.caricraft.client.phone.QaAutomation"]
+  },
+  "depends": { "caricraft": "*" }
+}
