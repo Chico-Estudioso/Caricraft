@@ -157,7 +157,7 @@
   "caricraft.chronicle.first_catch": "%s makes the group's first catch: %s.",
   "caricraft.chronicle.shiny_catch": "%s catches a shiny %s.",
   "caricraft.chronicle.legendary_catch": "%s catches the legendary %s.",
-  "caricraft.chronicle.evolution": "%s watches %s evolve.",
+  "caricraft.chronicle.evolution": "%s: %s evolves into %s!",
   "caricraft.chronicle.note": "%s: “%s”",
   "caricraft.chronicle.welcome": "%s's adventure begins.",
   "caricraft.result.no_profile": "Your profile isn't ready yet.",
@@ -287,5 +287,6 @@
   "caricraft.mission.milestone_catch": "Centennial",
   "caricraft.mission.milestone_catch.desc": "Milestone: 100 Pokémon caught by the group.",
   "caricraft.mission.milestone_shiny": "So shiny!",
-  "caricraft.mission.milestone_shiny.desc": "Milestone: the group's first shiny catch."
+  "caricraft.mission.milestone_shiny.desc": "Milestone: the group's first shiny catch.",
+  "caricraft.notify.shiny_catch": "%s caught a shiny %s!"
 }

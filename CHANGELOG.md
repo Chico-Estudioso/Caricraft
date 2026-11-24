@@ -13,3 +13,7 @@
   - Comandos `/carins` y `/caricraft`.
   - Interfaz completa del CariPhone: inicio, misiones, cartera, dúo, tienda, ajustes con 4 temas, crónicas, exploración, estadísticas y pantalla de app bloqueada.
   - Herramienta de QA visual solo para desarrollo.
+- M8 Cobblemon:
+  - Adaptador opcional para capturas, evoluciones y victorias (no cuenta PvP), con crónicas de primera captura, variocolor y legendarios.
+  - Probado en un servidor COBBLEVERSE 1.8.0 real: 251 mods, Java 21.
+  - Script `tools/cobbleverse_server_test.py`.

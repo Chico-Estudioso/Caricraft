@@ -157,7 +157,7 @@
   "caricraft.chronicle.first_catch": "%s hace la primera captura del grupo: %s.",
   "caricraft.chronicle.shiny_catch": "%s captura un %s variocolor.",
   "caricraft.chronicle.legendary_catch": "%s captura al legendario %s.",
-  "caricraft.chronicle.evolution": "%s ve evolucionar a %s.",
+  "caricraft.chronicle.evolution": "%s: ¡%s evoluciona a %s!",
   "caricraft.chronicle.note": "%s: «%s»",
   "caricraft.chronicle.welcome": "Comienza la aventura de %s.",
   "caricraft.result.no_profile": "Tu perfil aún no está listo.",
@@ -287,5 +287,6 @@
   "caricraft.mission.milestone_catch": "Centenario",
   "caricraft.mission.milestone_catch.desc": "Hito: 100 Pokémon capturados por el grupo.",
   "caricraft.mission.milestone_shiny": "¡Qué brillo!",
-  "caricraft.mission.milestone_shiny.desc": "Hito: la primera captura variocolor del grupo."
+  "caricraft.mission.milestone_shiny.desc": "Hito: la primera captura variocolor del grupo.",
+  "caricraft.notify.shiny_catch": "¡%s ha capturado un %s variocolor!"
 }
