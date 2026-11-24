@@ -9,6 +9,8 @@ Incluye un teléfono dentro del juego, el **CariPhone**, con aplicaciones desblo
 
 Documentación: `00_LEEME_PRIMERO.md`, `docs/` y `prompts/`.
 
+![CariPhone](docs/img/cariphone.png)
+
 ## Uso rápido
 - Al entrar por primera vez recibes un **CariPhone**. También se fabrica con 5 lingotes de hierro, 1 panel de cristal y 1 redstone.
 - Ábrelo con clic derecho o con la tecla `O` (configurable).

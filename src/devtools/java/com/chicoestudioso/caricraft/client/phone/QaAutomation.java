@@ -113,7 +113,9 @@ public final class QaAutomation implements ClientModInitializer {
     }
 
     private void shot(String name) {
-        then(25, () -> {
+        // Quita los avisos emergentes del juego (recetas, logros) para que no tapen el teléfono.
+        then(15, () -> Minecraft.getInstance().getToasts().clear());
+        then(10, () -> {
             Minecraft mc = Minecraft.getInstance();
             Screenshot.grab(mc.gameDirectory, name + ".png", mc.getMainRenderTarget(), msg -> System.out.println("[QA] " + msg.getString()));
         });
