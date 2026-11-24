@@ -1,12 +1,27 @@
 # Carins
 
-Moneda interna sin valor real.
+Moneda interna sin valor real, propia de Caricraft Mod. Independiente de CobbleDollars (ver ADR-004).
 
-Fuentes: misiones, hitos, descubrimientos y actividades validadas en servidor.
-Sumideros: apps, mejoras, temas, iconos, fondos y ampliaciones cosméticas.
+## Modelo
+Saldo compartido por grupo (dúo o jugador sin vincular). Ledger con los últimos asientos (por defecto 100) visible en la app Cartera.
 
-Reglas: saldo no negativo, transacciones atómicas, ledger, idempotencia, precios validados en servidor, protección frente a reintentos/desconexiones y configuración de balance.
+## Fuentes
+- Recompensas de misiones (al reclamarlas).
+- Descubrir un bioma nuevo con la app Exploración comprada (por defecto 5 Carins).
+- Comandos de administración (`/carins give|take|set`).
 
-Precios de prototipo: CariLens 300 Carins; Crónicas 250; Exploración 400; CariCamp 500; tema 150; ampliación álbum 200. Son orientativos y configurables.
+## Sumideros
+Apps del grupo y cosméticos personales.
 
-Decidir en ADR si usar saldo compartido o individual + fondo común; no implementar sin decisión.
+| Artículo | Tipo | Precio por defecto |
+|---|---|---|
+| Crónicas | App del grupo | 250 |
+| Exploración | App del grupo | 400 |
+| Estadísticas | App del grupo | 200 |
+| Tema Atardecer / Océano / Bosque | Cosmético personal | 150 |
+| CariLens, CariCamp | Próximamente | — |
+
+Todos los precios y recompensas se pueden cambiar en `config/caricraft.json`.
+
+## Reglas
+Saldo no negativo; transacciones atómicas en el hilo del servidor; ledger; idempotencia de créditos; precios siempre leídos en el servidor; no se cobra una app ya comprada.
