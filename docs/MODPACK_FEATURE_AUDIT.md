@@ -22,7 +22,13 @@ Objetivo: no duplicar lo que COBBLEVERSE 1.8.0 ya ofrece. Decisiones: **reutiliz
 | Estadísticas del dúo | Estadísticas vanilla individuales | **Complementar:** app Estadísticas con datos compartidos del dúo. |
 | Fotografía | No hay | **Aplazado:** capturas multiplataforma y almacenamiento fuera de alcance del MVP. |
 
+## Cambios de jugabilidad del modpack que afectan a las misiones
+- **MobsBeGone** elimina 84 mobs vanilla (lista en `config/mobsbegone-blacklist.json` del modpack): casi todos los hostiles y los animales de granja.
+- El datapack **COBBLEVERSE - No Hunger** desactiva el hambre.
+- **Terralith** está incluido como datapack: hay muchos más biomas que descubrir.
+
 ## Consecuencias
 
 - El catálogo inicial es: Misiones, Cartera, Dúo, Tienda y Ajustes (gratis); Crónicas, Exploración y Estadísticas (de pago); temas del teléfono (cosméticos personales). CariLens y CariCamp aparecen como "próximamente" y no se pueden comprar.
-- Las misiones pueden pedir ítems del modpack (p. ej. Poké Balls) solo cuando Cobblemon está cargado; si no, se ocultan.
+- Las misiones pueden pedir ítems del modpack (p. ej. Poké Balls, bayas, bonguris) solo cuando Cobblemon está cargado; si no, se ocultan.
+- Las misiones por defecto no piden matar mobs vanilla ni entregar comida.
