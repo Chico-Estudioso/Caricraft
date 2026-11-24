@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.0 (2026-11-24)
 - Kit inicial adaptado: el proyecto pasa a llamarse **Caricraft Mod**, la moneda **Carins** y el objetivo es COBBLEVERSE 1.8.0.
 - M0: auditoría de COBBLEVERSE 1.8.0, de funcionalidades del modpack y de la API de Cobblemon 1.8.4; registro de riesgos.
 - M1: arquitectura aprobada y ADR 001–005 (plataforma, autoridad del servidor, propiedad, modelo económico, persistencia y red).
@@ -17,3 +17,8 @@
   - Adaptador opcional para capturas, evoluciones y victorias (no cuenta PvP), con crónicas de primera captura, variocolor y legendarios.
   - Probado en un servidor COBBLEVERSE 1.8.0 real: 251 mods, Java 21.
   - Script `tools/cobbleverse_server_test.py`.
+- M9 QA y balance:
+  - 52 tests.
+  - Partida real automatizada con dos clientes.
+  - Informes `docs/QA_REPORT.md` y `docs/BALANCE_REPORT.md`.
+  - Capturas en `docs/img/cariphone.png`.
