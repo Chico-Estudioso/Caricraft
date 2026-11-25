@@ -56,6 +56,48 @@ public final class CaricraftConfig {
     public Map<String, Long> prices = new LinkedHashMap<>();
     /** Artículos de la tienda desactivados por id. */
     public List<String> disabledItems = new ArrayList<>();
+    /** Desafío Dúo: noches con mobs vanilla equipados (ver docs/CHALLENGE.md). */
+    public ChallengeConfig challenge = new ChallengeConfig();
+
+    /** Ajustes del Desafío Dúo. */
+    public static final class ChallengeConfig {
+        /** Activa el Desafío Dúo. Si es falso, la app y sus misiones desaparecen. */
+        public boolean enabled = true;
+        /** Cada cuántas noches hay un desafío obligatorio. */
+        public int intervalNights = 3;
+        /** Mobs vanilla que aparecen solo durante el desafío (deben quitarse de la lista de MobsBeGone). */
+        public List<String> mobs = new ArrayList<>(List.of(
+                "minecraft:zombie", "minecraft:husk", "minecraft:drowned", "minecraft:skeleton", "minecraft:stray",
+                "minecraft:spider", "minecraft:cave_spider", "minecraft:witch", "minecraft:slime", "minecraft:enderman"));
+        /** Carins base por mob derrotado (se suma el nivel de desafío - 1). */
+        public long killReward = 2;
+        /** Carins por sobrevivir una noche de desafío completa. */
+        public long nightReward = 50;
+        /** Nivel máximo de desafío (equipamiento y fuerza de los mobs). */
+        public int maxLevel = 5;
+        /** Noches superadas necesarias para subir un nivel. */
+        public int nightsPerLevel = 2;
+        /** Impide dormir durante la noche de desafío. */
+        public boolean blockSleep = true;
+        /** Fuera del desafío, impide que aparezcan los mobs de la lista (el mundo queda como sin ellos). */
+        public boolean gateMobsOutsideChallenge = true;
+        /** Radio (bloques) alrededor de un jugador en desafío donde se permiten los mobs. */
+        public int radius = 128;
+
+        ChallengeConfig validate() {
+            intervalNights = clamp(intervalNights, 1, 30);
+            killReward = Math.max(0, Math.min(1000, killReward));
+            nightReward = Math.max(0, Math.min(100_000, nightReward));
+            maxLevel = clamp(maxLevel, 1, 10);
+            nightsPerLevel = clamp(nightsPerLevel, 1, 50);
+            radius = clamp(radius, 32, 256);
+            if (mobs == null) {
+                mobs = new ArrayList<>();
+            }
+            mobs.removeIf(id -> id == null || id.isBlank());
+            return this;
+        }
+    }
 
     public static CaricraftConfig loadOrCreate(Path configDir) {
         Path file = configDir.resolve(FILE_NAME);
@@ -105,6 +147,10 @@ public final class CaricraftConfig {
         if (disabledItems == null) {
             disabledItems = new ArrayList<>();
         }
+        if (challenge == null) {
+            challenge = new ChallengeConfig();
+        }
+        challenge.validate();
         return this;
     }
 

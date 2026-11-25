@@ -57,6 +57,15 @@ loom {
             vmArg '-Dcaricraft.qa.role=A'
             programArgs '--username', 'Dev1', '--quickPlayMultiplayer', 'localhost:25565', '--width', '1280', '--height', '720'
         }
+        qaChallenge {
+            client()
+            name = 'QA Desafio'
+            source sourceSets.devtools
+            runDir 'run-qa-a'
+            ideConfigGenerated false
+            vmArg '-Dcaricraft.qa.role=C'
+            programArgs '--username', 'Dev1', '--quickPlayMultiplayer', 'localhost:25565', '--width', '1280', '--height', '720'
+        }
         qaClientB {
             client()
             name = 'QA Client B'

@@ -1,6 +1,7 @@
 package com.chicoestudioso.caricraft.server;
 
 import com.chicoestudioso.caricraft.core.CaricraftState;
+import com.chicoestudioso.caricraft.core.challenge.ChallengeState;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
 import com.chicoestudioso.caricraft.core.economy.LedgerEntry;
 import com.chicoestudioso.caricraft.core.mission.MissionState;
@@ -142,6 +143,19 @@ public final class StateCodec {
         CompoundTag stats = new CompoundTag();
         party.stats().forEach(stats::putLong);
         tag.put("stats", stats);
+
+        ChallengeState ch = party.challenge();
+        CompoundTag challenge = new CompoundTag();
+        challenge.putLong("last", ch.lastChallengeDay());
+        challenge.putLong("scheduled", ch.scheduledDay());
+        challenge.putBoolean("forced", ch.forced());
+        challenge.putBoolean("active", ch.active());
+        challenge.putInt("nights", ch.nightsCompleted());
+        challenge.putLong("kills", ch.totalKills());
+        challenge.putLong("carins", ch.totalCarins());
+        challenge.putInt("nightKills", ch.nightKills());
+        challenge.putLong("nightCarins", ch.nightCarins());
+        tag.put("challenge", challenge);
         return tag;
     }
 
@@ -193,6 +207,13 @@ public final class StateCodec {
         CompoundTag stats = tag.getCompound("stats");
         for (String key : stats.getAllKeys()) {
             party.stats().put(key, stats.getLong(key));
+        }
+
+        if (tag.contains("challenge", Tag.TAG_COMPOUND)) {
+            CompoundTag c = tag.getCompound("challenge");
+            party.challenge().restore(c.getLong("last"), c.getLong("scheduled"), c.getBoolean("forced"),
+                    c.getBoolean("active"), c.getInt("nights"), c.getLong("kills"), c.getLong("carins"),
+                    c.getInt("nightKills"), c.getLong("nightCarins"));
         }
         return party;
     }

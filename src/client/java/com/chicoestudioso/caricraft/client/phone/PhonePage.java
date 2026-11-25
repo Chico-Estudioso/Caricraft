@@ -13,6 +13,7 @@ public enum PhonePage {
     CHRONICLES("chronicles"),
     EXPLORER("explorer"),
     STATS("stats"),
+    CHALLENGE("challenge"),
     /** App que aún no se tiene o que llegará más adelante. */
     LOCKED(null);
 

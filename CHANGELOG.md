@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+- **Desafío Dúo:**
+  - Una noche de desafío obligatoria cada 3, que se puede adelantar desde la app; no se puede dormir.
+  - Mobs vanilla equipados y reforzados por niveles (1–5), indicador en pantalla, Carins por mob y por sobrevivir, y 9 misiones de caza.
+  - Preparación automática de MobsBeGone (`/caricraft desafio preparar`). Protocolo de red 2.
+
 ## 0.1.0 (2026-11-24)
 - Kit inicial adaptado: el proyecto pasa a llamarse **Caricraft Mod**, la moneda **Carins** y el objetivo es COBBLEVERSE 1.8.0.
 - M0: auditoría de COBBLEVERSE 1.8.0, de funcionalidades del modpack y de la API de Cobblemon 1.8.4; registro de riesgos.

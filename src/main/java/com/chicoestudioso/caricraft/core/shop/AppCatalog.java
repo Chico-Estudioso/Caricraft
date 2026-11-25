@@ -23,6 +23,7 @@ public final class AppCatalog {
     public static final String STATS = "stats";
     public static final String CARILENS = "carilens";
     public static final String CARICAMP = "caricamp";
+    public static final String CHALLENGE = "challenge";
 
     private final Map<String, ShopItem> items = new LinkedHashMap<>();
 
@@ -34,6 +35,9 @@ public final class AppCatalog {
         catalog.register(builtin(DUO, "minecraft:cake", 0xFFE71D36));
         catalog.register(builtin(SHOP, "minecraft:emerald", 0xFF2A9D8F));
         catalog.register(builtin(SETTINGS, "minecraft:comparator", 0xFF6C757D));
+        if (config.challenge.enabled) {
+            catalog.register(builtin(CHALLENGE, "minecraft:skeleton_skull", 0xFF9D0208));
+        }
         catalog.register(app(CHRONICLES, 250, "minecraft:book", 0xFF8E5A3C));
         catalog.register(app(EXPLORER, 400, "minecraft:compass", 0xFF3A86FF));
         catalog.register(app(STATS, 200, "minecraft:clock", 0xFF8338EC));

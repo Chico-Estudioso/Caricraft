@@ -61,6 +61,7 @@ final class PhonePages {
             case CHRONICLES -> hasApp(snap, "chronicles") ? chronicles(s, snap, x, y, w) : locked(s, snap, x, y, w, "chronicles");
             case EXPLORER -> hasApp(snap, "explorer") ? explorer(s, snap, x, y, w) : locked(s, snap, x, y, w, "explorer");
             case STATS -> hasApp(snap, "stats") ? stats(s, snap, x, y, w) : locked(s, snap, x, y, w, "stats");
+            case CHALLENGE -> challenge(s, snap, x, y, w);
             case LOCKED -> locked(s, snap, x, y, w, s.lockedAppId);
         };
     }
@@ -687,6 +688,101 @@ final class PhonePages {
         if (!any) {
             y += ui.wrapped(Component.translatable("caricraft.phone.stats.empty"), x, y, w, t.textDim());
         }
+        return y - top;
+    }
+
+    // ================================================================ desafío dúo
+
+    private static final int CHALLENGE_RED = 0xFF9D0208;
+
+    private static int challenge(PhoneScreen s, PhoneSnapshot snap, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        int top = y;
+        PhoneSnapshot.ChallengeView c = snap.challenge();
+        if (c == null || !c.enabled()) {
+            return ui.wrapped(Component.translatable("caricraft.phone.challenge.disabled"), x, y, w, t.textDim());
+        }
+
+        // Tarjeta de estado
+        Component title;
+        Component subtitle;
+        int bg;
+        if (c.active()) {
+            title = Component.translatable("caricraft.phone.challenge.active");
+            subtitle = Component.translatable("caricraft.phone.challenge.active_sub", c.nightKills(), PhoneText.number(c.nightCarins()));
+            bg = CHALLENGE_RED;
+        } else if (c.tonight()) {
+            title = Component.translatable("caricraft.phone.challenge.tonight");
+            subtitle = Component.translatable(c.night() ? "caricraft.phone.challenge.starting" : "caricraft.phone.challenge.tonight_sub");
+            bg = PhoneTheme.mix(CHALLENGE_RED, t.warn(), 0.45f);
+        } else {
+            title = Component.translatable("caricraft.phone.challenge.next");
+            subtitle = c.nightsUntilForced() == 0
+                    ? Component.translatable("caricraft.phone.challenge.next_tonight")
+                    : Component.translatable("caricraft.phone.challenge.next_in", c.nightsUntilForced());
+            bg = PhoneTheme.mix(CHALLENGE_RED, t.header(), 0.55f);
+        }
+        int textWidth = w - 12;
+        Component boldTitle = title.copy().withStyle(ChatFormatting.BOLD);
+        int titleHeight = ui.wrappedHeight(boldTitle, textWidth);
+        int cardHeight = 5 + titleHeight + 2 + ui.wrappedHeight(subtitle, textWidth) + 4;
+        ui.round(x, y, x + w, y + cardHeight, bg);
+        ui.wrapped(boldTitle, x + 6, y + 5, textWidth, 0xFFFFFFFF);
+        ui.wrapped(subtitle, x + 6, y + 5 + titleHeight + 2, textWidth, 0xFFFFE3E3);
+        y += cardHeight + 6;
+
+        // Nivel
+        Component level = Component.translatable("caricraft.phone.challenge.level", c.level(), c.maxLevel())
+                .withStyle(ChatFormatting.BOLD);
+        ui.text(level, x, y + 1, t.text());
+        int pipX = x + ui.font.width(level) + 6;
+        for (int i = 0; i < c.maxLevel(); i++) {
+            int px = pipX + i * 9;
+            if (px + 7 > x + w) {
+                break;
+            }
+            ui.round(px, y, px + 7, y + 9, i < c.level() ? CHALLENGE_RED : t.track());
+        }
+        y += 14;
+
+        // Botón
+        if (!c.active() && !c.tonight()) {
+            ui.button(x, y, w, BUTTON_H + 3, Component.translatable("caricraft.phone.challenge.bring_forward"), Style.DANGER,
+                    () -> s.send(PhoneAction.CHALLENGE_BRING_FORWARD, ""));
+            y += BUTTON_H + 3 + 4;
+            y += ui.wrapped(Component.translatable("caricraft.phone.challenge.bring_forward_help"), x, y, w, t.textDim()) + 4;
+        } else {
+            y += ui.wrapped(Component.translatable("caricraft.phone.challenge.no_sleep"), x, y, w, t.bad()) + 4;
+        }
+
+        if (!c.blockedMobs().isEmpty()) {
+            y += ui.wrapped(Component.translatable("caricraft.phone.challenge.blocked", c.blockedMobs().size()), x, y, w, t.bad()) + 4;
+        }
+
+        // Estadísticas
+        y += 2;
+        ui.text(Component.translatable("caricraft.phone.challenge.record").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+        y += 12;
+        String[][] rows = {
+                {"caricraft.phone.challenge.nights", PhoneText.number(c.nightsCompleted())},
+                {"caricraft.phone.challenge.kills", PhoneText.number(c.totalKills())},
+                {"caricraft.phone.challenge.carins", PhoneText.number(c.totalCarins())}};
+        for (String[] row : rows) {
+            ui.round(x, y, x + w, y + 15, t.card());
+            int vw = ui.font.width(row[1]);
+            ui.textClipped(Component.translatable(row[0]), x + 5, y + 4, w - vw - 14, t.text());
+            ui.text(row[1], x + w - 5 - vw, y + 4, CHALLENGE_RED);
+            y += 15 + 3;
+        }
+
+        // Reglas
+        y += 4;
+        ui.text(Component.translatable("caricraft.phone.challenge.rules").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+        y += 12;
+        Component rules = Component.translatable("caricraft.phone.challenge.rules_text", c.intervalNights(),
+                c.killReward(), c.nightReward());
+        y += ui.wrapped(rules, x, y, w, t.textDim());
         return y - top;
     }
 

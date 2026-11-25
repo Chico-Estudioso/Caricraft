@@ -1,6 +1,7 @@
 package com.chicoestudioso.caricraft.core;
 
 import com.chicoestudioso.caricraft.config.CaricraftConfig;
+import com.chicoestudioso.caricraft.core.challenge.ChallengeService;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleService;
 import com.chicoestudioso.caricraft.core.economy.EconomyService;
@@ -34,6 +35,7 @@ public final class CaricraftCore {
     private final ShopService shop;
     private final MissionService missions;
     private final PartyService parties;
+    private final ChallengeService challenge;
 
     public CaricraftCore(CaricraftState state, CaricraftConfig config, MissionCatalog missionCatalog, Clock clock) {
         this.state = state;
@@ -44,6 +46,11 @@ public final class CaricraftCore {
         this.shop = new ShopService(AppCatalog.createDefault(config), economy, chronicle);
         this.missions = new MissionService(missionCatalog, shop, economy, chronicle, config, clock);
         this.parties = new PartyService(config, clock, economy, chronicle);
+        this.challenge = new ChallengeService(config, economy, chronicle);
+    }
+
+    public ChallengeService challenge() {
+        return challenge;
     }
 
     public CaricraftState state() {

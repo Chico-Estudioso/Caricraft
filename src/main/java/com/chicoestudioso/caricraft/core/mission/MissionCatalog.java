@@ -32,6 +32,14 @@ public final class MissionCatalog {
      * @throws IllegalArgumentException si el JSON o alguna misión no es válida
      */
     public static MissionCatalog fromJson(Reader reader, Predicate<String> modLoaded) {
+        return fromJson(reader, modLoaded, feature -> true);
+    }
+
+    /**
+     * Igual que {@link #fromJson(Reader, Predicate)} pero también descarta las misiones cuyo
+     * {@code requiresFeature} no esté activo en el servidor.
+     */
+    public static MissionCatalog fromJson(Reader reader, Predicate<String> modLoaded, Predicate<String> featureEnabled) {
         FileFormat file;
         try {
             file = GSON.fromJson(reader, FileFormat.class);
@@ -41,10 +49,15 @@ public final class MissionCatalog {
         if (file == null || file.missions() == null) {
             throw new IllegalArgumentException("El JSON de misiones debe tener una lista \"missions\"");
         }
-        return of(file.missions(), modLoaded);
+        return of(file.missions(), modLoaded, featureEnabled);
     }
 
     public static MissionCatalog of(Collection<MissionDefinition> definitions, Predicate<String> modLoaded) {
+        return of(definitions, modLoaded, feature -> true);
+    }
+
+    public static MissionCatalog of(Collection<MissionDefinition> definitions, Predicate<String> modLoaded,
+                                    Predicate<String> featureEnabled) {
         MissionCatalog catalog = new MissionCatalog();
         List<String> errors = new ArrayList<>();
         for (MissionDefinition def : definitions) {
@@ -69,6 +82,8 @@ public final class MissionCatalog {
         }
         catalog.missions.values().removeIf(def -> def.requiresMod() != null && !def.requiresMod().isBlank()
                 && !modLoaded.test(def.requiresMod()));
+        catalog.missions.values().removeIf(def -> def.requiresFeature() != null && !def.requiresFeature().isBlank()
+                && !featureEnabled.test(def.requiresFeature()));
         // Quitar en cascada las que dependen de misiones descartadas.
         boolean changed = true;
         while (changed) {

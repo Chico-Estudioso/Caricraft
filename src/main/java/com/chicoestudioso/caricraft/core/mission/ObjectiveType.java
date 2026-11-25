@@ -21,7 +21,9 @@ public enum ObjectiveType {
     /** Cobblemon: evolucionar. Objetivo: especie resultante o vacío. */
     EVOLVE_POKEMON("pokemon_evolved"),
     /** Cobblemon: ganar combates. Objetivo: {@code wild}, {@code npc} o vacío. */
-    WIN_BATTLE("battles_won");
+    WIN_BATTLE("battles_won"),
+    /** Desafío Dúo: sobrevivir una noche de desafío (conectado al amanecer). */
+    CHALLENGE_NIGHT("challenge_nights");
 
     private final String statKey;
 

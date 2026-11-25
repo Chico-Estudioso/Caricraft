@@ -27,7 +27,8 @@ public record PhoneSnapshot(
         List<InviteView> incomingInvites,
         List<InviteView> outgoingInvites,
         boolean leavePending,
-        boolean cobblemonLoaded) {
+        boolean cobblemonLoaded,
+        ChallengeView challenge) {
 
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
@@ -82,5 +83,19 @@ public record PhoneSnapshot(
     }
 
     public record InviteView(String uuid, String name, long expiresAt) {
+    }
+
+    /**
+     * Desafío Dúo.
+     *
+     * @param tonight          hay desafío programado para esta noche (aún no ha empezado)
+     * @param nightsUntilForced noches hasta el próximo desafío obligatorio (0 = esta noche)
+     * @param blockedMobs      mobs que MobsBeGone sigue bloqueando (el servidor debe prepararse)
+     */
+    public record ChallengeView(boolean enabled, boolean active, boolean tonight, boolean forced, boolean night,
+                                long nightsUntilForced, int intervalNights, int level, int maxLevel,
+                                int nightsCompleted, long totalKills, long totalCarins, int nightKills,
+                                long nightCarins, long killReward, long nightReward, boolean blockSleep,
+                                List<String> blockedMobs) {
     }
 }

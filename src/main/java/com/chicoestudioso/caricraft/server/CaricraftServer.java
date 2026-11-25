@@ -65,27 +65,28 @@ public final class CaricraftServer {
     public void reload() {
         Path configDir = FabricLoader.getInstance().getConfigDir();
         CaricraftConfig config = CaricraftConfig.loadOrCreate(configDir);
-        MissionCatalog catalog = loadMissions(configDir);
+        MissionCatalog catalog = loadMissions(configDir, config);
         this.core = new CaricraftCore(savedData.state(), config, catalog, Clock.SYSTEM);
         this.rateLimiter = new ActionRateLimiter(config.actionsPerSecond, System::currentTimeMillis);
     }
 
-    private static MissionCatalog loadMissions(Path configDir) {
+    private static MissionCatalog loadMissions(Path configDir, CaricraftConfig config) {
         Path custom = configDir.resolve(MISSIONS_FILE);
+        java.util.function.Predicate<String> features = feature -> !"challenge".equals(feature) || config.challenge.enabled;
         if (Files.exists(custom)) {
             try (Reader reader = Files.newBufferedReader(custom, StandardCharsets.UTF_8)) {
-                return MissionCatalog.fromJson(reader, FabricLoader.getInstance()::isModLoaded);
+                return MissionCatalog.fromJson(reader, FabricLoader.getInstance()::isModLoaded, features);
             } catch (IOException | IllegalArgumentException e) {
                 CaricraftMod.LOGGER.error("{} no es válido; se usan las misiones por defecto.", custom, e);
             }
         }
-        return defaultMissions();
+        return defaultMissions(features);
     }
 
-    public static MissionCatalog defaultMissions() {
+    public static MissionCatalog defaultMissions(java.util.function.Predicate<String> features) {
         try (InputStream in = Objects.requireNonNull(CaricraftServer.class.getResourceAsStream("/caricraft/default_missions.json"));
              Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-            return MissionCatalog.fromJson(reader, FabricLoader.getInstance()::isModLoaded);
+            return MissionCatalog.fromJson(reader, FabricLoader.getInstance()::isModLoaded, features);
         } catch (IOException e) {
             throw new IllegalStateException("No se pudieron leer las misiones por defecto", e);
         }

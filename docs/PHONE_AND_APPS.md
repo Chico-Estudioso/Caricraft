@@ -13,6 +13,7 @@ Marco de teléfono centrado que se adapta a la escala de la GUI, barra de estado
 | Dúo | Gratis | Miembros, invitaciones y desvinculación. |
 | Tienda | Gratis | Comprar apps y temas. |
 | Ajustes | Gratis | Elegir tema del teléfono. |
+| Desafío Dúo | Gratis | Estado de la noche de desafío, nivel, historial y botón para adelantarla (`docs/CHALLENGE.md`). |
 | Crónicas | 250 | Diario compartido y notas. |
 | Exploración | 400 | Biomas descubiertos + bonificación por bioma nuevo. |
 | Estadísticas | 200 | Distancia, capturas, victorias, misiones del dúo. |
