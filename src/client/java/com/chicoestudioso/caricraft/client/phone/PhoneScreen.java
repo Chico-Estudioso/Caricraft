@@ -38,6 +38,11 @@ public class PhoneScreen extends Screen {
     PhonePage page;
     String lockedAppId;
     int missionTab;
+    /** Mercado: 0 = vainilla (Carins), 1 = Cobbleverse (CobbleDollars). */
+    int marketTab;
+    /** Pokémon que se ha tocado una vez para vender (hay que confirmar). */
+    String sellArmed;
+    long sellArmedAt;
     /** Foto abierta en CariLens, o {@code null} para ver la cuadrícula. */
     String openPhotoId;
     /** Momento de la primera pulsación de "Borrar" (confirmación). */

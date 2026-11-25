@@ -56,6 +56,12 @@ Se montó un servidor de producción (Fabric Server Launcher, sin entorno de des
 - [H] La tecla por defecto del CariPhone (`O`) no está asignada en `config/defaultoptions/keybindings.txt` del modpack.
 - [H] Cobblemon no arranca en el entorno de desarrollo de Loom (mappings de Mojang + reflexión de Kotlin: `ClassNotFoundException: net.minecraft.class_2960`). Las pruebas con Cobblemon se hacen en un servidor de producción.
 
+## CobbleDollars (integración opcional en tiempo de ejecución)
+
+- [H] CobbleDollars 2.0.0+Beta-5.1 (licencia «All rights reserved»): `PlayerMixin` añade a `Player` la interfaz `fr.harmex.cobbledollars.common.utils.CobbleDollarsPlayer` con `cobbleDollars$getCobbleDollars()` y `cobbleDollars$setCobbleDollars(BigInteger)`. El saldo va en `SynchedEntityData`.
+- [H] Caricraft Mod la usa por reflexión (`CobbleDollarsBridge`). **No hay dependencia nueva de compilación** y no se incluye nada de CobbleDollars.
+- [H] Probado en el servidor COBBLEVERSE 1.8.0 real con `/caricraft cobbleverse prueba` (ver `QA_REPORT.md`).
+
 ## Dudas abiertas
 
 - [D] Si el servidor real de Caricraft 2 añade mods fuera del modpack. Si es así, revisar conflictos de teclas y de red.

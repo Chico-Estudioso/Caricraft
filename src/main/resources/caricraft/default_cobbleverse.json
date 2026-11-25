@@ -1,0 +1,529 @@
+{
+  "dailyOffers": 6,
+  "offers": [
+    {
+      "id": "shiny_mystery",
+      "pokemon": {
+        "species": [
+          "eevee",
+          "dratini",
+          "larvitar",
+          "gible",
+          "riolu",
+          "bagon",
+          "axew",
+          "ralts",
+          "deino",
+          "dreepy",
+          "zorua",
+          "absol",
+          "mimikyu",
+          "litwick",
+          "growlithe",
+          "pichu",
+          "beldum",
+          "goomy",
+          "jangmoo",
+          "togepi",
+          "munchlax",
+          "sneasel",
+          "scyther",
+          "lapras",
+          "snorlax"
+        ],
+        "level": 15,
+        "shiny": true,
+        "perfectIvs": 2
+      },
+      "price": 80000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:luxury_ball"
+    },
+    {
+      "id": "shiny_eevee",
+      "pokemon": {
+        "species": [
+          "eevee"
+        ],
+        "level": 15,
+        "shiny": true,
+        "perfectIvs": 3
+      },
+      "price": 95000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:luxury_ball"
+    },
+    {
+      "id": "shiny_starter",
+      "pokemon": {
+        "species": [
+          "bulbasaur",
+          "charmander",
+          "squirtle",
+          "chikorita",
+          "cyndaquil",
+          "totodile",
+          "treecko",
+          "torchic",
+          "mudkip",
+          "turtwig",
+          "chimchar",
+          "piplup",
+          "snivy",
+          "tepig",
+          "oshawott",
+          "chespin",
+          "fennekin",
+          "froakie",
+          "rowlet",
+          "litten",
+          "popplio",
+          "grookey",
+          "scorbunny",
+          "sobble",
+          "sprigatito",
+          "fuecoco",
+          "quaxly"
+        ],
+        "level": 10,
+        "shiny": true,
+        "perfectIvs": 2
+      },
+      "price": 90000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:luxury_ball"
+    },
+    {
+      "id": "eevee_extremespeed",
+      "pokemon": {
+        "species": [
+          "eevee"
+        ],
+        "level": 15,
+        "perfectIvs": 2,
+        "moves": [
+          "extremespeed",
+          "quickattack",
+          "bite",
+          "protect"
+        ]
+      },
+      "price": 30000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:premier_ball"
+    },
+    {
+      "id": "growlithe_extremespeed",
+      "pokemon": {
+        "species": [
+          "growlithe"
+        ],
+        "level": 18,
+        "perfectIvs": 2,
+        "moves": [
+          "extremespeed",
+          "flamewheel",
+          "bite",
+          "morningsun"
+        ]
+      },
+      "price": 28000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:premier_ball"
+    },
+    {
+      "id": "riolu_extremespeed",
+      "pokemon": {
+        "species": [
+          "riolu"
+        ],
+        "level": 18,
+        "perfectIvs": 2,
+        "moves": [
+          "extremespeed",
+          "aurasphere",
+          "quickattack",
+          "endure"
+        ]
+      },
+      "price": 45000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:premier_ball"
+    },
+    {
+      "id": "beldum_meteormash",
+      "pokemon": {
+        "species": [
+          "beldum"
+        ],
+        "level": 20,
+        "perfectIvs": 2,
+        "moves": [
+          "meteormash",
+          "zenheadbutt",
+          "ironhead",
+          "takedown"
+        ]
+      },
+      "price": 50000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:premier_ball"
+    },
+    {
+      "id": "magikarp_dragondance",
+      "pokemon": {
+        "species": [
+          "magikarp"
+        ],
+        "level": 15,
+        "perfectIvs": 3,
+        "moves": [
+          "dragondance",
+          "waterfall",
+          "bounce",
+          "splash"
+        ]
+      },
+      "price": 25000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:premier_ball"
+    },
+    {
+      "id": "dratini_extremespeed",
+      "pokemon": {
+        "species": [
+          "dratini"
+        ],
+        "level": 15,
+        "perfectIvs": 2,
+        "moves": [
+          "extremespeed",
+          "dragondance",
+          "dragonrage",
+          "wrap"
+        ]
+      },
+      "price": 40000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:premier_ball"
+    },
+    {
+      "id": "pikachu_surf",
+      "pokemon": {
+        "species": [
+          "pikachu"
+        ],
+        "level": 15,
+        "perfectIvs": 2,
+        "moves": [
+          "surf",
+          "fly",
+          "volttackle",
+          "thunderbolt"
+        ]
+      },
+      "price": 32000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:premier_ball"
+    },
+    {
+      "id": "ditto_6iv",
+      "pokemon": {
+        "species": [
+          "ditto"
+        ],
+        "level": 20,
+        "perfectIvs": 6
+      },
+      "price": 60000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:dream_ball"
+    },
+    {
+      "id": "larvitar_6iv",
+      "pokemon": {
+        "species": [
+          "larvitar"
+        ],
+        "level": 15,
+        "perfectIvs": 6
+      },
+      "price": 55000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:dream_ball"
+    },
+    {
+      "id": "gible_6iv",
+      "pokemon": {
+        "species": [
+          "gible"
+        ],
+        "level": 15,
+        "perfectIvs": 6
+      },
+      "price": 55000,
+      "dailyLimit": 1,
+      "icon": "cobblemon:dream_ball"
+    },
+    {
+      "id": "master_ball",
+      "item": "cobblemon:master_ball",
+      "count": 1,
+      "price": 150000,
+      "dailyLimit": 1
+    },
+    {
+      "id": "ability_patch",
+      "item": "cobblemon:ability_patch",
+      "count": 1,
+      "price": 40000,
+      "dailyLimit": 1
+    },
+    {
+      "id": "ability_capsule",
+      "item": "cobblemon:ability_capsule",
+      "count": 1,
+      "price": 15000,
+      "dailyLimit": 2
+    },
+    {
+      "id": "rare_candy",
+      "item": "cobblemon:rare_candy",
+      "count": 5,
+      "price": 12500,
+      "dailyLimit": 2
+    },
+    {
+      "id": "exp_candy_xl",
+      "item": "cobblemon:exp_candy_xl",
+      "count": 3,
+      "price": 15000,
+      "dailyLimit": 2
+    },
+    {
+      "id": "lucky_egg",
+      "item": "cobblemon:lucky_egg",
+      "count": 1,
+      "price": 20000,
+      "dailyLimit": 1
+    },
+    {
+      "id": "destiny_knot",
+      "item": "cobblemon:destiny_knot",
+      "count": 1,
+      "price": 25000,
+      "dailyLimit": 1
+    },
+    {
+      "id": "shiny_stone",
+      "item": "cobblemon:shiny_stone",
+      "count": 1,
+      "price": 12000,
+      "dailyLimit": 1
+    },
+    {
+      "id": "dusk_stone",
+      "item": "cobblemon:dusk_stone",
+      "count": 1,
+      "price": 12000,
+      "dailyLimit": 1
+    },
+    {
+      "id": "life_orb",
+      "item": "cobblemon:life_orb",
+      "count": 1,
+      "price": 30000,
+      "dailyLimit": 1
+    },
+    {
+      "id": "choice_band",
+      "item": "cobblemon:choice_band",
+      "count": 1,
+      "price": 30000,
+      "dailyLimit": 1
+    }
+  ],
+  "gift": [
+    {
+      "id": "rare_candy",
+      "item": "cobblemon:rare_candy",
+      "amount": {
+        "min": 1,
+        "max": 3
+      },
+      "weight": 18
+    },
+    {
+      "id": "ultra_balls",
+      "item": "cobblemon:ultra_ball",
+      "amount": {
+        "min": 3,
+        "max": 6
+      },
+      "weight": 18
+    },
+    {
+      "id": "great_balls",
+      "item": "cobblemon:great_ball",
+      "amount": {
+        "min": 5,
+        "max": 10
+      },
+      "weight": 14
+    },
+    {
+      "id": "exp_candy",
+      "item": "cobblemon:exp_candy_l",
+      "amount": {
+        "min": 2,
+        "max": 4
+      },
+      "weight": 14
+    },
+    {
+      "id": "fire_stone",
+      "item": "cobblemon:fire_stone",
+      "weight": 4
+    },
+    {
+      "id": "water_stone",
+      "item": "cobblemon:water_stone",
+      "weight": 4
+    },
+    {
+      "id": "thunder_stone",
+      "item": "cobblemon:thunder_stone",
+      "weight": 4
+    },
+    {
+      "id": "leaf_stone",
+      "item": "cobblemon:leaf_stone",
+      "weight": 4
+    },
+    {
+      "id": "moon_stone",
+      "item": "cobblemon:moon_stone",
+      "weight": 3
+    },
+    {
+      "id": "ability_capsule",
+      "item": "cobblemon:ability_capsule",
+      "weight": 4
+    },
+    {
+      "id": "cobbledollars",
+      "cobbledollars": {
+        "min": 1500,
+        "max": 6000
+      },
+      "weight": 14
+    },
+    {
+      "id": "carins",
+      "carins": {
+        "min": 40,
+        "max": 120
+      },
+      "weight": 10
+    },
+    {
+      "id": "pokemon",
+      "pokemon": {
+        "species": [
+          "pikachu",
+          "eevee",
+          "growlithe",
+          "abra",
+          "ralts",
+          "riolu",
+          "togepi",
+          "pichu",
+          "litwick",
+          "zorua",
+          "axew",
+          "munchlax",
+          "sneasel",
+          "scyther",
+          "magikarp",
+          "ditto",
+          "absol"
+        ],
+        "level": 12,
+        "shinyChance": 0.05,
+        "perfectIvs": 3
+      },
+      "weight": 10
+    },
+    {
+      "id": "starter",
+      "pokemon": {
+        "species": [
+          "bulbasaur",
+          "charmander",
+          "squirtle",
+          "chikorita",
+          "cyndaquil",
+          "totodile",
+          "treecko",
+          "torchic",
+          "mudkip",
+          "turtwig",
+          "chimchar",
+          "piplup",
+          "snivy",
+          "tepig",
+          "oshawott",
+          "chespin",
+          "fennekin",
+          "froakie",
+          "rowlet",
+          "litten",
+          "popplio",
+          "grookey",
+          "scorbunny",
+          "sobble",
+          "sprigatito",
+          "fuecoco",
+          "quaxly"
+        ],
+        "level": 5,
+        "shinyChance": 0.05,
+        "perfectIvs": 3
+      },
+      "weight": 4
+    },
+    {
+      "id": "shiny_pokemon",
+      "pokemon": {
+        "species": [
+          "pikachu",
+          "eevee",
+          "growlithe",
+          "abra",
+          "ralts",
+          "riolu",
+          "togepi",
+          "pichu",
+          "litwick",
+          "zorua",
+          "axew",
+          "munchlax",
+          "sneasel",
+          "scyther",
+          "magikarp",
+          "ditto",
+          "absol"
+        ],
+        "level": 15,
+        "shiny": true,
+        "perfectIvs": 3
+      },
+      "weight": 2
+    },
+    {
+      "id": "master_ball",
+      "item": "cobblemon:master_ball",
+      "weight": 1
+    }
+  ]
+}

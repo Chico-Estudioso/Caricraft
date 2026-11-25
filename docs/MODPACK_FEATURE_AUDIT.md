@@ -4,7 +4,7 @@ Objetivo: no duplicar lo que COBBLEVERSE 1.8.0 ya ofrece. Decisiones: **reutiliz
 
 | Sistema | Ya existe en el modpack | Decisión para Caricraft Mod |
 |---|---|---|
-| Economía de tienda | CobbleDollars (moneda, tiendas, NPCs) | **Complementar.** Los Carins son una moneda propia del dúo, solo para progresión del CariPhone. No se intercambian con CobbleDollars ni se pueden comerciar entre jugadores fuera del dúo. |
+| Economía de tienda | CobbleDollars (moneda, tiendas, NPCs) | **Complementar.** Los Carins son una moneda propia del dúo, solo para progresión del CariPhone. No se intercambian con CobbleDollars ni se pueden comerciar entre jugadores fuera del dúo. La pestaña opcional Cobbleverse **complementa** las tiendas de CobbleDollars: no repite lo que ya venden, sino que ofrece Pokémon especiales (variocolor, IV perfectos, movimientos que no podrían aprender) y compra Pokémon, algo que el modpack no tiene (ADR-006). |
 | Pokédex | Pokédex integrada de Cobblemon 1.8.4 | **No desarrollar** un álbum de especies. CariLens es un álbum de **fotos reales** del dúo, no de especies. |
 | Radar / PokéNav | cobblenav 2.4.2 | **No desarrollar.** |
 | Mapa y minimapa | Xaero's Minimap y World Map | **No desarrollar** mapas. La app Exploración muestra solo el registro de biomas descubiertos por el dúo. |

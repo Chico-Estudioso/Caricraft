@@ -28,6 +28,8 @@ Guion B: recibir y aceptar la invitación y viajar.
 
 ### Guiones adicionales
 - `./gradlew runQaChallenge`: Desafío Dúo. Comprueba que los mobs no aparecen fuera del desafío, que salen equipados durante él, las recompensas y que desaparecen al amanecer.
+- `./gradlew runQaChallenge -DqaRole=V`: aspecto de la pestaña Cobbleverse con datos de ejemplo. En desarrollo no hay Cobblemon.
+- En un servidor COBBLEVERSE real: `/caricraft cobbleverse prueba` (desde la consola) comprueba Cobblemon y CobbleDollars con un jugador ficticio.
 - `./gradlew runQaChallenge -DqaRole=S` (con `runServer`): escuadrón con botín. Comprueba la aparición, el aviso y la app, el cofre bloqueado, la derrota (Carins y botín) y que al amanecer el cofre abierto se queda y el no ganado desaparece.
 - `./gradlew runQaChallenge -DqaRole=T` (con `runServer`): consejo en el chat, notificación con el teléfono cerrado, barra amarilla antes de la noche y roja durante el desafío, interruptor de consejos y aviso al amanecer.
 - `./gradlew runQaChallenge -DqaRole=P` (con `runServer`): CariPhone personal. Comprueba que:

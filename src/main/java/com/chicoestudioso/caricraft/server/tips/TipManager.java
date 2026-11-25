@@ -69,7 +69,8 @@ public final class TipManager {
         Party party = mod.core().partyOf(player.getUUID());
         TipRotation.TipContext context = new TipRotation.TipContext(party != null && party.isDuo(),
                 party == null ? Set.of() : Set.copyOf(party.ownedApps()), mod.core().config().challenge.enabled,
-                FabricLoader.getInstance().isModLoaded("cobblemon"));
+                FabricLoader.getInstance().isModLoaded("cobblemon"),
+                com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseManager.active(mod));
         return ROTATIONS.computeIfAbsent(player.getUUID(), uuid -> new TipRotation(new Random(RANDOM.nextLong())))
                 .next(context)
                 .map(id -> {

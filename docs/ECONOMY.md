@@ -1,6 +1,6 @@
 # Carins
 
-Moneda interna sin valor real, propia de Caricraft Mod. Independiente de CobbleDollars (ver ADR-004).
+Moneda interna sin valor real, propia de Caricraft Mod. Independiente de CobbleDollars (ver ADR-004). La pestaña opcional Cobbleverse del Mercado usa CobbleDollars, no Carins (ver `COBBLEVERSE.md` y ADR-006). Su regalo misterioso puede dar Carins.
 
 ## Modelo
 Saldo compartido por grupo (dúo o jugador sin vincular). Ledger con los últimos asientos (por defecto 100) visible en la app Cartera.

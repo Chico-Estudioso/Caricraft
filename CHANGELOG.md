@@ -1,6 +1,13 @@
 # Changelog
 
 ## Unreleased
+- **Cobbleverse en el Mercado** (`cobbleverse.enabled`, desactivado por defecto; ver `docs/COBBLEVERSE.md`):
+  - Pestaña nueva con el saldo de CobbleDollars.
+  - **Regalo misterioso diario**: objetos, Pokémon (a veces variocolor), CobbleDollars o Carins.
+  - **Tienda en CobbleDollars**: 6 ofertas al día de un catálogo de 24. Hay Pokémon variocolor, con movimientos que no podrían aprender o con 6 IV perfectos, y objetos raros como la Master Ball o el Parche de habilidad.
+  - **Venta de Pokémon del equipo** por CobbleDollars, con confirmación doble y límite diario. Precio según nivel, rareza, IV y variocolor; los legendarios no se venden.
+  - Integración con CobbleDollars por reflexión, sin redistribuir nada (ADR-006). Catálogo configurable en `config/caricraft_cobbleverse.json`.
+  - `/caricraft cobbleverse prueba` comprueba la integración en el servidor. Configuración versión 3 y protocolo de red 6.
 - **Escuadrones con botín en el Desafío Dúo:**
   - De 1 a 3 escuadrones por noche según el nivel. Cada uno tiene de 3 a 7 mobs con un capitán y protege un cofre que no se abre ni se rompe hasta derrotarlos.
   - Al derrotarlo: botín por niveles (tablas de botín propias, cambiables con datapack), 40 + 5 × nivel Carins y una crónica.

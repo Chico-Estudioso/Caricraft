@@ -26,7 +26,7 @@ public final class CaricraftConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     public static final String FILE_NAME = "caricraft.json";
     /** Versión del formato de configuración; permite migrar valores por defecto antiguos. */
-    public static final int CURRENT_VERSION = 2;
+    public static final int CURRENT_VERSION = 3;
 
     /** Versión con la que se escribió el archivo (0 = anterior a las migraciones). */
     public int configVersion = CURRENT_VERSION;
@@ -71,6 +71,8 @@ public final class CaricraftConfig {
     public CampConfig camp = new CampConfig();
     /** Mercado: objetos por Carins (ver docs/MARKET.md). */
     public MarketConfig market = new MarketConfig();
+    /** Cobbleverse: regalo misterioso, tienda y venta de Pokémon en CobbleDollars (ver docs/COBBLEVERSE.md). */
+    public CobbleverseConfig cobbleverse = new CobbleverseConfig();
     /** Desafío Dúo: noches con mobs vanilla equipados (ver docs/CHALLENGE.md). */
     public ChallengeConfig challenge = new ChallengeConfig();
 
@@ -147,6 +149,32 @@ public final class CaricraftConfig {
             campfireRadius = clamp(campfireRadius, 1, 8);
             requestSeconds = clamp(requestSeconds, 10, 600);
             warmupSeconds = clamp(warmupSeconds, 0, 30);
+            return this;
+        }
+    }
+
+    /** Parte Cobbleverse del Mercado. Necesita Cobblemon; la tienda y la venta, también CobbleDollars. */
+    public static final class CobbleverseConfig {
+        /** Activa la parte Cobbleverse (y los objetos de Cobblemon en el Mercado de Carins). Desactivado por defecto. */
+        public boolean enabled = false;
+        /** Regalo misterioso diario para cada jugador. */
+        public boolean mysteryGift = true;
+        /** Tienda en CobbleDollars (Pokémon especiales y objetos raros). */
+        public boolean shop = true;
+        /** Vender Pokémon del equipo por CobbleDollars. */
+        public boolean sellPokemon = true;
+        /** Ventas de Pokémon por jugador y día. */
+        public int maxSalesPerDay = 10;
+        /** Multiplica lo que se paga por cada Pokémon. */
+        public double sellPriceMultiplier = 1.0;
+        /** Permite vender legendarios, singulares y ultraentes (por defecto no, para evitar sustos). */
+        public boolean sellLegendaries = false;
+
+        CobbleverseConfig validate() {
+            maxSalesPerDay = clamp(maxSalesPerDay, 0, 100);
+            if (!(sellPriceMultiplier >= 0) || sellPriceMultiplier > 100) {
+                sellPriceMultiplier = 1.0;
+            }
             return this;
         }
     }
@@ -267,6 +295,13 @@ public final class CaricraftConfig {
             }
             LOGGER.info("Configuración de Caricraft Mod migrada a la versión {}.", CURRENT_VERSION);
         }
+        if (configVersion < 3 && market != null && market.includeCobblemonItems) {
+            // v3: la opción de Cobbleverse pasa a su propio bloque y activa también la tienda en CobbleDollars.
+            if (cobbleverse == null) {
+                cobbleverse = new CobbleverseConfig();
+            }
+            cobbleverse.enabled = true;
+        }
         configVersion = CURRENT_VERSION;
         return this;
     }
@@ -313,6 +348,10 @@ public final class CaricraftConfig {
             market = new MarketConfig();
         }
         market.validate();
+        if (cobbleverse == null) {
+            cobbleverse = new CobbleverseConfig();
+        }
+        cobbleverse.validate();
         if (challenge == null) {
             challenge = new ChallengeConfig();
         }

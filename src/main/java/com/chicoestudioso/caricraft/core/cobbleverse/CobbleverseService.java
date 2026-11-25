@@ -1,0 +1,149 @@
+package com.chicoestudioso.caricraft.core.cobbleverse;
+
+import com.chicoestudioso.caricraft.config.CaricraftConfig;
+import com.chicoestudioso.caricraft.core.ActionResult;
+import com.chicoestudioso.caricraft.core.Clock;
+import com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog.Gift;
+import com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog.Offer;
+import com.chicoestudioso.caricraft.core.party.PlayerProfile;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
+/**
+ * Reglas de la parte Cobbleverse del Mercado: ofertas del día, límites por jugador, regalo misterioso diario
+ * y ventas de Pokémon. El dinero es CobbleDollars (de otro mod), así que aquí solo se decide; el servidor
+ * cobra, paga y entrega.
+ */
+public final class CobbleverseService {
+    public static final long DAY_MS = 86_400_000L;
+
+    private final CaricraftConfig config;
+    private final CobbleverseCatalog catalog;
+    private final Clock clock;
+
+    public CobbleverseService(CaricraftConfig config, CobbleverseCatalog catalog, Clock clock) {
+        this.config = config;
+        this.catalog = catalog;
+        this.clock = clock;
+    }
+
+    public CobbleverseCatalog catalog() {
+        return catalog;
+    }
+
+    /** Activado en la configuración (el servidor comprueba además que Cobblemon esté instalado). */
+    public boolean enabled() {
+        return config.cobbleverse.enabled;
+    }
+
+    public long day() {
+        return Math.floorDiv(clock.now(), DAY_MS);
+    }
+
+    public long nextDayAt() {
+        return (day() + 1) * DAY_MS;
+    }
+
+    /** Ofertas de hoy: las mismas para todos, distintas cada día. */
+    public List<Offer> offersOfDay(long day) {
+        List<Offer> shuffled = new ArrayList<>(catalog.offers());
+        Collections.shuffle(shuffled, new Random(day * 7_919L + 104_729L));
+        return List.copyOf(shuffled.subList(0, catalog.dailyOffers()));
+    }
+
+    private static void rollDay(PlayerProfile profile, long day) {
+        if (profile.cobbleverseDay() != day) {
+            profile.setCobbleverseDay(day);
+            profile.setSalesToday(0);
+            profile.boughtToday().clear();
+        }
+    }
+
+    public int boughtToday(PlayerProfile profile, String offerId, long day) {
+        return profile.cobbleverseDay() == day ? profile.boughtToday().getOrDefault(offerId, 0) : 0;
+    }
+
+    public int salesToday(PlayerProfile profile, long day) {
+        return profile.cobbleverseDay() == day ? profile.salesToday() : 0;
+    }
+
+    public int maxSalesPerDay() {
+        return config.cobbleverse.maxSalesPerDay;
+    }
+
+    /** Comprueba una compra con el saldo de CobbleDollars del jugador. */
+    public ActionResult canBuy(PlayerProfile profile, String offerId, long day, long balance) {
+        Offer offer = offersOfDay(day).stream().filter(o -> o.id().equals(offerId)).findFirst().orElse(null);
+        if (offer == null) {
+            return ActionResult.fail("cv_offer_gone");
+        }
+        if (boughtToday(profile, offerId, day) >= offer.dailyLimitOrDefault()) {
+            return ActionResult.fail("cv_sold_out");
+        }
+        if (balance < offer.price()) {
+            return ActionResult.fail("cv_insufficient", offer.price() - balance);
+        }
+        return ActionResult.ok("ok");
+    }
+
+    public void recordPurchase(PlayerProfile profile, String offerId, long day) {
+        rollDay(profile, day);
+        profile.boughtToday().merge(offerId, 1, Integer::sum);
+    }
+
+    public ActionResult canSell(PlayerProfile profile, long day) {
+        if (salesToday(profile, day) >= maxSalesPerDay()) {
+            return ActionResult.fail("cv_sell_limit", maxSalesPerDay());
+        }
+        return ActionResult.ok("ok");
+    }
+
+    public void recordSale(PlayerProfile profile, long day) {
+        rollDay(profile, day);
+        profile.setSalesToday(profile.salesToday() + 1);
+    }
+
+    public long sellPrice(PokemonPricing.PokemonInfo info) {
+        return PokemonPricing.sellPrice(info, config.cobbleverse.sellPriceMultiplier);
+    }
+
+    /** Clave del motivo por el que no se puede vender, o {@code null}. */
+    public String sellBlocked(PokemonPricing.PokemonInfo info, boolean lastInParty, boolean inBattle) {
+        if (inBattle) {
+            return "in_battle";
+        }
+        if (lastInParty) {
+            return "last";
+        }
+        if (info.legendary() && !config.cobbleverse.sellLegendaries) {
+            return "legendary";
+        }
+        return null;
+    }
+
+    // ------------------------------------------------------------------ regalo misterioso
+
+    public boolean giftAvailable(PlayerProfile profile, long day) {
+        return config.cobbleverse.mysteryGift && !catalog.gifts().isEmpty() && profile.giftDay() != day;
+    }
+
+    /** Premio al azar según los pesos del catálogo. */
+    public Gift pickGift(Random random) {
+        int total = catalog.gifts().stream().mapToInt(Gift::weight).sum();
+        int roll = random.nextInt(total);
+        for (Gift gift : catalog.gifts()) {
+            roll -= gift.weight();
+            if (roll < 0) {
+                return gift;
+            }
+        }
+        return catalog.gifts().getLast();
+    }
+
+    public void recordGift(PlayerProfile profile, long day) {
+        profile.setGiftDay(day);
+    }
+}

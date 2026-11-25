@@ -317,6 +317,12 @@ public final class StateCodec {
         tag.putBoolean("starterPhone", profile.starterPhoneGiven());
         tag.putInt("phoneSerial", profile.phoneSerial());
         tag.putBoolean("tips", profile.tipsEnabled());
+        tag.putLong("giftDay", profile.giftDay());
+        tag.putLong("cvDay", profile.cobbleverseDay());
+        tag.putInt("cvSales", profile.salesToday());
+        CompoundTag bought = new CompoundTag();
+        profile.boughtToday().forEach(bought::putInt);
+        tag.put("cvBought", bought);
         return tag;
     }
 
@@ -331,6 +337,13 @@ public final class StateCodec {
         profile.setStarterPhoneGiven(tag.getBoolean("starterPhone"));
         profile.setPhoneSerial(tag.getInt("phoneSerial"));
         profile.setTipsEnabled(!tag.contains("tips") || tag.getBoolean("tips"));
+        profile.setGiftDay(tag.contains("giftDay") ? tag.getLong("giftDay") : -1);
+        profile.setCobbleverseDay(tag.contains("cvDay") ? tag.getLong("cvDay") : -1);
+        profile.setSalesToday(tag.getInt("cvSales"));
+        CompoundTag bought = tag.getCompound("cvBought");
+        for (String key : bought.getAllKeys()) {
+            profile.boughtToday().put(key, bought.getInt(key));
+        }
         return profile;
     }
 

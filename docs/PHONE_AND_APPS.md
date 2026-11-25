@@ -104,7 +104,7 @@ Tres secciones (apps, mejoras y temas), cada una con un contador `compradas/tota
 | Dúo | Gratis | Miembros, invitaciones y desvinculación. |
 | Tienda | Gratis | Comprar apps y temas. |
 | Ajustes | Gratis | Elegir tema del teléfono. |
-| Mercado | Gratis | Ofertas diarias de objetos por Carins (`docs/MARKET.md`). |
+| Mercado | Gratis | Ofertas diarias de objetos por Carins (`docs/MARKET.md`). Con Cobbleverse activado tiene una segunda pestaña: regalo misterioso, tienda y venta de Pokémon en CobbleDollars (`docs/COBBLEVERSE.md`). |
 | Desafío Dúo | Gratis | Estado de la noche de desafío, nivel, historial y botón para adelantarla (`docs/CHALLENGE.md`). |
 | Crónicas | 250 | Diario compartido y notas. |
 | Exploración | 400 | Biomas descubiertos + bonificación por bioma nuevo. |

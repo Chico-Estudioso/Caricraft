@@ -100,6 +100,16 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 | Petición «Traer» | Cuenta atrás visible en TP Dúo; el compañero llega a 0 bloques |
 | Noche de desafío | CariCamp y TP Dúo bloquean el viaje con aviso rojo; aviso «¡Desafío en curso!» en el inicio |
 
+**Cobbleverse** (servidor COBBLEVERSE 1.8.0 real, con `cobbleverse.enabled`, `/caricraft cobbleverse prueba` desde la consola):
+
+| Comprobación | Resultado |
+|---|---|
+| Carga | «Cobbleverse: 24 ofertas y 16 premios»; Mercado de Carins con 46 ofertas (33 vanilla + 13 de Cobblemon); «CobbleDollars detectado» |
+| Pokémon de tienda | `cobblemon:eevee` nv. 15, variocolor, IV 186/186 y Velocidad Extrema (sin avisos de movimientos desconocidos); se vendería por ₽31.240 |
+| Quitar y devolver al equipo | 0 → 1 |
+| CobbleDollars | 0 → +1000 → −1000 = 0; un cobro sin saldo se rechaza |
+| Interfaz (`runQaChallenge -DqaRole=V`, datos de ejemplo) | Pestañas Mercado/Cobbleverse con punto rojo si hay regalo; saldo, regalo, ofertas con distintivos y movimientos, «Agotado hoy», «Faltan ₽…», venta con «¿Seguro?» y «Legendario» |
+
 **Escuadrones con botín** (`runQaChallenge -DqaRole=S`):
 
 | Paso | Resultado |
