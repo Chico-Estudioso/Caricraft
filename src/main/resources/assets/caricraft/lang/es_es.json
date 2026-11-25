@@ -300,7 +300,7 @@
   "caricraft.phone.challenge.next": "Próximo desafío obligatorio",
   "caricraft.phone.challenge.next_tonight": "Esta noche.",
   "caricraft.phone.challenge.next_in": "Dentro de %s noches.",
-  "caricraft.phone.challenge.level": "Nivel %s de %s",
+  "caricraft.phone.challenge.level": "Nivel %s (máx. %s)",
   "caricraft.phone.challenge.bring_forward": "Adelantar a esta noche",
   "caricraft.phone.challenge.bring_forward_help": "Adelantarlo cuenta como el desafío obligatorio: el siguiente llegará unas noches después.",
   "caricraft.phone.challenge.no_sleep": "No se puede dormir durante el desafío.",
@@ -310,8 +310,8 @@
   "caricraft.phone.challenge.kills": "Mobs derrotados",
   "caricraft.phone.challenge.carins": "Carins ganados",
   "caricraft.phone.challenge.rules": "Cómo funciona",
-  "caricraft.phone.challenge.rules_text": "Cada %s noches hay un desafío obligatorio, y podéis adelantarlo. Esa noche no se puede dormir y aparecen zombis, esqueletos, arañas y más, con armadura y armas. Cuantas más noches superéis, más nivel y más duros. Cada mob da %s Carins (+1 por nivel) y al amanecer ganáis %s más. Al salir el sol, los mobs desaparecen.",
-  "caricraft.hud.challenge": "☠ Noche de desafío · nivel %s · %s mobs",
+  "caricraft.phone.challenge.rules_text": "Cada %s noches hay un desafío obligatorio, y podéis adelantarlo. Esa noche no se puede dormir y aparecen zombis, esqueletos, arañas y más, con armadura y armas. Cada noche superada sube un nivel y los mobs salen cada vez más fuertes: más vida, daño y velocidad, equipo de cota de malla a netherita, encantamientos y efectos. Dentro de la noche hay 3 oleadas, cada una más dura. Algunos son élite (brillan, tienen nombre y dan el triple) y a veces vienen en horda. Cada mob da %s Carins más la mitad de su nivel, y al amanecer ganáis %s más. Al salir el sol, los mobs desaparecen.",
+  "caricraft.hud.challenge": "☠ Desafío · nivel %s · oleada %s/3 · %s mobs",
   "caricraft.challenge.actionbar_start": "☠ ¡Noche de desafío! Nivel %s",
   "caricraft.challenge.kill_reward": "+%s Carins",
   "caricraft.challenge.no_sleep": "¡No puedes dormir en una noche de desafío!",
@@ -441,5 +441,10 @@
   "caricraft.notify.partner_photo": "%s ha hecho una foto. Mírala en CariLens.",
   "caricraft.chronicle.photo": "%s añade una foto al álbum: «%s»",
   "caricraft.chronicle.photo_plain": "%s añade una foto al álbum.",
-  "caricraft.stat.photos": "Fotos hechas"
+  "caricraft.stat.photos": "Fotos hechas",
+  "caricraft.phone.challenge.wave": "Oleada %s de 3 · los mobs salen a nivel %s",
+  "caricraft.challenge.elite": "Élite: %s",
+  "caricraft.challenge.elite_reward": "¡Élite derrotado! +%s Carins",
+  "caricraft.stat.challenge_elites": "Élites derrotados",
+  "caricraft.command.challenge.level_set": "Nivel de desafío del grupo fijado en %s."
 }

@@ -83,7 +83,7 @@ public final class ServerEvents {
                 Set<String> keys = new HashSet<>(ProgressKeys.of(entity.getType().builtInRegistryHolder()));
                 if (entity.getTags().contains(ChallengeManager.TAG)) {
                     keys.add("challenge");
-                    ChallengeManager.onKill(killer);
+                    ChallengeManager.onKill(killer, entity);
                 }
                 progress(killer, ObjectiveType.KILL_ENTITY, keys, 1);
             }

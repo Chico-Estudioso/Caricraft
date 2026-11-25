@@ -17,18 +17,30 @@ Noches de desafío con mobs vanilla equipados. Es una app de serie del CariPhone
   - Los mobs del desafío desaparecen.
 - Fuera del desafío **no aparecen** esos mobs: el mundo queda como siempre en COBBLEVERSE.
 
-## Niveles
-El nivel sube cada `nightsPerLevel` (2) noches superadas, hasta `maxLevel` (5).
+## Niveles: cada vez más fuertes
 
-| Nivel | Equipamiento | Refuerzos |
-|---|---|---|
-| 1 | Cota de malla, espada de piedra | +15 % vida, +10 % daño, +50 % alcance de detección, +3 % velocidad |
-| 2 | Cota de malla, espada de hierro, arcos con Poder I | Arañas con Velocidad |
-| 3 | Hierro, hacha de hierro, Poder II | +45 % vida, +30 % daño |
-| 4 | Hierro con Protección I, Filo I, Poder III | Arañas con Fuerza |
-| 5 | Hierro y diamante con Protección II, espada de diamante con Filo II, Poder IV + Retroceso | +75 % vida, +50 % daño |
+![Nivel 1 frente a nivel 20](img/desafio_niveles.png)
 
-La probabilidad de cada pieza de armadura es 25 % + 15 % por nivel. El equipamiento solo cae al morir un 4 % de las veces.
+- **Un nivel más por cada noche superada** (`nightsPerLevel` = 1), hasta `maxLevel` (por defecto **30**, configurable hasta 100).
+- **Oleadas:** dentro de cada noche, la segunda oleada (desde medianoche) suma +1 nivel y la tercera (de madrugada) +2 (`waves`).
+- **Élites:** probabilidad del 4 % + 1 % por nivel (máx. 25 %). Tienen +3 niveles de equipo, brillan, llevan el nombre "Élite: …" y dan el triple de Carins (`elites`).
+- **Hordas:** con probabilidad del 3 % por nivel (máx. 50 %), un mob aparece acompañado de otro igual (`hordes`).
+- **Por cada nivel:** +12 % de vida, +8 % de daño, +2 % de velocidad (máx. +25 %), resistencia al empuje (máx. 60 %) y más alcance de detección. Los zombis también llaman más refuerzos.
+
+| Nivel | Armadura | Armas | Efectos |
+|---|---|---|---|
+| 1–2 | Cota de malla | Espada de piedra o de hierro; arco con Poder I | — |
+| 3–5 | Hierro, Protección I | Hacha o espada de hierro, Filo I; Poder II–IV, Retroceso | — |
+| 6–9 | Hierro y diamante, Protección II–III | Espada de diamante, Filo II–III, Aspecto ígneo; Poder V, Fuego | Velocidad I (6+), Fuerza I (8+) |
+| 10–14 | Diamante, Protección IV, Espinas | Hacha de diamante, Filo IV–V, Empuje | Resistencia I (10+), Resistencia al fuego (12+), Velocidad II (14+) |
+| 15–19 | Diamante y netherita | Espada de netherita o hacha de diamante | Fuerza II (16+), Regeneración (18+) |
+| 20+ | Netherita completa, Protección IV, Espinas III | Espada o hacha de netherita, Filo V, Aspecto ígneo II | Resistencia II (20+), Regeneración II (26+) |
+
+Las arañas no llevan equipo y reciben los efectos 2 niveles antes. El equipo solo cae al morir un 4 % de las veces.
+
+**Recompensa por mob:** `killReward + nivel / 2` (2 Carins a nivel 1, 12 a nivel 20), el triple si es élite.
+
+**Servidores que ya tenían `config/caricraft.json`:** se migran solos a la versión 2. Si seguían con los valores antiguos (máx. 5 y un nivel cada 2 noches) pasan a 30 y 1; si el administrador los había cambiado, se respetan.
 
 ## Misiones de caza
 `first_challenge`, `night_hunter`, `duo_survivors`, `duo_trophies`, `elite_hunters`, `daily_hunt`, `weekly_hunt`, `milestone_hunter` y `milestone_nights` (ver `default_missions.json`). Usan:
@@ -54,4 +66,4 @@ Para hacerlo a mano, basta con borrar esas entradas del JSON.
   - Si no hay un dúo en desafío a menos de `radius` bloques, impide la aparición. Esto cubre aparición natural, spawners, conversiones y comandos.
   - Si lo hay, etiqueta el mob (`caricraft_challenge`) y lo equipa.
 - Al cargar chunks se retiran los mobs etiquetados que quedaron de noches pasadas.
-- Comandos de administración: `/caricraft desafio iniciar|terminar` (nivel 2).
+- Comandos de administración: `/caricraft desafio iniciar|terminar|nivel <n>` (nivel 2).

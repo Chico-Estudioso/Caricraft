@@ -293,6 +293,22 @@ public final class QaAutomation implements ClientModInitializer {
         then(40, () -> log("mobs en desafío: zombie=" + count("minecraft:zombie") + " skeleton=" + count("minecraft:skeleton")
                 + " husk=" + count("minecraft:husk") + " spider=" + count("minecraft:spider")));
         shot("c03_mobs_equipados");
+        // Nivel alto en la última oleada: equipo de netherita, efectos y élites.
+        then(10, () -> {
+            cmd("caricraft desafio nivel 20");
+            cmd("time set 21000");
+            cmd("kill @e[type=!minecraft:player,distance=..40]");
+        });
+        then(40, () -> {
+            cmd("summon minecraft:zombie ~-1 ~ ~4 {NoAI:1b,Rotation:[180f,0f]}");
+            cmd("summon minecraft:skeleton ~1.5 ~ ~5 {NoAI:1b,Rotation:[180f,0f]}");
+            cmd("summon minecraft:husk ~-3 ~ ~5 {NoAI:1b,Rotation:[180f,0f]}");
+            cmd("summon minecraft:zombie ~3.5 ~ ~6 {NoAI:1b,Rotation:[180f,0f]}");
+            cmd("summon minecraft:stray ~0 ~ ~8 {NoAI:1b,Rotation:[180f,0f]}");
+        });
+        then(60, () -> log("mobs a nivel alto (con hordas): " + count("minecraft:zombie") + " zombis, "
+                + count("minecraft:skeleton") + " esqueletos"));
+        shot("c03b_mobs_nivel_alto");
         then(10, () -> cmd("damage @e[type=minecraft:zombie,limit=1,sort=nearest] 200 minecraft:player_attack by @s"));
         then(30, () -> cmd("damage @e[type=minecraft:husk,limit=1,sort=nearest] 200 minecraft:player_attack by @s"));
         page(PhonePage.CHALLENGE, 0);

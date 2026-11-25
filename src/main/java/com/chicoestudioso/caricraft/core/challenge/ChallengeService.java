@@ -35,6 +35,15 @@ public final class ChallengeService {
         return Math.floorDiv(dayTime + (TICKS_PER_DAY - NIGHT_END), TICKS_PER_DAY);
     }
 
+    /** Oleada de la noche: 0 al anochecer, 1 a medianoche y 2 de madrugada (fuera de la noche, 0). */
+    public static int wave(long dayTime) {
+        if (!isNight(dayTime)) {
+            return 0;
+        }
+        long t = Math.floorMod(dayTime, TICKS_PER_DAY);
+        return t < 16_000 ? 0 : t < 19_500 ? 1 : 2;
+    }
+
     public static boolean isNight(long dayTime) {
         long t = Math.floorMod(dayTime, TICKS_PER_DAY);
         return t >= NIGHT_START && t < NIGHT_END;
@@ -47,6 +56,21 @@ public final class ChallengeService {
     public int level(Party party) {
         CaricraftConfig.ChallengeConfig c = config.challenge;
         return Math.min(c.maxLevel, 1 + party.challenge().nightsCompleted / c.nightsPerLevel);
+    }
+
+    /** Nivel con el que aparecen ahora los mobs: nivel del grupo más la oleada. */
+    public int effectiveLevel(Party party, int wave) {
+        return level(party) + (config.challenge.waves ? Math.max(0, Math.min(2, wave)) : 0);
+    }
+
+    /** Probabilidad de que un mob sea élite a este nivel. */
+    public double eliteChance(int effectiveLevel) {
+        return config.challenge.elites ? Math.min(0.25, 0.04 + 0.01 * effectiveLevel) : 0;
+    }
+
+    /** Probabilidad de que un mob aparezca acompañado (horda) a este nivel. */
+    public double hordeChance(int effectiveLevel) {
+        return config.challenge.hordes ? Math.min(0.5, 0.03 * effectiveLevel) : 0;
     }
 
     /** Noches que faltan para el próximo desafío obligatorio (0 = esta noche). */
@@ -152,8 +176,17 @@ public final class ChallengeService {
         return party.challenge().active ? end(party, false) : null;
     }
 
-    /** Un miembro ha derrotado un mob del desafío. Devuelve los Carins ganados. */
+    /** Un miembro ha derrotado un mob del desafío (nivel 1, no élite). */
     public long onKill(Party party) {
+        return onKill(party, level(party), false);
+    }
+
+    /**
+     * Un miembro ha derrotado un mob del desafío. Recompensa: {@code killReward + nivel/2}, triple si es élite.
+     *
+     * @return Carins ganados
+     */
+    public long onKill(Party party, int mobLevel, boolean elite) {
         ChallengeState s = party.challenge();
         if (!s.active) {
             return 0;
@@ -161,7 +194,11 @@ public final class ChallengeService {
         s.nightKills++;
         s.totalKills++;
         party.incrementStat(STAT_KILLS, 1);
-        long reward = config.challenge.killReward == 0 ? 0 : config.challenge.killReward + level(party) - 1;
+        if (elite) {
+            party.incrementStat("challenge_elites", 1);
+        }
+        long base = config.challenge.killReward == 0 ? 0 : config.challenge.killReward + Math.max(1, mobLevel) / 2;
+        long reward = elite ? base * 3 : base;
         if (reward > 0 && economy.credit(party.wallet(), reward, "challenge_kill", "", null) == EconomyService.Result.OK) {
             s.nightCarins += reward;
             s.totalCarins += reward;

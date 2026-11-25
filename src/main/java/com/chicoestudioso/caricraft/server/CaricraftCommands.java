@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  *   <li>{@code /carins give|take|set <jugadores> <cantidad>}: administración (nivel 2).</li>
  *   <li>{@code /caricraft duo invite|accept|decline <jugador>}, {@code /caricraft duo leave}.</li>
  *   <li>{@code /caricraft info <jugador>} y {@code /caricraft reload} (nivel 2).</li>
- *   <li>{@code /caricraft desafio [estado]}; {@code preparar} (nivel 3), {@code iniciar|terminar} (nivel 2).</li>
+ *   <li>{@code /caricraft desafio [estado]}; {@code preparar} (nivel 3), {@code iniciar|terminar|nivel <n>} (nivel 2).</li>
  * </ul>
  */
 public final class CaricraftCommands {
@@ -67,7 +67,10 @@ public final class CaricraftCommands {
                         .then(Commands.literal("iniciar").requires(src -> src.hasPermission(2))
                                 .executes(CaricraftCommands::challengeStart))
                         .then(Commands.literal("terminar").requires(src -> src.hasPermission(2))
-                                .executes(CaricraftCommands::challengeStop)))
+                                .executes(CaricraftCommands::challengeStop))
+                        .then(Commands.literal("nivel").requires(src -> src.hasPermission(2))
+                                .then(Commands.argument("nivel", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 100))
+                                        .executes(CaricraftCommands::challengeLevel))))
                 .then(Commands.literal("info").requires(src -> src.hasPermission(2))
                         .then(Commands.argument("player", EntityArgument.player()).executes(CaricraftCommands::info)))
                 .then(Commands.literal("duo")
@@ -219,6 +222,27 @@ public final class CaricraftCommands {
         mod.markDirty();
         mod.sendPartySnapshots(player.getUUID());
         return result.success() ? 1 : 0;
+    }
+
+    private static int challengeLevel(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        CaricraftServer mod = mod(ctx);
+        if (mod == null) {
+            return 0;
+        }
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        CaricraftCore core = mod.core();
+        core.onPlayerJoin(player.getUUID(), player.getGameProfile().getName());
+        Party party = core.partyOf(player.getUUID());
+        int wanted = com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "nivel");
+        var state = party.challenge();
+        state.restore(state.lastChallengeDay(), state.scheduledDay(), state.forced(), state.active(),
+                (wanted - 1) * core.config().challenge.nightsPerLevel, state.totalKills(), state.totalCarins(),
+                state.nightKills(), state.nightCarins());
+        int level = core.challenge().level(party);
+        ctx.getSource().sendSuccess(() -> Component.translatable("caricraft.command.challenge.level_set", level), true);
+        mod.markDirty();
+        mod.sendPartySnapshots(player.getUUID());
+        return level;
     }
 
     private static int challengeStop(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {

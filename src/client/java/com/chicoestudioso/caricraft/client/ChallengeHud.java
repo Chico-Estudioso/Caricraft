@@ -20,7 +20,11 @@ public final class ChallengeHud {
             return;
         }
         PhoneSnapshot.ChallengeView c = snapshot.challenge();
-        Component text = Component.translatable("caricraft.hud.challenge", c.level(), c.nightKills());
+        // La oleada depende de la hora: se calcula en el cliente para que el indicador esté siempre al día.
+        int wave = minecraft.level == null ? c.wave()
+                : com.chicoestudioso.caricraft.core.challenge.ChallengeService.wave(minecraft.level.getDayTime());
+        int level = c.level() + (c.waves() ? wave : 0);
+        Component text = Component.translatable("caricraft.hud.challenge", level, wave + 1, c.nightKills());
         int width = minecraft.font.width(text) + 10;
         int x = (graphics.guiWidth() - width) / 2;
         int y = 4;
