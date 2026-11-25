@@ -134,9 +134,15 @@ public final class SnapshotBuilder {
             }
         }
         var config = core.config().camp;
+        var state = core.state();
+        PhoneSnapshot.TravelView incoming = core.camp().incoming(state, viewer.getUUID())
+                .map(r -> new PhoneSnapshot.TravelView(state.nameOf(r.from()), r.kind().name(), r.expiresAt())).orElse(null);
+        PhoneSnapshot.TravelView outgoing = core.camp().outgoing(state, viewer.getUUID())
+                .map(r -> new PhoneSnapshot.TravelView(state.nameOf(r.to()), r.kind().name(), r.expiresAt())).orElse(null);
         return new PhoneSnapshot.CampView(camp, others, core.camp().cooldownEndsAt(party, viewer.getUUID()),
                 config.campTravelCost, config.partnerTravelCost,
-                config.blockDuringChallenge && ChallengeManager.challengeTonight(viewer));
+                config.blockDuringChallenge && ChallengeManager.challengeTonight(viewer), incoming, outgoing,
+                com.chicoestudioso.caricraft.server.camp.TravelManager.warmupSecondsLeft(viewer.getUUID()));
     }
 
     private static PhoneSnapshot.MarketView marketView(CaricraftCore core, Party party) {

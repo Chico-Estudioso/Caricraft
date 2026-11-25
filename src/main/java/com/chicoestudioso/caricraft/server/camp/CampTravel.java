@@ -60,67 +60,63 @@ public final class CampTravel {
                 player.level().dimension().location().toString(), best.getX(), best.getY(), best.getZ());
     }
 
-    public static ActionResult travel(CaricraftServer mod, ServerPlayer player, String target) {
-        CaricraftCore core = mod.core();
-        Party party = core.partyOf(player.getUUID());
-        Destination destination = "partner".equals(target) ? Destination.PARTNER : Destination.CAMP;
-        ServerLevel level;
-        Vec3 position;
-        if (destination == Destination.CAMP) {
-            CampSite camp = party.camp();
-            if (camp == null) {
-                return ActionResult.fail("camp_missing");
-            }
-            ResourceLocation dimension = ResourceLocation.tryParse(camp.dimension());
-            level = dimension == null ? null : mod.server().getLevel(ResourceKey.create(Registries.DIMENSION, dimension));
-            if (level == null) {
-                return ActionResult.fail("camp_missing");
-            }
-            BlockPos campfire = new BlockPos(camp.x(), camp.y(), camp.z());
-            if (!isLitCampfire(level.getBlockState(campfire))) {
-                // Sin la hoguera encendida no hay campamento (no se cobra).
-                if (!level.getBlockState(campfire).is(BlockTags.CAMPFIRES)) {
-                    core.camp().clearCamp(party);
-                    mod.markDirty();
-                }
-                return ActionResult.fail("camp_campfire_gone");
-            }
-            position = safeSpotNear(level, campfire);
-        } else {
-            ServerPlayer partner = onlinePartner(mod, party, player.getUUID());
-            if (partner == null) {
-                return ActionResult.fail("partner_offline");
-            }
-            level = partner.serverLevel();
-            position = partner.position();
+    /** Comprueba que el campamento existe y su hoguera sigue encendida (borra el campamento si la rompieron). */
+    static ActionResult checkCamp(CaricraftServer mod, Party party) {
+        CampSite camp = party == null ? null : party.camp();
+        if (camp == null) {
+            return ActionResult.fail("camp_missing");
         }
-        boolean challengeNight = ChallengeManager.challengeTonight(player);
-        ActionResult charged = core.camp().chargeTravel(party, player.getUUID(), destination, challengeNight);
+        ServerLevel level = campLevel(mod, camp);
+        if (level == null) {
+            return ActionResult.fail("camp_missing");
+        }
+        BlockPos campfire = new BlockPos(camp.x(), camp.y(), camp.z());
+        if (!isLitCampfire(level.getBlockState(campfire))) {
+            if (!level.getBlockState(campfire).is(BlockTags.CAMPFIRES)) {
+                mod.core().camp().clearCamp(party);
+                mod.markDirty();
+            }
+            return ActionResult.fail("camp_campfire_gone");
+        }
+        return ActionResult.ok("ok");
+    }
+
+    private static ServerLevel campLevel(CaricraftServer mod, CampSite camp) {
+        ResourceLocation dimension = ResourceLocation.tryParse(camp.dimension());
+        return dimension == null ? null : mod.server().getLevel(ResourceKey.create(Registries.DIMENSION, dimension));
+    }
+
+    /** Al terminar la cuenta atrás: vuelve a comprobar, cobra y teletransporta al campamento. */
+    static ActionResult travelToCamp(CaricraftServer mod, ServerPlayer player, Party party) {
+        ActionResult check = checkCamp(mod, party);
+        if (!check.success()) {
+            return check;
+        }
+        CampSite camp = party.camp();
+        ServerLevel level = campLevel(mod, camp);
+        Vec3 position = safeSpotNear(level, new BlockPos(camp.x(), camp.y(), camp.z()));
+        ActionResult charged = mod.core().camp().chargeTravel(party, player.getUUID(), Destination.CAMP,
+                ChallengeManager.challengeTonight(player));
         if (!charged.success()) {
             return charged;
         }
-        try {
-            effects(player.serverLevel(), player.position());
-            player.stopRiding();
-            player.teleportTo(level, position.x, position.y, position.z, player.getYRot(), player.getXRot());
-            effects(level, position);
-        } catch (RuntimeException e) {
-            core.camp().refund(party, player.getUUID(), destination);
+        if (!teleport(player, level, position)) {
+            mod.core().camp().refund(party, player.getUUID(), Destination.CAMP);
             return ActionResult.fail("internal_error");
         }
         return charged;
     }
 
-    private static ServerPlayer onlinePartner(CaricraftServer mod, Party party, UUID self) {
-        for (UUID member : party.members()) {
-            if (!member.equals(self)) {
-                ServerPlayer online = mod.server().getPlayerList().getPlayer(member);
-                if (online != null) {
-                    return online;
-                }
-            }
+    static boolean teleport(ServerPlayer player, ServerLevel level, Vec3 position) {
+        try {
+            effects(player.serverLevel(), player.position());
+            player.stopRiding();
+            player.teleportTo(level, position.x, position.y, position.z, player.getYRot(), player.getXRot());
+            effects(level, position);
+            return true;
+        } catch (RuntimeException e) {
+            return false;
         }
-        return null;
     }
 
     /** Busca junto a la hoguera un hueco con suelo firme y dos bloques de aire. */

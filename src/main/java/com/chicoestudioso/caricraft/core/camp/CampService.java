@@ -2,6 +2,7 @@ package com.chicoestudioso.caricraft.core.camp;
 
 import com.chicoestudioso.caricraft.config.CaricraftConfig;
 import com.chicoestudioso.caricraft.core.ActionResult;
+import com.chicoestudioso.caricraft.core.CaricraftState;
 import com.chicoestudioso.caricraft.core.Clock;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleService;
@@ -92,6 +93,79 @@ public final class CampService {
         party.travelCooldowns().put(player, now + config.camp.cooldownSeconds * 1000L);
         party.incrementStat("travels", 1);
         return ActionResult.ok(destination == Destination.CAMP ? "travel_camp" : "travel_partner", cost);
+    }
+
+    // ------------------------------------------------------------------ peticiones estilo /tpa
+
+    /** Resultado de aceptar una petición. */
+    public record Acceptance(ActionResult result, TravelRequest request) {
+    }
+
+    /**
+     * {@code from} pide ir hacia {@code to} o traerlo. Comprueba las reglas del viajero, pero no cobra:
+     * se cobra al llegar.
+     */
+    public ActionResult request(CaricraftState state, UUID from, UUID to, TravelRequest.Kind kind, boolean challengeNight) {
+        Party party = state.partyOf(from);
+        if (party == null || !hasApp(party)) {
+            return ActionResult.fail("app_locked", AppCatalog.CARICAMP);
+        }
+        if (to == null || from.equals(to) || !party.members().contains(to)) {
+            return ActionResult.fail("not_in_duo");
+        }
+        if (challengeNight && config.camp.blockDuringChallenge) {
+            return ActionResult.fail("travel_challenge");
+        }
+        TravelRequest request = new TravelRequest(from, to, kind, clock.now() + config.camp.requestSeconds * 1000L);
+        long until = cooldownEndsAt(party, request.traveler());
+        if (until > clock.now()) {
+            return ActionResult.fail("travel_cooldown", Math.max(1, (until - clock.now() + 999) / 1000));
+        }
+        if (party.wallet().balance() < cost(Destination.PARTNER)) {
+            return ActionResult.fail("insufficient_funds", cost(Destination.PARTNER) - party.wallet().balance());
+        }
+        purgeExpired(state);
+        state.travelRequests().removeIf(r -> r.from().equals(from));
+        state.travelRequests().add(request);
+        return ActionResult.ok(kind == TravelRequest.Kind.GO ? "travel_request_go" : "travel_request_bring", state.nameOf(to));
+    }
+
+    /** {@code accepter} acepta la petición más reciente que le han hecho. */
+    public Acceptance accept(CaricraftState state, UUID accepter) {
+        purgeExpired(state);
+        TravelRequest found = null;
+        for (TravelRequest request : state.travelRequests()) {
+            if (request.to().equals(accepter)) {
+                found = request;
+            }
+        }
+        if (found == null) {
+            return new Acceptance(ActionResult.fail("travel_request_missing"), null);
+        }
+        state.travelRequests().remove(found);
+        return new Acceptance(ActionResult.ok("travel_request_accepted", state.nameOf(found.from())), found);
+    }
+
+    /** Rechaza las peticiones recibidas o cancela las enviadas por {@code player}. */
+    public ActionResult decline(CaricraftState state, UUID player) {
+        purgeExpired(state);
+        boolean removed = state.travelRequests().removeIf(r -> r.to().equals(player) || r.from().equals(player));
+        return removed ? ActionResult.ok("travel_request_declined") : ActionResult.fail("travel_request_missing");
+    }
+
+    public java.util.Optional<TravelRequest> incoming(CaricraftState state, UUID player) {
+        purgeExpired(state);
+        return state.travelRequests().stream().filter(r -> r.to().equals(player)).reduce((a, b) -> b);
+    }
+
+    public java.util.Optional<TravelRequest> outgoing(CaricraftState state, UUID player) {
+        purgeExpired(state);
+        return state.travelRequests().stream().filter(r -> r.from().equals(player)).findFirst();
+    }
+
+    private void purgeExpired(CaricraftState state) {
+        long now = clock.now();
+        state.travelRequests().removeIf(r -> r.expired(now));
     }
 
     /** Devuelve el coste y quita la espera si el viaje no pudo hacerse. */

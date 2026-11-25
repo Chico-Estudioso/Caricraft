@@ -6,7 +6,9 @@ import com.chicoestudioso.caricraft.core.CaricraftCore;
 import com.chicoestudioso.caricraft.core.CaricraftState;
 import com.chicoestudioso.caricraft.network.PhoneAction;
 import com.chicoestudioso.caricraft.core.lens.LensService;
+import com.chicoestudioso.caricraft.core.camp.TravelRequest;
 import com.chicoestudioso.caricraft.server.camp.CampTravel;
+import com.chicoestudioso.caricraft.server.camp.TravelManager;
 import com.chicoestudioso.caricraft.server.lens.PhotoUploads;
 import com.chicoestudioso.caricraft.server.challenge.ChallengeManager;
 import com.chicoestudioso.caricraft.network.PhoneActionPayload;
@@ -96,7 +98,12 @@ public final class PhoneActionHandler {
                     yield deleted;
                 }
                 case CAMP_SET -> CampTravel.setCamp(mod, player);
-                case CAMP_TRAVEL -> CampTravel.travel(mod, player, payload.arg1());
+                case CAMP_TRAVEL -> "partner".equals(payload.arg1())
+                        ? TravelManager.request(mod, player, TravelRequest.Kind.GO) : TravelManager.travelToCamp(mod, player);
+                case TRAVEL_REQUEST -> TravelManager.request(mod, player,
+                        "bring".equals(payload.arg1()) ? TravelRequest.Kind.BRING : TravelRequest.Kind.GO);
+                case TRAVEL_ACCEPT -> TravelManager.accept(mod, player);
+                case TRAVEL_DECLINE -> TravelManager.decline(mod, player);
                 case CHALLENGE_BRING_FORWARD -> core.challenge().bringForward(core.partyOf(uuid),
                         ChallengeManager.day(mod.server()), ChallengeManager.night(mod.server()));
             };
@@ -116,9 +123,6 @@ public final class PhoneActionHandler {
             }
             if (result.success() && payload.action() == PhoneAction.BUY_ITEM) {
                 notifyPartner(mod, player, "caricraft.notify.partner_bought", List.of(player.getGameProfile().getName(), payload.arg1()));
-            }
-            if (result.success() && payload.action() == PhoneAction.CAMP_TRAVEL && "partner".equals(payload.arg1())) {
-                notifyPartner(mod, player, "caricraft.notify.partner_arrived", List.of(player.getGameProfile().getName()));
             }
             if (result.success() && payload.action() == PhoneAction.CHALLENGE_BRING_FORWARD) {
                 notifyPartner(mod, player, "caricraft.notify.partner_challenge", List.of(player.getGameProfile().getName()));

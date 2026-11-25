@@ -1,6 +1,11 @@
 # Changelog
 
 ## Unreleased
+- **Viajes estilo /tpa en CariCamp:**
+  - «Ir» hasta el compañero o «Traer» al compañero, siempre con su aceptación (teléfono, botones clicables en el chat o `/tpduo aceptar`).
+  - Petición que caduca a los 60 s y cuenta atrás de 3 s sin moverse; se cobra al llegar.
+  - El viaje al campamento también tiene cuenta atrás.
+  - Comandos `/tpduo` y `/caricraft viaje`.
 - **Desafío escalado:**
   - Un nivel por noche superada (hasta 30) y 3 oleadas por noche.
   - Equipo hasta netherita con encantamientos crecientes y efectos (velocidad, fuerza, resistencia, regeneración).

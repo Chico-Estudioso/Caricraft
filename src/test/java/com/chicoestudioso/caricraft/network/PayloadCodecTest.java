@@ -70,7 +70,8 @@ class PayloadCodecTest {
                 List.of(), List.of(), false, true,
                 new PhoneSnapshot.ChallengeView(true, false, true, false, false, 0, 3, 1, 30, 0, 0, 0, 0, 0, 2, 50, true, List.of(), 0, 1, true),
                 new PhoneSnapshot.MarketView(true, 1000L, List.of(new PhoneSnapshot.OfferView("iron", "minecraft:iron_ingot", 8, 30, 3, 3, "vanilla"))),
-                new PhoneSnapshot.CampView(new PhoneSnapshot.PositionView("", "minecraft:overworld", 1.5, 64, 2.5), List.of(), 0, 30, 50, false),
+                new PhoneSnapshot.CampView(new PhoneSnapshot.PositionView("", "minecraft:overworld", 1.5, 64, 2.5), List.of(), 0, 30, 50, false,
+                        new PhoneSnapshot.TravelView("Bob", "GO", 99L), null, 0),
                 new PhoneSnapshot.LensView(true, 12, List.of(new PhoneSnapshot.PhotoView("0123456789abcdef", "Alice", 5L, "Hola", 256, 144))));
         PhoneSnapshot decoded = PhoneSnapshot.fromJson(snapshot.toJson());
         assertEquals(snapshot, decoded);

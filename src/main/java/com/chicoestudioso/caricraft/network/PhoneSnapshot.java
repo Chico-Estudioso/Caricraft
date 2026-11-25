@@ -102,7 +102,12 @@ public record PhoneSnapshot(
      * @param others posición de los demás miembros conectados
      */
     public record CampView(PositionView camp, List<PositionView> others, long cooldownEndsAt, long campCost,
-                           long partnerCost, boolean challengeBlocked) {
+                           long partnerCost, boolean challengeBlocked, TravelView incoming, TravelView outgoing,
+                           int warmupSeconds) {
+    }
+
+    /** Petición de viaje estilo /tpa: {@code kind} es {@code GO} (ir hacia) o {@code BRING} (traer). */
+    public record TravelView(String name, String kind, long expiresAt) {
     }
 
     public record PositionView(String name, String dimension, double x, double y, double z) {

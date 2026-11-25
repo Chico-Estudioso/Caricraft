@@ -45,7 +45,13 @@ public enum PhoneAction {
     /** arg1 = id de la foto que el cliente quiere ver. */
     PHOTO_REQUEST,
     /** arg1 = id de la foto que se borra del álbum. */
-    PHOTO_DELETE;
+    PHOTO_DELETE,
+    /** Petición de viaje al compañero: arg1 = {@code go} (ir hacia él) o {@code bring} (traerlo). */
+    TRAVEL_REQUEST,
+    /** Acepta la petición de viaje recibida. */
+    TRAVEL_ACCEPT,
+    /** Rechaza la petición recibida o cancela la enviada. */
+    TRAVEL_DECLINE;
 
     private static final PhoneAction[] VALUES = values();
 
