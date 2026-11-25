@@ -2,6 +2,12 @@
 
 Ítem `caricraft:cariphone`. Se abre con clic derecho o con la tecla configurable (por defecto `O`, si se lleva el CariPhone propio en el inventario).
 
+**Modelo 3D:** teléfono rojo y morado con la pantalla de apps delante, la estrella detrás y botones en los lados. Lo diseñó el autor del proyecto (`models/item/cariphone.json` y una textura de 128×128).
+- En primera persona se sostiene con la pantalla hacia el jugador.
+- En el inventario se ve de frente.
+
+![CariPhone en la mano, en tercera persona y en el inventario](img/cariphone_modelo.png)
+
 ## Un CariPhone personal, único e indestructible
 Con `phone.personal` activado (por defecto), el servidor da a cada jugador **su** CariPhone y se encarga de que tenga uno y solo uno. No se fabrica (no hay receta) ni aparece en las pestañas del modo creativo.
 

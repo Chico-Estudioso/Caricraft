@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- **Nuevo modelo 3D del CariPhone** con el diseño del autor (rojo y morado, pantalla de apps, botones laterales y textura de 128×128). Ajustado para verse bien en la mano, en tercera persona y en el inventario.
 - **Cobbleverse en el Mercado** (`cobbleverse.enabled`, desactivado por defecto; ver `docs/COBBLEVERSE.md`):
   - Pestaña nueva con el saldo de CobbleDollars.
   - **Regalo misterioso diario**: objetos, Pokémon (a veces variocolor), CobbleDollars o Carins.
