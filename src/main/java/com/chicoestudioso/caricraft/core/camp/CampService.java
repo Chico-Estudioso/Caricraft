@@ -14,8 +14,13 @@ import com.chicoestudioso.caricraft.core.shop.ShopService;
 import java.util.UUID;
 
 /**
- * CariCamp: un campamento por grupo y viajes de pago (al campamento o junto al compañero) con tiempo de espera.
- * El servidor valida la hoguera y el destino antes de cobrar; aquí solo se aplican las reglas.
+ * Viajes de pago del dúo con tiempo de espera:
+ * <ul>
+ *     <li>CariCamp ({@link AppCatalog#CARICAMP}): un campamento por grupo y viaje hasta él.</li>
+ *     <li>TP Dúo ({@link AppCatalog#TPDUO}): peticiones estilo /tpa para ir junto al compañero o traerlo.</li>
+ * </ul>
+ * Las dos apps comparten la espera entre viajes. El servidor valida la hoguera y el destino antes de cobrar;
+ * aquí solo se aplican las reglas.
  */
 public final class CampService {
     public enum Destination { CAMP, PARTNER }
@@ -34,8 +39,23 @@ public final class CampService {
         this.clock = clock;
     }
 
+    /** Tiene CariCamp (campamento y viaje al campamento). */
     public boolean hasApp(Party party) {
-        return shop.hasApp(party, AppCatalog.CARICAMP);
+        return party != null && shop.hasApp(party, AppCatalog.CARICAMP);
+    }
+
+    /** Tiene TP Dúo (viajes junto al compañero). */
+    public boolean hasTravelApp(Party party) {
+        return party != null && shop.hasApp(party, AppCatalog.TPDUO);
+    }
+
+    /** App que hace falta para viajar a ese destino. */
+    public static String requiredApp(Destination destination) {
+        return destination == Destination.CAMP ? AppCatalog.CARICAMP : AppCatalog.TPDUO;
+    }
+
+    public boolean canTravel(Party party, Destination destination) {
+        return destination == Destination.CAMP ? hasApp(party) : hasTravelApp(party);
     }
 
     public long cost(Destination destination) {
@@ -62,8 +82,8 @@ public final class CampService {
      * @param challengeNight si el grupo está en noche de desafío
      */
     public ActionResult chargeTravel(Party party, UUID player, Destination destination, boolean challengeNight) {
-        if (!hasApp(party)) {
-            return ActionResult.fail("app_locked", AppCatalog.CARICAMP);
+        if (!canTravel(party, destination)) {
+            return ActionResult.fail("app_locked", requiredApp(destination));
         }
         if (destination == Destination.CAMP && party.camp() == null) {
             return ActionResult.fail("camp_missing");
@@ -107,8 +127,8 @@ public final class CampService {
      */
     public ActionResult request(CaricraftState state, UUID from, UUID to, TravelRequest.Kind kind, boolean challengeNight) {
         Party party = state.partyOf(from);
-        if (party == null || !hasApp(party)) {
-            return ActionResult.fail("app_locked", AppCatalog.CARICAMP);
+        if (!hasTravelApp(party)) {
+            return ActionResult.fail("app_locked", AppCatalog.TPDUO);
         }
         if (to == null || from.equals(to) || !party.members().contains(to)) {
             return ActionResult.fail("not_in_duo");

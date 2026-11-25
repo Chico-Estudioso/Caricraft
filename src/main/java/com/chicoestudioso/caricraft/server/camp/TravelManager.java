@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Viajes de CariCamp en el servidor, al estilo /tpa: el compañero acepta la petición y luego hay una
- * cuenta atrás sin moverse. Al campamento también hay cuenta atrás. Se cobra al llegar.
+ * Viajes en el servidor. TP Dúo funciona al estilo /tpa: el compañero acepta la petición y luego hay una
+ * cuenta atrás sin moverse. Al campamento de CariCamp también hay cuenta atrás. Se cobra al llegar.
  */
 public final class TravelManager {
     private record Warmup(Destination destination, UUID target, ResourceKey<Level> dimension, Vec3 start, int ticksLeft) {
@@ -46,6 +46,12 @@ public final class TravelManager {
 
     public static boolean warmingUp(UUID player) {
         return WARMUPS.containsKey(player);
+    }
+
+    /** Destino de la cuenta atrás en marcha, o {@code null}. */
+    public static Destination warmupDestination(UUID player) {
+        Warmup warmup = WARMUPS.get(player);
+        return warmup == null ? null : warmup.destination();
     }
 
     public static int warmupSecondsLeft(UUID player) {
@@ -148,8 +154,8 @@ public final class TravelManager {
     }
 
     private static ActionResult preCheck(CaricraftCore core, Party party, ServerPlayer traveler, Destination destination) {
-        if (party == null || !core.camp().hasApp(party)) {
-            return ActionResult.fail("app_locked", "caricamp");
+        if (!core.camp().canTravel(party, destination)) {
+            return ActionResult.fail("app_locked", CampService.requiredApp(destination));
         }
         if (WARMUPS.containsKey(traveler.getUUID())) {
             return ActionResult.fail("travel_in_progress");

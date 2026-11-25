@@ -29,7 +29,7 @@ Cliente (CariPhone)                       Servidor
 
 ## Núcleo (`core`)
 
-- `CaricraftState`: raíz persistente: grupos (`Party`), perfiles (`PlayerProfile`), índice jugador→grupo, `schemaVersion`.
+- `CaricraftState`: raíz persistente: grupos (`Party`), perfiles (`PlayerProfile`), índice jugador→grupo, `schemaVersion` (2: TP Dúo separado de CariCamp).
 - `Party`: id, miembros, saldo, ledger acotado, claves de idempotencia, apps compradas, estados de misión, crónicas, biomas descubiertos, estadísticas.
 - `PartyService`: invitar, aceptar, rechazar, cancelar, desvincular (con confirmación y enfriamiento). Fusión y reparto según ADR-004.
 - `EconomyService`: `credit/debit` atómicos, saldo no negativo, idempotencia, ledger.

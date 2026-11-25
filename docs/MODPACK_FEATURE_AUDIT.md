@@ -11,7 +11,7 @@ Objetivo: no duplicar lo que COBBLEVERSE 1.8.0 ya ofrece. Decisiones: **reutiliz
 | Teletransporte | Waystones | **No desarrollar.** |
 | Entrenadores, gimnasios y medallas | Radical Cobblemon Trainers + CobbleverseBadges | **Integrar** de forma indirecta: las victorias contra NPC cuentan para misiones vía `BATTLE_VICTORY` de Cobblemon. |
 | Incursiones | Cobblemon Raid Dens | **Aplazado.** Sin evento público auditado todavía. |
-| Campamento / descanso | Comforts (sacos de dormir, hamacas), Waystones | **Complementar:** CariCamp no da camas ni red de teletransporte. Da un campamento propio del dúo en una hoguera, brújula hacia el campamento y el compañero, y viajes pagados con Carins. |
+| Campamento / descanso | Comforts (sacos de dormir, hamacas), Waystones | **Complementar:** CariCamp no da camas ni red de teletransporte. Da un campamento propio del dúo en una hoguera y el viaje de vuelta pagado con Carins. Los viajes junto al compañero (estilo /tpa, con aceptación) están en TP Dúo. |
 | Cría | Cobbreeding | **Aplazado** (posible objetivo futuro con `HATCH_EGG_POST`). |
 | Mochilas y almacenamiento | Sophisticated Backpacks/Storage, Tom's Storage | **Complementar:** solo **CariBox**, un cofre compartido por el dúo y accesible desde cualquier parte (lo demás es personal o fijo). |
 | Logros | Avances vanilla + Advancement Plaques | **Complementar:** las misiones son cooperativas, con recompensa y reclamables. |
@@ -31,7 +31,7 @@ Objetivo: no duplicar lo que COBBLEVERSE 1.8.0 ya ofrece. Decisiones: **reutiliz
 
 - El catálogo es:
   - Gratis: Misiones, Cartera, Dúo, Tienda, Ajustes, Mercado y Desafío Dúo.
-  - De pago: Crónicas, Exploración, Estadísticas, CariLens (con ampliaciones de álbum) y CariCamp.
+  - De pago: Crónicas, Exploración, Estadísticas, CariLens (con ampliaciones de álbum), CariCamp, TP Dúo y CariBox.
   - Temas del teléfono, como cosméticos personales.
 - Las misiones pueden pedir ítems del modpack (p. ej. Poké Balls, bayas, bonguris) solo cuando Cobblemon está cargado; si no, se ocultan.
 - Las misiones por defecto no piden matar mobs vanilla ni entregar comida.

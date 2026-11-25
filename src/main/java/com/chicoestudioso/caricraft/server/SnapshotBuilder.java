@@ -4,7 +4,9 @@ import com.chicoestudioso.caricraft.CaricraftConstants;
 import com.chicoestudioso.caricraft.config.CaricraftConfig;
 import com.chicoestudioso.caricraft.core.challenge.ChallengeService;
 import com.chicoestudioso.caricraft.core.challenge.ChallengeState;
+import com.chicoestudioso.caricraft.server.camp.TravelManager;
 import com.chicoestudioso.caricraft.server.challenge.ChallengeManager;
+import com.chicoestudioso.caricraft.core.camp.CampService;
 import com.chicoestudioso.caricraft.core.CaricraftCore;
 import com.chicoestudioso.caricraft.core.CaricraftState;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
@@ -102,7 +104,8 @@ public final class SnapshotBuilder {
                 party.wallet().balance(), profile.theme(), List.copyOf(profile.ownedCosmetics()), partyView, apps,
                 missions, ledger, chronicle, exploration, stats, incoming, outgoing,
                 core.parties().leavePending(state, viewer), FabricLoader.getInstance().isModLoaded("cobblemon"),
-                challengeView(mod, party), marketView(core, party), campView(mod, party, player), lensView(core, party),
+                challengeView(mod, party), marketView(core, party), campView(mod, party, player),
+                duoTravelView(mod, party, player), lensView(core, party),
                 new PhoneSnapshot.BoxView(core.box().hasApp(party), core.box().rows(party),
                         com.chicoestudioso.caricraft.server.box.CariBoxManager.usedSlots(mod, party)));
     }
@@ -120,19 +123,33 @@ public final class SnapshotBuilder {
     private static PhoneSnapshot.CampView campView(CaricraftServer mod, Party party, ServerPlayer viewer) {
         CaricraftCore core = mod.core();
         PhoneSnapshot.PositionView camp = null;
-        if (party.camp() != null) {
+        if (party.camp() != null && core.camp().hasApp(party)) {
             var c = party.camp();
-            camp = new PhoneSnapshot.PositionView("", c.dimension(), c.x() + 0.5, c.y(), c.z() + 0.5);
+            camp = new PhoneSnapshot.PositionView("", "", c.dimension(), "", c.x() + 0.5, c.y(), c.z() + 0.5);
         }
-        List<PhoneSnapshot.PositionView> others = new ArrayList<>();
-        for (UUID member : party.members()) {
-            if (member.equals(viewer.getUUID())) {
-                continue;
-            }
-            ServerPlayer online = mod.server().getPlayerList().getPlayer(member);
-            if (online != null) {
-                others.add(new PhoneSnapshot.PositionView(online.getGameProfile().getName(),
-                        online.level().dimension().location().toString(), online.getX(), online.getY(), online.getZ()));
+        var config = core.config().camp;
+        boolean toCamp = TravelManager.warmupDestination(viewer.getUUID()) == CampService.Destination.CAMP;
+        return new PhoneSnapshot.CampView(camp, core.camp().cooldownEndsAt(party, viewer.getUUID()),
+                config.campTravelCost, config.blockDuringChallenge && ChallengeManager.challengeTonight(viewer),
+                toCamp ? TravelManager.warmupSecondsLeft(viewer.getUUID()) : 0);
+    }
+
+    private static PhoneSnapshot.DuoTravelView duoTravelView(CaricraftServer mod, Party party, ServerPlayer viewer) {
+        CaricraftCore core = mod.core();
+        List<PhoneSnapshot.PositionView> partners = new ArrayList<>();
+        if (core.camp().hasTravelApp(party)) {
+            for (UUID member : party.members()) {
+                if (member.equals(viewer.getUUID())) {
+                    continue;
+                }
+                ServerPlayer online = mod.server().getPlayerList().getPlayer(member);
+                if (online != null) {
+                    String biome = online.serverLevel().getBiome(online.blockPosition()).unwrapKey()
+                            .map(key -> key.location().toString()).orElse("");
+                    partners.add(new PhoneSnapshot.PositionView(member.toString(), online.getGameProfile().getName(),
+                            online.level().dimension().location().toString(), biome,
+                            online.getX(), online.getY(), online.getZ()));
+                }
             }
         }
         var config = core.config().camp;
@@ -141,10 +158,11 @@ public final class SnapshotBuilder {
                 .map(r -> new PhoneSnapshot.TravelView(state.nameOf(r.from()), r.kind().name(), r.expiresAt())).orElse(null);
         PhoneSnapshot.TravelView outgoing = core.camp().outgoing(state, viewer.getUUID())
                 .map(r -> new PhoneSnapshot.TravelView(state.nameOf(r.to()), r.kind().name(), r.expiresAt())).orElse(null);
-        return new PhoneSnapshot.CampView(camp, others, core.camp().cooldownEndsAt(party, viewer.getUUID()),
-                config.campTravelCost, config.partnerTravelCost,
-                config.blockDuringChallenge && ChallengeManager.challengeTonight(viewer), incoming, outgoing,
-                com.chicoestudioso.caricraft.server.camp.TravelManager.warmupSecondsLeft(viewer.getUUID()));
+        boolean toPartner = TravelManager.warmupDestination(viewer.getUUID()) == CampService.Destination.PARTNER;
+        return new PhoneSnapshot.DuoTravelView(partners, core.camp().cooldownEndsAt(party, viewer.getUUID()),
+                config.partnerTravelCost, config.blockDuringChallenge && ChallengeManager.challengeTonight(viewer),
+                incoming, outgoing, toPartner ? TravelManager.warmupSecondsLeft(viewer.getUUID()) : 0,
+                config.requestSeconds, config.warmupSeconds);
     }
 
     private static PhoneSnapshot.MarketView marketView(CaricraftCore core, Party party) {

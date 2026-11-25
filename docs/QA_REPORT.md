@@ -86,6 +86,20 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 | Foto con pie | PNG de 61 KB subido en 3 trozos; aparece en el álbum, en las Crónicas y **en el álbum del compañero** |
 | Viajar durante la noche de desafío | Rechazado con aviso |
 
+**CariPhone ordenado y TP Dúo** (`runQaNewApps` + `runQaNewAppsPartner`, 2 clientes):
+
+| Paso | Resultado |
+|---|---|
+| Inicio sin apps compradas | Secciones Día a día / Dúo / Aventura / Sistema; las apps sin comprar, atenuadas y con precio |
+| Tienda tras comprar 4 apps | Contador 4/7; primero las que se pueden comprar |
+| Inicio → CariCamp → TP Dúo → atrás | Vuelve a CariCamp |
+| Esc desde CariCamp | Vuelve al inicio; Esc en el inicio cierra |
+| Tienda → ficha de Estadísticas → Tienda → botón lateral del ratón ×2 | Ficha de Estadísticas y luego Tienda |
+| Tarjeta del compañero | Cara, bioma (Taiga), distancia y punto cardinal; la brújula apunta bien según hacia dónde se mira |
+| Petición «Ir» | El compañero ve el aviso en el inicio, un globo «1» en TP Dúo y la tarjeta con barra de tiempo; al aceptar, llega a 0 bloques |
+| Petición «Traer» | Cuenta atrás visible en TP Dúo; el compañero llega a 0 bloques |
+| Noche de desafío | CariCamp y TP Dúo bloquean el viaje con aviso rojo; aviso «¡Desafío en curso!» en el inicio |
+
 **Servidor COBBLEVERSE 1.8.0 real** (251 mods, Java 21):
 - Avisa al arrancar de que MobsBeGone bloquea los 10 mobs del desafío.
 - `/caricraft desafio preparar` (consola) los quita: la lista pasa de 84 a 74 entradas y se guarda copia `.caricraft.bak`. Tras reiniciar, sin aviso.
@@ -99,6 +113,7 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 4. **Servidor montado a mano sin `athena`/`fusion` (medio):** documentado; el script de prueba los incluye.
 5. **Tarjeta del Desafío (bajo):** el título se cortaba y los indicadores de nivel se montaban sobre el texto en negrita. Corregido.
 6. **Mercado (bajo):** el texto de stock quedaba tapado por el botón Comprar. Corregido.
+7. **Etiquetas del inicio pegadas (bajo):** con 4 columnas, «Misiones», «Cartera» y «Mercado» se tocaban. Ahora dejan margen y algunas apps usan un nombre corto.
 
 ## Pendiente (priorizado)
 1. **Medio:** probar captura, evolución y combate con un cliente COBBLEVERSE completo.

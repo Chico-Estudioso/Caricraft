@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  */
 public final class CaricraftState {
     /** Versión del esquema persistido. Incrementar y añadir migración en {@code StateCodec} si cambia. */
-    public static final int SCHEMA_VERSION = 1;
+    public static final int SCHEMA_VERSION = 2;
 
     private final Map<UUID, Party> parties = new LinkedHashMap<>();
     private final Map<UUID, PlayerProfile> profiles = new LinkedHashMap<>();

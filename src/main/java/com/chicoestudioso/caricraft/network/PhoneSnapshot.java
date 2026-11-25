@@ -31,6 +31,7 @@ public record PhoneSnapshot(
         ChallengeView challenge,
         MarketView market,
         CampView camp,
+        DuoTravelView tpduo,
         LensView lens,
         BoxView box) {
 
@@ -101,21 +102,35 @@ public record PhoneSnapshot(
     }
 
     /**
-     * CariCamp. Las posiciones solo se envían a miembros del grupo.
+     * CariCamp: campamento del grupo.
      *
-     * @param camp   campamento o {@code null}
-     * @param others posición de los demás miembros conectados
+     * @param camp          campamento o {@code null}
+     * @param warmupSeconds cuenta atrás hacia el campamento en marcha (0 si no hay)
      */
-    public record CampView(PositionView camp, List<PositionView> others, long cooldownEndsAt, long campCost,
-                           long partnerCost, boolean challengeBlocked, TravelView incoming, TravelView outgoing,
+    public record CampView(PositionView camp, long cooldownEndsAt, long cost, boolean challengeBlocked,
                            int warmupSeconds) {
+    }
+
+    /**
+     * TP Dúo: dónde está el compañero y peticiones de viaje estilo /tpa. Las posiciones solo se envían a
+     * miembros del grupo que tienen la app.
+     *
+     * @param partners           demás miembros conectados
+     * @param warmupSeconds      cuenta atrás hacia el compañero en marcha (0 si no hay)
+     * @param requestSeconds     lo que dura una petición sin respuesta
+     * @param warmupTotalSeconds duración total de la cuenta atrás
+     */
+    public record DuoTravelView(List<PositionView> partners, long cooldownEndsAt, long cost, boolean challengeBlocked,
+                                TravelView incoming, TravelView outgoing, int warmupSeconds, int requestSeconds,
+                                int warmupTotalSeconds) {
     }
 
     /** Petición de viaje estilo /tpa: {@code kind} es {@code GO} (ir hacia) o {@code BRING} (traer). */
     public record TravelView(String name, String kind, long expiresAt) {
     }
 
-    public record PositionView(String name, String dimension, double x, double y, double z) {
+    /** Posición de un jugador o del campamento. {@code uuid}, {@code name} y {@code biome} pueden ir vacíos. */
+    public record PositionView(String uuid, String name, String dimension, String biome, double x, double y, double z) {
     }
 
     /** Mercado del día. */

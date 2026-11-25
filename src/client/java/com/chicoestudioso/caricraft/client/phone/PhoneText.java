@@ -25,6 +25,22 @@ public final class PhoneText {
         return Component.translatable("caricraft.app." + id);
     }
 
+    /** Nombre corto para la cuadrícula del inicio (si no hay, el normal). */
+    public static Component appShortName(String id) {
+        String key = "caricraft.app." + id + ".short";
+        return I18n.exists(key) ? Component.translatable(key) : appName(id);
+    }
+
+    /** «En el Nether», «En el End»… o el nombre de la dimensión si es de otro mod. */
+    public static Component dimensionName(String dimension) {
+        String key = "caricraft.dimension." + dimension.replace(':', '.');
+        if (I18n.exists(key)) {
+            return Component.translatable(key);
+        }
+        ResourceLocation rl = ResourceLocation.tryParse(dimension);
+        return Component.translatable("caricraft.dimension.other", rl == null ? dimension : prettify(rl.getPath()));
+    }
+
     public static Component appDescription(String id) {
         return Component.translatable("caricraft.app." + id + ".desc");
     }

@@ -28,6 +28,11 @@ Guion B: recibir y aceptar la invitación y viajar.
 
 ### Guiones adicionales
 - `./gradlew runQaChallenge`: Desafío Dúo. Comprueba que los mobs no aparecen fuera del desafío, que salen equipados durante él, las recompensas y que desaparecen al amanecer.
-- `./gradlew runQaNewApps` + `./gradlew runQaNewAppsPartner`: Mercado, CariCamp y CariLens con dos jugadores. Cubre compra y entrega, fijar campamento, brújula, viaje al campamento y al compañero, foto, álbum del compañero y viajes bloqueados en noche de desafío.
+- `./gradlew runQaNewApps` + `./gradlew runQaNewAppsPartner`: inicio por secciones, navegación con historial, Mercado, CariCamp, TP Dúo, CariLens y CariBox con dos jugadores. Cubre:
+  - Compra y entrega.
+  - Fijar campamento, brújula y viaje al campamento.
+  - Ir/Traer con TP Dúo y avisos en el inicio.
+  - Foto y álbum del compañero.
+  - Viajes bloqueados en noche de desafío.
 
 Para que el guion de apps sea rápido, en `run/config/caricraft.json` conviene poner `camp.cooldownSeconds = 5` y `lens.uploadCooldownSeconds = 0`.

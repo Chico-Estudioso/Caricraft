@@ -59,6 +59,7 @@ final class PhonePages {
             case MISSIONS -> missions(s, snap, x, y, w);
             case WALLET -> wallet(s, snap, x, y, w);
             case DUO -> duo(s, snap, x, y, w);
+            case TPDUO -> hasApp(snap, "tpduo") ? tpduo(s, snap, x, y, w) : locked(s, snap, x, y, w, "tpduo");
             case SHOP -> shop(s, snap, x, y, w);
             case SETTINGS -> settings(s, snap, x, y, w);
             case CHRONICLES -> hasApp(snap, "chronicles") ? chronicles(s, snap, x, y, w) : locked(s, snap, x, y, w, "chronicles");
@@ -74,6 +75,21 @@ final class PhonePages {
     }
 
     // ================================================================ inicio
+
+    /** Secciones del inicio, en orden. Las apps que no estén aquí van a «Otras». */
+    private record HomeSection(String key, List<String> apps) {
+    }
+
+    private static final List<HomeSection> HOME_SECTIONS = List.of(
+            new HomeSection("daily", List.of("missions", "wallet", "market", "shop")),
+            new HomeSection("duo", List.of("duo", "tpduo", "caribox", "chronicles")),
+            new HomeSection("adventure", List.of("challenge", "explorer", "caricamp", "carilens")),
+            new HomeSection("system", List.of("stats", "settings")));
+    private static final int HOME_COLUMNS = 4;
+
+    /** Aviso del inicio que lleva a la app donde se resuelve. */
+    private record Notice(Component text, int color, PhonePage target) {
+    }
 
     private static int home(PhoneScreen s, PhoneSnapshot snap, int x, int y, int w) {
         PhoneUi ui = s.ui;
@@ -95,53 +111,144 @@ final class PhonePages {
         ui.round(x, y, x + w, y + cardHeight, t.header());
         ui.text(hello.copy().withStyle(ChatFormatting.BOLD), x + 6, y + 5, t.headerText());
         ui.wrapped(duoLine, x + 6, y + 5 + ui.font.lineHeight + 2, textWidth, PhoneTheme.mix(t.headerText(), t.header(), 0.2f));
-        y += cardHeight + 8;
+        y += cardHeight + 5;
 
-        // Cuadrícula de apps
-        List<AppView> apps = snap.apps().stream().filter(a -> "APP".equals(a.kind())).toList();
-        int columns = w >= 200 ? 4 : 3;
-        int cell = w / columns;
-        int cellHeight = 54;
-        long claimable = snap.missions().stream().filter(m -> "COMPLETED".equals(m.status())).count();
-        for (int i = 0; i < apps.size(); i++) {
-            AppView app = apps.get(i);
-            int cx = x + (i % columns) * cell;
-            int cy = y + (i / columns) * cellHeight;
-            int iconX = cx + (cell - 28) / 2;
-            boolean usable = "BUILTIN".equals(app.state()) || "OWNED".equals(app.state());
-            boolean hover = ui.hovered(cx, cy, cx + cell, cy + cellHeight);
-            int bg = usable ? app.color() : PhoneTheme.mix(app.color(), t.track(), 0.65f);
-            if (hover) {
-                bg = PhoneTheme.mix(bg, 0xFFFFFFFF, 0.2f);
-            }
-            ui.round(iconX, cy + 2, iconX + 28, cy + 30, bg);
-            ui.item(app.icon(), iconX + 6, cy + 8);
-            ui.textFit(PhoneText.appName(app.id()), cx + cell / 2, cy + 33, cell - 2, usable ? t.text() : t.textDim());
-            if ("COMING_SOON".equals(app.state())) {
-                Component soon = Component.translatable("caricraft.phone.soon");
-                ui.textCentered(soon, cx + cell / 2, cy + 42 - 1, t.textDim());
-            } else if (!usable) {
-                String price = PhoneText.number(app.price());
-                int pw = ui.font.width(price) + 9;
-                int px = cx + (cell - pw) / 2;
-                s.drawCoin(px, cy + 42);
-                ui.text(price, px + 9, cy + 42, t.warn());
-            }
-            int badge = switch (app.id()) {
-                case "missions" -> (int) claimable;
-                case "duo" -> snap.incomingInvites().size();
-                default -> 0;
-            };
-            if (badge > 0) {
-                String b = String.valueOf(badge);
-                int bw = Math.max(9, ui.font.width(b) + 4);
-                ui.round(iconX + 28 - bw + 3, cy, iconX + 31, cy + 10, t.bad());
-                ui.text(b, iconX + 31 - bw + (bw - ui.font.width(b)) / 2, cy + 1, 0xFFFFFFFF);
-            }
-            ui.hit(cx, cy, cx + cell, cy + cellHeight, () -> s.openApp(app.id(), app.state()));
+        // Avisos: lo que espera respuesta, con acceso directo a su app
+        for (Notice notice : notices(snap)) {
+            int h = 15;
+            boolean hover = ui.hovered(x, y, x + w, y + h);
+            ui.round(x, y, x + w, y + h, hover ? PhoneTheme.mix(t.card(), notice.color(), 0.25f) : PhoneTheme.mix(t.card(), notice.color(), 0.12f));
+            ui.g.fill(x, y + 2, x + 2, y + h - 2, notice.color());
+            ui.textClipped(notice.text(), x + 6, y + 4, w - 18, t.text());
+            ui.text("›", x + w - 8, y + 4, notice.color());
+            PhonePage target = notice.target();
+            ui.hit(x, y, x + w, y + h, () -> s.navigate(target));
+            y += h + 3;
         }
-        y += ((apps.size() + columns - 1) / columns) * cellHeight;
+        y += 3;
+
+        // Apps por secciones
+        Map<String, AppView> apps = new java.util.LinkedHashMap<>();
+        snap.apps().stream().filter(a -> "APP".equals(a.kind())).forEach(a -> apps.put(a.id(), a));
+        List<HomeSection> sections = new ArrayList<>();
+        for (HomeSection section : HOME_SECTIONS) {
+            List<String> present = section.apps().stream().filter(apps::containsKey).toList();
+            if (!present.isEmpty()) {
+                sections.add(new HomeSection(section.key(), present));
+            }
+            section.apps().forEach(apps::remove);
+        }
+        if (!apps.isEmpty()) {
+            sections.add(new HomeSection("other", List.copyOf(apps.keySet())));
+        }
+        Map<String, AppView> byId = new java.util.HashMap<>();
+        snap.apps().forEach(a -> byId.put(a.id(), a));
+        for (HomeSection section : sections) {
+            Component title = Component.translatable("caricraft.phone.section." + section.key());
+            ui.text(title.copy().withStyle(ChatFormatting.BOLD), x + 1, y, t.textDim());
+            int lineX = x + ui.font.width(title.copy().withStyle(ChatFormatting.BOLD)) + 5;
+            ui.g.fill(lineX, y + 4, x + w, y + 5, PhoneTheme.mix(t.textDim(), t.background(), 0.7f));
+            y += 11;
+            y += appGrid(s, snap, section.apps().stream().map(byId::get).toList(), x, y, w) + 4;
+        }
         return y - top;
+    }
+
+    /** Cuadrícula de iconos; cada fila mide menos si ninguna app muestra precio. */
+    private static int appGrid(PhoneScreen s, PhoneSnapshot snap, List<AppView> apps, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        int top = y;
+        int cell = w / HOME_COLUMNS;
+        for (int row = 0; row * HOME_COLUMNS < apps.size(); row++) {
+            List<AppView> rowApps = apps.subList(row * HOME_COLUMNS, Math.min(apps.size(), (row + 1) * HOME_COLUMNS));
+            boolean anyPrice = rowApps.stream().anyMatch(a -> !usable(a));
+            int cellHeight = anyPrice ? 52 : 43;
+            for (int i = 0; i < rowApps.size(); i++) {
+                AppView app = rowApps.get(i);
+                int cx = x + i * cell;
+                int cy = y;
+                int iconX = cx + (cell - 28) / 2;
+                boolean usable = usable(app);
+                boolean hover = ui.hovered(cx, cy, cx + cell, cy + cellHeight);
+                int bg = usable ? app.color() : PhoneTheme.mix(app.color(), t.track(), 0.65f);
+                if (hover) {
+                    bg = PhoneTheme.mix(bg, 0xFFFFFFFF, 0.2f);
+                }
+                ui.round(iconX, cy + 2, iconX + 28, cy + 30, bg);
+                ui.item(app.icon(), iconX + 6, cy + 8);
+                ui.textFit(PhoneText.appShortName(app.id()), cx + cell / 2, cy + 33, cell - 6, usable ? t.text() : t.textDim());
+                if ("COMING_SOON".equals(app.state())) {
+                    ui.textFit(Component.translatable("caricraft.phone.soon"), cx + cell / 2, cy + 42, cell - 2, t.textDim());
+                } else if (!usable) {
+                    String price = PhoneText.number(app.price());
+                    int pw = ui.font.width(price) + 9;
+                    int px = cx + (cell - pw) / 2;
+                    s.drawCoin(px, cy + 42);
+                    ui.text(price, px + 9, cy + 42, t.warn());
+                }
+                String badge = badge(snap, app.id());
+                if (!badge.isEmpty()) {
+                    int bw = Math.max(9, ui.font.width(badge) + 4);
+                    ui.round(iconX + 28 - bw + 3, cy, iconX + 31, cy + 10, t.bad());
+                    ui.text(badge, iconX + 31 - bw + (bw - ui.font.width(badge)) / 2, cy + 1, 0xFFFFFFFF);
+                }
+                ui.hit(cx, cy, cx + cell, cy + cellHeight, () -> s.openApp(app.id(), app.state()));
+            }
+            y += cellHeight;
+        }
+        return y - top;
+    }
+
+    private static boolean usable(AppView app) {
+        return "BUILTIN".equals(app.state()) || "OWNED".equals(app.state());
+    }
+
+    /** Globo rojo sobre el icono: cosas pendientes dentro de la app. */
+    private static String badge(PhoneSnapshot snap, String appId) {
+        int count = switch (appId) {
+            case "missions" -> (int) snap.missions().stream().filter(m -> "COMPLETED".equals(m.status())).count();
+            case "duo" -> snap.incomingInvites().size();
+            case "tpduo" -> snap.tpduo() != null && snap.tpduo().incoming() != null ? 1 : 0;
+            default -> 0;
+        };
+        if (count > 0) {
+            return String.valueOf(count);
+        }
+        if ("challenge".equals(appId) && snap.challenge() != null && snap.challenge().enabled()
+                && (snap.challenge().active() || snap.challenge().tonight())) {
+            return "!";
+        }
+        return "";
+    }
+
+    private static List<Notice> notices(PhoneSnapshot snap) {
+        List<Notice> notices = new ArrayList<>();
+        PhoneSnapshot.DuoTravelView travel = snap.tpduo();
+        if (travel != null && travel.incoming() != null) {
+            notices.add(new Notice(Component.translatable("GO".equals(travel.incoming().kind())
+                    ? "caricraft.phone.notice.travel_go" : "caricraft.phone.notice.travel_bring", travel.incoming().name()),
+                    0xFF7209B7, PhonePage.TPDUO));
+        }
+        for (InviteView invite : snap.incomingInvites()) {
+            notices.add(new Notice(Component.translatable("caricraft.phone.notice.invite", invite.name()), 0xFFE71D36, PhonePage.DUO));
+        }
+        PhoneSnapshot.ChallengeView challenge = snap.challenge();
+        if (challenge != null && challenge.enabled() && challenge.active()) {
+            notices.add(new Notice(Component.translatable("caricraft.phone.notice.challenge_active", challenge.wave() + 1),
+                    CHALLENGE_RED, PhonePage.CHALLENGE));
+        } else if (challenge != null && challenge.enabled() && challenge.tonight()) {
+            notices.add(new Notice(Component.translatable("caricraft.phone.notice.challenge_tonight"), CHALLENGE_RED, PhonePage.CHALLENGE));
+        }
+        long claimable = snap.missions().stream().filter(m -> "COMPLETED".equals(m.status())).count();
+        if (claimable > 0) {
+            notices.add(new Notice(Component.translatable("caricraft.phone.notice.missions", claimable), 0xFF2A9D8F, PhonePage.MISSIONS));
+        }
+        if (travel != null && travel.outgoing() != null) {
+            notices.add(new Notice(Component.translatable("caricraft.phone.notice.travel_wait", travel.outgoing().name()),
+                    0xFF7209B7, PhonePage.TPDUO));
+        }
+        return notices;
     }
 
     // ================================================================ misiones
@@ -500,12 +607,19 @@ final class PhonePages {
         int top = y;
         y += ui.wrapped(Component.translatable("caricraft.phone.shop.intro"), x, y, w, t.textDim()) + 6;
         for (String kind : List.of("APP", "UPGRADE", "COSMETIC")) {
+            // Primero lo que se puede comprar, luego lo que tiene requisitos y al final lo que ya tienes.
+            List<AppView> items = snap.apps().stream()
+                    .filter(item -> kind.equals(item.kind()) && !"BUILTIN".equals(item.state()))
+                    .sorted(Comparator.comparingInt(item -> shopOrder(item.state())))
+                    .toList();
+            if (items.isEmpty()) {
+                continue;
+            }
+            long owned = items.stream().filter(item -> "OWNED".equals(item.state())).count();
             ui.text(Component.translatable("caricraft.phone.shop.section." + kind.toLowerCase()).copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+            ui.textRight(Component.translatable("caricraft.phone.shop.owned_count", owned, items.size()), x + w, y, t.textDim());
             y += 12;
-            for (AppView item : snap.apps()) {
-                if (!kind.equals(item.kind()) || "BUILTIN".equals(item.state())) {
-                    continue;
-                }
+            for (AppView item : items) {
                 int h = shopCard(s, snap, item, x, y, w, false);
                 ui.round(x, y, x + w, y + h, t.card());
                 shopCard(s, snap, item, x, y, w, true);
@@ -514,6 +628,15 @@ final class PhonePages {
             y += 4;
         }
         return y - top;
+    }
+
+    private static int shopOrder(String state) {
+        return switch (state) {
+            case "AVAILABLE" -> 0;
+            case "LOCKED" -> 1;
+            case "COMING_SOON" -> 2;
+            default -> 3;
+        };
     }
 
     private static int shopCard(PhoneScreen s, PhoneSnapshot snap, AppView item, int x, int y, int w, boolean draw) {
@@ -621,6 +744,7 @@ final class PhonePages {
         y += 12;
         Component key = CaricraftClient.openPhoneKey().getTranslatedKeyMessage();
         y += ui.wrapped(Component.translatable("caricraft.phone.settings.key", key), x, y, w, t.textDim()) + 2;
+        y += ui.wrapped(Component.translatable("caricraft.phone.settings.navigation", key), x, y, w, t.textDim()) + 2;
         y += ui.wrapped(Component.translatable("caricraft.phone.settings.server_authority"), x, y, w, t.textDim());
         return y - top;
     }
@@ -792,13 +916,13 @@ final class PhonePages {
                 boolean armed = System.currentTimeMillis() - s.deleteArmedAt < 3000;
                 Component delete = Component.translatable(armed ? "caricraft.phone.lens.delete_confirm" : "caricraft.phone.lens.delete");
                 int bw = ui.buttonWidth(back);
-                ui.button(x, y, bw, BUTTON_H, back, Style.SECONDARY, () -> s.openPhotoId = null);
+                ui.button(x, y, bw, BUTTON_H, back, Style.SECONDARY, s::back);
                 int dw = ui.buttonWidth(delete);
                 ui.button(x + w - dw, y, dw, BUTTON_H, delete, armed ? Style.DANGER : Style.SECONDARY, () -> {
                     if (System.currentTimeMillis() - s.deleteArmedAt < 3000) {
                         s.send(PhoneAction.PHOTO_DELETE, open.id());
                         com.chicoestudioso.caricraft.client.ClientPhotos.forget(open.id());
-                        s.openPhotoId = null;
+                        s.back();
                     } else {
                         s.deleteArmedAt = System.currentTimeMillis();
                     }
@@ -853,22 +977,26 @@ final class PhonePages {
         }
         String myDimension = me.level().dimension().location().toString();
         long cooldown = Math.max(0, camp.cooldownEndsAt() - snap.serverTime());
-        boolean canTravel = cooldown == 0 && !camp.challengeBlocked();
+        boolean canTravel = cooldown == 0 && !camp.challengeBlocked() && camp.warmupSeconds() == 0;
+
+        if (camp.warmupSeconds() > 0) {
+            y += warmupCard(s, camp.warmupSeconds(), 0, CAMP_ORANGE, x, y, w) + 5;
+        }
 
         // Campamento
         ui.text(Component.translatable("caricraft.phone.camp.camp").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
         y += 12;
-        int cardHeight = camp.camp() == null ? 0 : 50;
         if (camp.camp() != null) {
+            int cardHeight = 50;
             PhoneSnapshot.PositionView c = camp.camp();
             ui.round(x, y, x + w, y + cardHeight, PhoneTheme.mix(CAMP_ORANGE, t.card(), 0.85f));
             compass(s, me, myDimension, c, x + 22, y + 22, CAMP_ORANGE);
             locationText(s, me, myDimension, c, x + 44, y + 6, w - 48);
             ui.text(Component.literal((int) Math.floor(c.x()) + ", " + (int) c.y() + ", " + (int) Math.floor(c.z())), x + 44, y + 17, t.textDim());
-            Component travel = Component.translatable("caricraft.phone.camp.travel", camp.campCost());
+            Component travel = Component.translatable("caricraft.phone.camp.travel", camp.cost());
             int bw = ui.buttonWidth(travel);
             ui.button(x + w - 5 - bw, y + cardHeight - BUTTON_H - 5, bw, BUTTON_H, travel,
-                    canTravel && snap.balance() >= camp.campCost() ? Style.PRIMARY : Style.DISABLED,
+                    canTravel && snap.balance() >= camp.cost() ? Style.PRIMARY : Style.DISABLED,
                     () -> s.send(PhoneAction.CAMP_TRAVEL, "camp"));
             y += cardHeight + 4;
         } else {
@@ -876,79 +1004,233 @@ final class PhonePages {
         }
         ui.button(x, y, w, BUTTON_H + 2, Component.translatable("caricraft.phone.camp.set"), Style.SECONDARY,
                 () -> s.send(PhoneAction.CAMP_SET, ""));
-        y += BUTTON_H + 2 + 8;
+        y += BUTTON_H + 2 + 6;
+        y += travelStatus(s, snap, camp.challengeBlocked(), cooldown, camp.camp() != null ? camp.cost() : 0, x, y, w);
 
-        // Compañero: viajes estilo /tpa (el otro tiene que aceptar)
-        ui.text(Component.translatable("caricraft.phone.camp.partner").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
-        y += 12;
-        if (camp.warmupSeconds() > 0) {
-            ui.round(x, y, x + w, y + 16, PhoneTheme.mix(t.header(), t.card(), 0.6f));
-            ui.textClipped(Component.translatable("caricraft.phone.camp.warmup", camp.warmupSeconds()), x + 5, y + 4, w - 10, t.text());
-            y += 16 + 4;
+        // Los viajes con el compañero están en TP Dúo
+        Component hint = Component.translatable("caricraft.phone.camp.tpduo_hint");
+        Component open = Component.translatable("caricraft.phone.camp.open_tpduo");
+        int hintHeight = ui.wrappedHeight(hint, w - 30) + BUTTON_H + 13;
+        ui.round(x, y, x + w, y + hintHeight, PhoneTheme.mix(TPDUO_PURPLE, t.card(), 0.85f));
+        ui.item("minecraft:ender_pearl", x + 5, y + 5);
+        ui.wrapped(hint, x + 25, y + 5, w - 30, t.text());
+        AppView tpduoApp = snap.apps().stream().filter(a -> a.id().equals("tpduo")).findFirst().orElse(null);
+        int ow = ui.buttonWidth(open);
+        ui.button(x + w - 5 - ow, y + hintHeight - BUTTON_H - 5, ow, BUTTON_H, open, Style.SECONDARY,
+                () -> s.openApp("tpduo", tpduoApp == null ? "LOCKED" : tpduoApp.state()));
+        y += hintHeight + 6;
+
+        y += ui.wrapped(Component.translatable("caricraft.phone.camp.help"), x, y, w, t.textDim());
+        return y - top;
+    }
+
+    /** Aviso de la noche de desafío, la espera entre viajes o la falta de Carins. Devuelve la altura. */
+    private static int travelStatus(PhoneScreen s, PhoneSnapshot snap, boolean challengeBlocked, long cooldown, long cost,
+                                    int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        if (challengeBlocked) {
+            return ui.wrapped(Component.translatable("caricraft.phone.camp.challenge"), x, y, w, t.bad()) + 5;
         }
-        if (camp.incoming() != null) {
-            PhoneSnapshot.TravelView in = camp.incoming();
+        if (cooldown > 0) {
+            return ui.wrapped(Component.translatable("caricraft.phone.camp.cooldown", PhoneText.remaining(cooldown)), x, y, w, t.warn()) + 5;
+        }
+        if (cost > snap.balance()) {
+            return ui.wrapped(Component.translatable("caricraft.phone.tpduo.funds", PhoneText.number(cost - snap.balance())), x, y, w, t.warn()) + 5;
+        }
+        return 0;
+    }
+
+    /** Tarjeta de cuenta atrás de un viaje. {@code total} 0 = sin barra. */
+    private static int warmupCard(PhoneScreen s, int secondsLeft, int total, int color, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        int h = total > 0 ? 34 : 28;
+        ui.round(x, y, x + w, y + h, color);
+        ui.text(Component.translatable("caricraft.phone.tpduo.warmup", secondsLeft).copy().withStyle(ChatFormatting.BOLD),
+                x + 6, y + 5, 0xFFFFFFFF);
+        ui.textClipped(Component.translatable("caricraft.phone.tpduo.warmup_sub"), x + 6, y + 16, w - 12,
+                PhoneTheme.mix(0xFFFFFFFF, color, 0.25f));
+        if (total > 0) {
+            ui.progressBar(x + 6, y + h - 6, w - 12, Math.max(0, total - secondsLeft), total, 0xFFFFFFFF);
+        }
+        return h;
+    }
+
+    // ================================================================ tp dúo
+
+    private static final int TPDUO_PURPLE = 0xFF7209B7;
+
+    private static int tpduo(PhoneScreen s, PhoneSnapshot snap, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        int top = y;
+        PhoneSnapshot.DuoTravelView travel = snap.tpduo();
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        net.minecraft.client.player.LocalPlayer me = mc.player;
+        if (travel == null || me == null) {
+            return 0;
+        }
+
+        // Sin compañero: explicar y llevar a la app Dúo
+        if (!snap.party().duo()) {
+            Component text = Component.translatable("caricraft.phone.tpduo.no_duo");
+            int h = ui.wrappedHeight(text, w - 12) + BUTTON_H + 30;
+            ui.round(x, y, x + w, y + h, PhoneTheme.mix(TPDUO_PURPLE, t.card(), 0.85f));
+            ui.item("minecraft:ender_pearl", x + 6, y + 6);
+            ui.text(Component.translatable("caricraft.phone.tpduo.alone").copy().withStyle(ChatFormatting.BOLD), x + 26, y + 10, t.text());
+            ui.wrapped(text, x + 6, y + 26, w - 12, t.textDim());
+            Component go = Component.translatable("caricraft.phone.tpduo.go_duo");
+            ui.button(x + 6, y + h - BUTTON_H - 6, w - 12, BUTTON_H, go, Style.PRIMARY, () -> s.navigate(PhonePage.DUO));
+            y += h + 8;
+            return y - top + howItWorks(s, travel, x, y, w);
+        }
+
+        String myDimension = me.level().dimension().location().toString();
+        long cooldown = Math.max(0, travel.cooldownEndsAt() - snap.serverTime());
+        boolean busy = travel.outgoing() != null || travel.warmupSeconds() > 0;
+        boolean canRequest = cooldown == 0 && !travel.challengeBlocked() && !busy && snap.balance() >= travel.cost();
+
+        if (travel.warmupSeconds() > 0) {
+            y += warmupCard(s, travel.warmupSeconds(), travel.warmupTotalSeconds(), TPDUO_PURPLE, x, y, w) + 5;
+        }
+
+        // Petición recibida
+        if (travel.incoming() != null) {
+            PhoneSnapshot.TravelView in = travel.incoming();
             long left = Math.max(1, (in.expiresAt() - snap.serverTime()) / 1000);
-            Component text = Component.translatable("GO".equals(in.kind()) ? "caricraft.phone.camp.incoming_go"
-                    : "caricraft.phone.camp.incoming_bring", in.name(), left);
-            int th = ui.wrappedHeight(text, w - 10);
-            int ch = th + BUTTON_H + 12;
-            ui.round(x, y, x + w, y + ch, PhoneTheme.mix(t.card(), t.accent(), 0.18f));
-            ui.wrapped(text, x + 5, y + 4, w - 10, t.text());
+            Component text = Component.translatable("GO".equals(in.kind()) ? "caricraft.phone.tpduo.incoming_go"
+                    : "caricraft.phone.tpduo.incoming_bring", in.name());
+            int th = ui.wrappedHeight(text.copy().withStyle(ChatFormatting.BOLD), w - 12);
+            int ch = th + BUTTON_H + 26;
+            ui.round(x, y, x + w, y + ch, PhoneTheme.mix(TPDUO_PURPLE, t.card(), 0.7f));
+            ui.wrapped(text.copy().withStyle(ChatFormatting.BOLD), x + 6, y + 5, w - 12, t.text());
+            ui.text(Component.translatable("caricraft.phone.tpduo.expires", left), x + 6, y + 7 + th, t.textDim());
+            ui.progressBar(x + 6, y + 17 + th, w - 12, left, Math.max(1, travel.requestSeconds()), TPDUO_PURPLE);
             Component accept = Component.translatable("caricraft.phone.duo.accept");
             Component decline = Component.translatable("caricraft.phone.duo.decline");
-            int aw = ui.buttonWidth(accept);
-            int dw = ui.buttonWidth(decline);
-            ui.button(x + w - 5 - aw, y + ch - BUTTON_H - 4, aw, BUTTON_H, accept, Style.GOOD,
+            int half = (w - 12 - GAP) / 2;
+            ui.button(x + 6, y + ch - BUTTON_H - 5, half, BUTTON_H, decline, Style.SECONDARY,
+                    () -> s.send(PhoneAction.TRAVEL_DECLINE, ""));
+            ui.button(x + 6 + half + GAP, y + ch - BUTTON_H - 5, half, BUTTON_H, accept, Style.GOOD,
                     () -> s.send(PhoneAction.TRAVEL_ACCEPT, ""));
-            ui.button(x + w - 5 - aw - GAP - dw, y + ch - BUTTON_H - 4, dw, BUTTON_H, decline, Style.SECONDARY,
-                    () -> s.send(PhoneAction.TRAVEL_DECLINE, ""));
-            y += ch + 4;
-        }
-        if (camp.outgoing() != null) {
-            PhoneSnapshot.TravelView out = camp.outgoing();
-            long left = Math.max(1, (out.expiresAt() - snap.serverTime()) / 1000);
-            Component text = Component.translatable("caricraft.phone.camp.outgoing", out.name(), left);
-            Component cancel = Component.translatable("caricraft.phone.duo.cancel");
-            int cw = ui.buttonWidth(cancel);
-            int th = ui.wrappedHeight(text, w - cw - 14);
-            int ch = Math.max(th + 8, BUTTON_H + 8);
-            ui.round(x, y, x + w, y + ch, t.card());
-            ui.wrapped(text, x + 5, y + 4, w - cw - 14, t.textDim());
-            ui.button(x + w - 5 - cw, y + (ch - BUTTON_H) / 2, cw, BUTTON_H, cancel, Style.SECONDARY,
-                    () -> s.send(PhoneAction.TRAVEL_DECLINE, ""));
-            y += ch + 4;
-        }
-        if (!snap.party().duo()) {
-            y += ui.wrapped(Component.translatable("caricraft.phone.camp.no_duo"), x, y, w, t.textDim()) + 4;
-        } else if (camp.others().isEmpty()) {
-            y += ui.wrapped(Component.translatable("caricraft.phone.camp.partner_offline"), x, y, w, t.textDim()) + 4;
-        }
-        boolean canRequest = canTravel && camp.outgoing() == null && camp.warmupSeconds() == 0 && snap.balance() >= camp.partnerCost();
-        for (PhoneSnapshot.PositionView other : camp.others()) {
-            int ch = 54;
-            ui.round(x, y, x + w, y + ch, t.card());
-            compass(s, me, myDimension, other, x + 22, y + 22, t.header());
-            ui.textClipped(Component.literal(other.name()).withStyle(ChatFormatting.BOLD), x + 44, y + 6, w - 48, t.text());
-            locationText(s, me, myDimension, other, x + 44, y + 17, w - 48);
-            Component go = Component.translatable("caricraft.phone.camp.go", camp.partnerCost());
-            Component bring = Component.translatable("caricraft.phone.camp.bring", camp.partnerCost());
-            int gw = ui.buttonWidth(go);
-            int bw = ui.buttonWidth(bring);
-            ui.button(x + w - 5 - gw, y + ch - BUTTON_H - 5, gw, BUTTON_H, go, canRequest ? Style.PRIMARY : Style.DISABLED,
-                    () -> s.send(PhoneAction.TRAVEL_REQUEST, "go"));
-            ui.button(x + w - 5 - gw - GAP - bw, y + ch - BUTTON_H - 5, bw, BUTTON_H, bring,
-                    canRequest ? Style.SECONDARY : Style.DISABLED, () -> s.send(PhoneAction.TRAVEL_REQUEST, "bring"));
-            y += ch + 4;
+            y += ch + 5;
         }
 
-        y += 4;
-        if (camp.challengeBlocked()) {
-            y += ui.wrapped(Component.translatable("caricraft.phone.camp.challenge"), x, y, w, t.bad()) + 3;
-        } else if (cooldown > 0) {
-            y += ui.wrapped(Component.translatable("caricraft.phone.camp.cooldown", PhoneText.remaining(cooldown)), x, y, w, t.warn()) + 3;
+        // Tarjeta de cada compañero
+        for (MemberView member : snap.party().members()) {
+            if (member.self()) {
+                continue;
+            }
+            PhoneSnapshot.PositionView position = travel.partners().stream()
+                    .filter(p -> p.uuid().equals(member.uuid())).findFirst().orElse(null);
+            y += partnerCard(s, snap, travel, member, position, me, myDimension, canRequest, x, y, w) + 5;
         }
-        y += ui.wrapped(Component.translatable("caricraft.phone.camp.help"), x, y, w, t.textDim());
+
+        // Petición enviada
+        if (travel.outgoing() != null) {
+            PhoneSnapshot.TravelView out = travel.outgoing();
+            long left = Math.max(1, (out.expiresAt() - snap.serverTime()) / 1000);
+            Component text = Component.translatable("GO".equals(out.kind()) ? "caricraft.phone.tpduo.outgoing_go"
+                    : "caricraft.phone.tpduo.outgoing_bring", out.name(), left);
+            Component cancel = Component.translatable("caricraft.phone.duo.cancel");
+            int cw = ui.buttonWidth(cancel);
+            int th = ui.wrappedHeight(text, w - cw - 16);
+            int ch = Math.max(th + 10, BUTTON_H + 10);
+            ui.round(x, y, x + w, y + ch, t.card());
+            ui.wrapped(text, x + 6, y + (ch - th) / 2 + 1, w - cw - 16, t.textDim());
+            ui.button(x + w - 5 - cw, y + (ch - BUTTON_H) / 2, cw, BUTTON_H, cancel, Style.SECONDARY,
+                    () -> s.send(PhoneAction.TRAVEL_DECLINE, ""));
+            y += ch + 5;
+        }
+
+        if (!busy) {
+            y += travelStatus(s, snap, travel.challengeBlocked(), cooldown, travel.cost(), x, y, w);
+        }
+        y += 3;
+        return y - top + howItWorks(s, travel, x, y, w);
+    }
+
+    private static int partnerCard(PhoneScreen s, PhoneSnapshot snap, PhoneSnapshot.DuoTravelView travel, MemberView member,
+                                   PhoneSnapshot.PositionView position, net.minecraft.client.player.LocalPlayer me,
+                                   String myDimension, boolean canRequest, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        boolean online = position != null;
+        int h = online ? 66 : 40;
+        ui.round(x, y, x + w, y + h, t.card());
+        ui.round(x, y, x + 3, y + h, online ? t.good() : t.track());
+
+        // Cara del jugador (o un hueco si no está conectado)
+        int faceX = x + 8;
+        int faceY = y + 7;
+        ui.round(faceX - 1, faceY - 1, faceX + 25, faceY + 25, PhoneTheme.mix(TPDUO_PURPLE, t.card(), 0.4f));
+        net.minecraft.client.multiplayer.PlayerInfo info = playerInfo(member.uuid());
+        if (online && info != null) {
+            net.minecraft.client.gui.components.PlayerFaceRenderer.draw(ui.g, info.getSkin(), faceX, faceY, 24);
+        } else {
+            ui.g.fill(faceX, faceY, faceX + 24, faceY + 24, t.track());
+            ui.textCentered(Component.literal("?"), faceX + 12, faceY + 8, t.textDim());
+        }
+
+        int textX = x + 38;
+        int textWidth = online ? w - 38 - 42 : w - 44;
+        ui.textClipped(Component.literal(member.name()).withStyle(ChatFormatting.BOLD), textX, y + 7, textWidth, t.text());
+        if (!online) {
+            ui.textClipped(Component.translatable(member.online() ? "caricraft.phone.tpduo.no_signal" : "caricraft.phone.tpduo.offline"),
+                    textX, y + 18, textWidth, t.textDim());
+            return h;
+        }
+        boolean sameDimension = myDimension.equals(position.dimension());
+        Component place = position.biome().isEmpty() ? PhoneText.dimensionName(position.dimension()) : PhoneText.idName(position.biome());
+        ui.textClipped(place, textX, y + 18, textWidth, t.textDim());
+        if (sameDimension) {
+            locationText(s, me, myDimension, position, textX, y + 29, textWidth);
+        } else {
+            ui.textClipped(PhoneText.dimensionName(position.dimension()), textX, y + 29, textWidth, t.warn());
+        }
+        compass(s, me, myDimension, position, x + w - 22, y + 22, TPDUO_PURPLE);
+
+        Component go = Component.translatable("caricraft.phone.tpduo.go", travel.cost());
+        Component bring = Component.translatable("caricraft.phone.tpduo.bring", travel.cost());
+        int half = (w - 12 - GAP) / 2;
+        int by = y + h - BUTTON_H - 6;
+        ui.button(x + 6, by, half, BUTTON_H, go, canRequest ? Style.PRIMARY : Style.DISABLED,
+                () -> s.send(PhoneAction.TRAVEL_REQUEST, "go"));
+        ui.button(x + 6 + half + GAP, by, half, BUTTON_H, bring, canRequest ? Style.SECONDARY : Style.DISABLED,
+                () -> s.send(PhoneAction.TRAVEL_REQUEST, "bring"));
+        return h;
+    }
+
+    private static net.minecraft.client.multiplayer.PlayerInfo playerInfo(String uuid) {
+        var connection = net.minecraft.client.Minecraft.getInstance().getConnection();
+        if (connection == null) {
+            return null;
+        }
+        try {
+            return connection.getPlayerInfo(java.util.UUID.fromString(uuid));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /** Pasos numerados de cómo funciona TP Dúo. */
+    private static int howItWorks(PhoneScreen s, PhoneSnapshot.DuoTravelView travel, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        int top = y;
+        ui.text(Component.translatable("caricraft.phone.tpduo.how").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+        y += 12;
+        List<Component> steps = List.of(
+                Component.translatable("caricraft.phone.tpduo.step1"),
+                Component.translatable("caricraft.phone.tpduo.step2", travel.requestSeconds()),
+                Component.translatable("caricraft.phone.tpduo.step3", travel.warmupTotalSeconds()),
+                Component.translatable("caricraft.phone.tpduo.step4"));
+        for (int i = 0; i < steps.size(); i++) {
+            ui.round(x, y, x + 10, y + 10, PhoneTheme.mix(TPDUO_PURPLE, t.card(), 0.3f));
+            ui.textCentered(Component.literal(String.valueOf(i + 1)), x + 5, y + 1, 0xFFFFFFFF);
+            y += Math.max(10, ui.wrapped(steps.get(i), x + 14, y + 1, w - 14, t.textDim())) + 4;
+        }
+        y += ui.wrapped(Component.translatable("caricraft.phone.tpduo.shortcut"), x, y, w, PhoneTheme.mix(t.textDim(), t.background(), 0.3f));
         return y - top;
     }
 
