@@ -57,7 +57,7 @@ public final class CaricraftCommands {
                                 .then(Commands.argument("amount", LongArgumentType.longArg(0, EconomyService.MAX_BALANCE))
                                         .executes(ctx -> adjust(ctx, Mode.SET))))));
 
-        // Viajes estilo /tpa con el compañero (requiere CariCamp).
+        // Viajes estilo /tpa con el compañero (requiere TP Dúo; el campamento, CariCamp).
         com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> travel = Commands.literal("tpduo")
                 .executes(ctx -> travel(ctx, "ir"))
                 .then(Commands.literal("ir").executes(ctx -> travel(ctx, "ir")))
@@ -74,6 +74,7 @@ public final class CaricraftCommands {
                         .then(Commands.literal("aceptar").executes(ctx -> travel(ctx, "aceptar")))
                         .then(Commands.literal("rechazar").executes(ctx -> travel(ctx, "rechazar")))
                         .then(Commands.literal("campamento").executes(ctx -> travel(ctx, "campamento"))))
+                .then(Commands.literal("consejo").executes(CaricraftCommands::tip))
                 .then(Commands.literal("reload").requires(src -> src.hasPermission(2))
                         .executes(CaricraftCommands::reload))
                 .then(Commands.literal("desafio")
@@ -156,6 +157,15 @@ public final class CaricraftCommands {
         }
         mod.markDirty();
         return done;
+    }
+
+    /** Muestra un consejo del CariPhone ahora mismo (aunque estén desactivados). */
+    private static int tip(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        CaricraftServer mod = CaricraftServer.get();
+        if (mod == null) {
+            return 0;
+        }
+        return com.chicoestudioso.caricraft.server.tips.TipManager.send(mod, ctx.getSource().getPlayerOrException(), true) ? 1 : 0;
     }
 
     private static int reload(CommandContext<CommandSourceStack> ctx) {

@@ -67,7 +67,7 @@ class PayloadCodecTest {
                 List.of(new PhoneSnapshot.MissionView("walk", "INDIVIDUAL", "DAILY", "ACCEPTED", 25, false,
                         List.of(new PhoneSnapshot.ObjectiveView("TRAVEL", "", 1000, 250)), Map.of(), 999L, null, null)),
                 List.of(), List.of(), new PhoneSnapshot.ExplorationView(3, 64, List.of("minecraft:plains")), Map.of("distance_m", 250L),
-                List.of(), List.of(), false, true,
+                List.of(), List.of(), false, true, false,
                 new PhoneSnapshot.ChallengeView(true, false, true, false, false, 0, 3, 1, 30, 0, 0, 0, 0, 0, 2, 50, true, List.of(), 0, 1, true),
                 new PhoneSnapshot.MarketView(true, 1000L, List.of(new PhoneSnapshot.OfferView("iron", "minecraft:iron_ingot", 8, 30, 3, 3, "vanilla"))),
                 new PhoneSnapshot.CampView(new PhoneSnapshot.PositionView("", "", "minecraft:overworld", "", 1.5, 64, 2.5), 0, 30, false, 0),

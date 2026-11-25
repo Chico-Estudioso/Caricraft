@@ -28,6 +28,7 @@ Guion B: recibir y aceptar la invitación y viajar.
 
 ### Guiones adicionales
 - `./gradlew runQaChallenge`: Desafío Dúo. Comprueba que los mobs no aparecen fuera del desafío, que salen equipados durante él, las recompensas y que desaparecen al amanecer.
+- `./gradlew runQaChallenge -DqaRole=T` (con `runServer`): consejo en el chat, notificación con el teléfono cerrado, barra amarilla antes de la noche y roja durante el desafío, interruptor de consejos y aviso al amanecer.
 - `./gradlew runQaChallenge -DqaRole=P` (con `runServer`): CariPhone personal. Comprueba que:
   - Hay uno vinculado al entrar.
   - La tecla de tirar y tirarlo desde el inventario no lo sueltan.

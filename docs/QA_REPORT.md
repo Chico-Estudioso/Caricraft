@@ -100,6 +100,17 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 | Petición «Traer» | Cuenta atrás visible en TP Dúo; el compañero llega a 0 bloques |
 | Noche de desafío | CariCamp y TP Dúo bloquean el viaje con aviso rojo; aviso «¡Desafío en curso!» en el inicio |
 
+**Avisos, consejos y barra del desafío** (`runQaChallenge -DqaRole=T`):
+
+| Paso | Resultado |
+|---|---|
+| Entrar | Llega un consejo «[CariPhone] …» por el chat; `/caricraft consejo` muestra otro |
+| Adelantar el desafío y poner la hora a 11800 | Barra amarilla «El Desafío Dúo empieza en 1:00» |
+| Anochece (13000) | Notificación con sonido «¡Empieza la noche de desafío!» y barra roja «Nivel 1 · Oleada 1/3 · Amanece en 8:20»; la tarjeta queda debajo de la barra |
+| Medianoche (18000) | «Nivel 2 · Oleada 2/3 · Amanece en 4:10» |
+| Ajustes → Consejos | Pasa a «Desactivados» y se guarda en el servidor |
+| Amanece | Notificación «¡Habéis sobrevivido!…» y la barra desaparece |
+
 **CariPhone personal** (`runQaChallenge -DqaRole=P`, supervivencia):
 
 | Paso | Resultado |

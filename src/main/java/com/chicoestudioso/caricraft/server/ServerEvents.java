@@ -42,13 +42,18 @@ public final class ServerEvents {
             CaricraftServer.start(server);
             ChallengeManager.onServerStarted(CaricraftServer.get());
         });
-        ServerLifecycleEvents.SERVER_STOPPED.register(server -> CaricraftServer.stop());
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            com.chicoestudioso.caricraft.server.challenge.ChallengeBossBars.clear();
+            CaricraftServer.stop();
+        });
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> onJoin(handler.getPlayer()));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             UUID uuid = handler.getPlayer().getUUID();
             TRACKER.forget(uuid);
             PhoneGuard.forget(uuid);
+            com.chicoestudioso.caricraft.server.tips.TipManager.forget(uuid);
+            com.chicoestudioso.caricraft.server.challenge.ChallengeBossBars.forget(handler.getPlayer());
             com.chicoestudioso.caricraft.server.lens.PhotoUploads.forget(uuid);
             com.chicoestudioso.caricraft.server.camp.TravelManager.forget(uuid);
             CaricraftServer mod = CaricraftServer.get();
@@ -64,6 +69,7 @@ public final class ServerEvents {
                 ChallengeManager.tick(server, mod);
                 com.chicoestudioso.caricraft.server.camp.TravelManager.tick(mod);
                 PhoneGuard.tick(server, mod);
+                com.chicoestudioso.caricraft.server.tips.TipManager.tick(server, mod);
             }
         });
 
@@ -122,6 +128,7 @@ public final class ServerEvents {
             profile.setStarterPhoneGiven(true);
             mod.notify(player, true, "caricraft.notify.welcome", List.of());
         }
+        com.chicoestudioso.caricraft.server.tips.TipManager.onJoin(mod, player);
         mod.markDirty();
         mod.sendPartySnapshots(player.getUUID());
         core.parties().incomingInvites(core.state(), player.getUUID()).forEach(invite ->

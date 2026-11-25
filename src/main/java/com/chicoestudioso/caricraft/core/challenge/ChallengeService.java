@@ -18,6 +18,8 @@ public final class ChallengeService {
     public static final long TICKS_PER_DAY = 24_000L;
     public static final long NIGHT_START = 13_000L;
     public static final long NIGHT_END = 23_000L;
+    /** Oleadas por noche (anochecer, medianoche y madrugada). */
+    public static final int WAVES = 3;
     public static final String STAT_KILLS = "challenge_kills";
 
     private final CaricraftConfig config;

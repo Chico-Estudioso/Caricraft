@@ -47,9 +47,10 @@ public final class CaricraftClient implements ClientModInitializer {
                 (payload, context) -> ClientPhotos.accept(payload.photoId(), payload.png()));
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             ClientPhoneState.clear();
+            NotificationHud.clear();
             ClientPhotos.clear();
         });
-        HudRenderCallback.EVENT.register(ChallengeHud::render);
+        HudRenderCallback.EVENT.register(NotificationHud::render);
     }
 
     public static KeyMapping openPhoneKey() {

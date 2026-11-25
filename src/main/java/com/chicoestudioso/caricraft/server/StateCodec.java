@@ -316,6 +316,7 @@ public final class StateCodec {
         tag.putLong("cooldown", profile.linkCooldownUntil());
         tag.putBoolean("starterPhone", profile.starterPhoneGiven());
         tag.putInt("phoneSerial", profile.phoneSerial());
+        tag.putBoolean("tips", profile.tipsEnabled());
         return tag;
     }
 
@@ -329,6 +330,7 @@ public final class StateCodec {
         profile.setLinkCooldownUntil(tag.getLong("cooldown"));
         profile.setStarterPhoneGiven(tag.getBoolean("starterPhone"));
         profile.setPhoneSerial(tag.getInt("phoneSerial"));
+        profile.setTipsEnabled(!tag.contains("tips") || tag.getBoolean("tips"));
         return profile;
     }
 

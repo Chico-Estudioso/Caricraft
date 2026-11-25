@@ -74,6 +74,25 @@ Con `phone.personal: false` vuelve el comportamiento anterior: un teléfono de r
 - La tecla del teléfono (`O`) lo cierra desde cualquier página.
 - Al volver a abrir el teléfono se recupera la última página, y «atrás» lleva al inicio.
 
+### Notificaciones
+- Con el teléfono cerrado, los avisos llegan como una **tarjeta propia** en la esquina superior derecha, con sonido de campana. Por ejemplo:
+  - Petición de viaje.
+  - Invitación.
+  - Misión completada.
+  - Empieza o termina el desafío.
+  - Foto o compra del compañero.
+- La tarjeta se quita sola, con una barra de tiempo, y se coloca debajo de las barras de jefe si las hay.
+- No usa los avisos emergentes del juego, que recortan el texto y algunos modpacks ocultan.
+- Con el teléfono abierto, el aviso aparece como banner dentro del teléfono.
+
+### Consejos en el chat
+- Cada `tips.intervalMinutes` (15) minutos llega un consejo del CariPhone por el chat, con la etiqueta «[CariPhone]». El primero llega a los `tips.firstDelayMinutes` (4) minutos de entrar.
+- Hay 22 consejos. Se reparten sin repetirse y solo los que vienen a cuento; por ejemplo, no se anuncia TP Dúo a quien ya lo tiene.
+- La tecla del teléfono aparece con la que tenga asignada cada jugador.
+- Cada jugador puede desactivarlos en **Ajustes → Consejos en el chat**. La preferencia se guarda en el servidor.
+- `/caricraft consejo` muestra uno al momento.
+- `tips.enabled: false` los quita para todo el servidor.
+
 ### Tienda
 Tres secciones (apps, mejoras y temas), cada una con un contador `compradas/total`. Dentro de cada sección, primero aparece lo que se puede comprar, luego lo que tiene requisitos y al final lo que ya se tiene.
 

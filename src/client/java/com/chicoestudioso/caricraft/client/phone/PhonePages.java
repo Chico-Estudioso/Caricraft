@@ -740,6 +740,19 @@ final class PhonePages {
             y += 22 + 3;
         }
         y += 8;
+        // Consejos en el chat (personal)
+        ui.text(Component.translatable("caricraft.phone.settings.tips").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+        y += 12;
+        Component tipsState = Component.translatable(snap.tipsEnabled() ? "caricraft.phone.settings.on" : "caricraft.phone.settings.off");
+        int tw = ui.buttonWidth(tipsState);
+        Component tipsHelp = Component.translatable("caricraft.phone.settings.tips_help");
+        int helpHeight = ui.wrappedHeight(tipsHelp, w - 10);
+        int th = 4 + helpHeight + 4 + BUTTON_H + 5;
+        ui.round(x, y, x + w, y + th, t.card());
+        ui.wrapped(tipsHelp, x + 5, y + 4, w - 10, t.textDim());
+        ui.button(x + w - 5 - tw, y + th - BUTTON_H - 5, tw, BUTTON_H, tipsState, snap.tipsEnabled() ? Style.GOOD : Style.SECONDARY,
+                () -> s.send(PhoneAction.TOGGLE_TIPS, ""));
+        y += th + 8;
         ui.text(Component.translatable("caricraft.phone.settings.about").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
         y += 12;
         Component key = CaricraftClient.openPhoneKey().getTranslatedKeyMessage();

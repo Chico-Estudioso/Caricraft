@@ -87,6 +87,11 @@ public final class PhoneActionHandler {
                 }
                 case SELECT_THEME -> validId(payload.arg1()) ? core.shop().selectTheme(state, uuid, payload.arg1()) : invalid();
                 case ADD_NOTE -> core.addNote(uuid, payload.arg1());
+                case TOGGLE_TIPS -> {
+                    var profile = core.onPlayerJoin(uuid, player.getGameProfile().getName());
+                    profile.setTipsEnabled(!profile.tipsEnabled());
+                    yield com.chicoestudioso.caricraft.core.ActionResult.ok(profile.tipsEnabled() ? "tips_on" : "tips_off");
+                }
                 case MARKET_BUY -> validId(payload.arg1())
                         ? core.market().buy(state, uuid, payload.arg1(), (item, count) -> giveItem(player, item, count)) : invalid();
                 case PHOTO_REQUEST -> LensService.PHOTO_ID.matcher(payload.arg1()).matches()

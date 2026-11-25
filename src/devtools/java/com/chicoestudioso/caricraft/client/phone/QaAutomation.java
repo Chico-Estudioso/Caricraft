@@ -44,6 +44,8 @@ public final class QaAutomation implements ClientModInitializer {
             scriptNewAppsPartner();
         } else if ("P".equals(role)) {
             scriptPhone();
+        } else if ("T".equals(role)) {
+            scriptNotices();
         } else {
             scriptB();
         }
@@ -579,6 +581,54 @@ public final class QaAutomation implements ClientModInitializer {
         shot("m03_caribox_companero");
         closePhone();
         then(1200, () -> Minecraft.getInstance().stop());
+    }
+
+    // ------------------------------------------------------------------ avisos, consejos y barra
+
+    /** Consejo en el chat, notificación emergente y barra de jefe del desafío (rol T). */
+    private void scriptNotices() {
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("gamerule doDaylightCycle false");
+            cmd("time set 1000");
+            cmd("weather clear");
+            cmd("fill -4 119 -4 4 119 4 minecraft:stone");
+            cmd("tp @s 0 120 0 -90 15");
+        });
+        // El primer consejo llega al entrar; pedimos otro para la captura.
+        then(40, () -> cmd("caricraft consejo"));
+        then(20, () -> {
+        });
+        shot("t01_consejo_chat");
+        // Desafío adelantado: aviso amarillo antes de anochecer.
+        then(10, () -> act(PhoneAction.CHALLENGE_BRING_FORWARD, ""));
+        then(20, () -> cmd("time set 11800"));
+        then(40, () -> {
+        });
+        shot("t02_barra_aviso");
+        // Empieza: notificación emergente y barra roja.
+        then(10, () -> cmd("time set 13000"));
+        then(30, () -> {
+        });
+        shot("t03_notificacion_y_barra");
+        then(10, () -> cmd("time set 18000"));
+        then(40, () -> {
+        });
+        shot("t04_barra_oleada");
+        // Ajustes: desactivar consejos.
+        then(10, () -> act(PhoneAction.TOGGLE_TIPS, ""));
+        page(PhonePage.SETTINGS, 0);
+        then(30, () -> {
+        });
+        shot("t05_ajustes_consejos");
+        then(5, () -> log("TIPS activados tras desactivar (false): " + snap().tipsEnabled()));
+        closePhone();
+        // Amanece: notificación de noche superada y la barra desaparece.
+        then(10, () -> cmd("time set 23100"));
+        then(30, () -> {
+        });
+        shot("t06_amanecer");
+        then(60, () -> Minecraft.getInstance().stop());
     }
 
     // ------------------------------------------------------------------ CariPhone personal

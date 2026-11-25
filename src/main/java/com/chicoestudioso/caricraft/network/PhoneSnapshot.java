@@ -28,6 +28,7 @@ public record PhoneSnapshot(
         List<InviteView> outgoingInvites,
         boolean leavePending,
         boolean cobblemonLoaded,
+        boolean tipsEnabled,
         ChallengeView challenge,
         MarketView market,
         CampView camp,

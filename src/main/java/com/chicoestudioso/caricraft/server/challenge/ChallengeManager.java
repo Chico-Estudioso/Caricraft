@@ -169,10 +169,10 @@ public final class ChallengeManager {
         CaricraftCore core = mod.core();
         long day = day(server);
         boolean night = night(server);
-        Set<UUID> seen = new HashSet<>();
+        java.util.Map<UUID, Party> online = new java.util.LinkedHashMap<>();
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             Party party = core.partyOf(player.getUUID());
-            if (party == null || !seen.add(party.id())) {
+            if (party == null || online.putIfAbsent(party.id(), party) != null) {
                 continue;
             }
             ChallengeEvent event = core.challenge().update(party, day, night);
@@ -181,6 +181,7 @@ public final class ChallengeManager {
                 announce(mod, party, event);
             }
         }
+        ChallengeBossBars.update(mod, online, server.overworld().getDayTime(), day);
     }
 
     private static void announce(CaricraftServer mod, Party party, ChallengeEvent event) {

@@ -18,6 +18,8 @@ public final class PlayerProfile {
     private boolean starterPhoneGiven;
     /** Número de serie del CariPhone vigente (0 = aún no tiene ninguno vinculado). */
     private int phoneSerial;
+    /** Recibir consejos del CariPhone en el chat. */
+    private boolean tipsEnabled = true;
     /** Momento de la primera pulsación de "desvincular" (no se persiste). */
     private transient long leaveRequestedAt;
 
@@ -82,6 +84,14 @@ public final class PlayerProfile {
 
     public void setPhoneSerial(int phoneSerial) {
         this.phoneSerial = Math.max(0, phoneSerial);
+    }
+
+    public boolean tipsEnabled() {
+        return tipsEnabled;
+    }
+
+    public void setTipsEnabled(boolean tipsEnabled) {
+        this.tipsEnabled = tipsEnabled;
     }
 
     public long leaveRequestedAt() {

@@ -104,6 +104,7 @@ public final class SnapshotBuilder {
                 party.wallet().balance(), profile.theme(), List.copyOf(profile.ownedCosmetics()), partyView, apps,
                 missions, ledger, chronicle, exploration, stats, incoming, outgoing,
                 core.parties().leavePending(state, viewer), FabricLoader.getInstance().isModLoaded("cobblemon"),
+                profile.tipsEnabled(),
                 challengeView(mod, party), marketView(core, party), campView(mod, party, player),
                 duoTravelView(mod, party, player), lensView(core, party),
                 new PhoneSnapshot.BoxView(core.box().hasApp(party), core.box().rows(party),
