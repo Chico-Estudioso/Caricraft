@@ -134,6 +134,46 @@ final class CobblemonBackend implements PokemonBackend {
         return pool.get(random.nextInt(pool.size())).getResourceIdentifier().getPath();
     }
 
+    private static Pokemon find(ServerPlayer player, UUID uuid) {
+        PlayerPartyStore party = store(player);
+        for (int slot = 0; slot < party.size(); slot++) {
+            Pokemon pokemon = party.get(slot);
+            if (pokemon != null && pokemon.getUuid().equals(uuid)) {
+                return pokemon;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Optional<int[]> ivs(ServerPlayer player, UUID uuid) {
+        Pokemon pokemon = find(player, uuid);
+        if (pokemon == null) {
+            return Optional.empty();
+        }
+        int[] ivs = new int[IV_STATS.size()];
+        for (int i = 0; i < ivs.length; i++) {
+            Integer iv = pokemon.getIvs().get(IV_STATS.get(i));
+            ivs[i] = iv == null ? 0 : iv;
+        }
+        return Optional.of(ivs);
+    }
+
+    @Override
+    public boolean improve(ServerPlayer player, UUID uuid, String kind, int value) {
+        Pokemon pokemon = find(player, uuid);
+        if (pokemon == null) {
+            return false;
+        }
+        switch (kind) {
+            case "iv" -> pokemon.getIvs().set(IV_STATS.get(value), 31);
+            case "level" -> pokemon.setLevel(value);
+            case "shiny" -> pokemon.setShiny(true);
+            default -> throw new IllegalArgumentException("Mejora desconocida: " + kind);
+        }
+        return true;
+    }
+
     @Override
     public boolean speciesExists(String species) {
         return PokemonSpecies.getByName(species) != null;

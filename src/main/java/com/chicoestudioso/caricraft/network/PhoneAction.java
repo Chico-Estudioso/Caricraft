@@ -63,7 +63,15 @@ public enum PhoneAction {
     /** Vende un Pokémon del equipo por CobbleDollars: arg1 = UUID del Pokémon. */
     CV_SELL,
     /** Intercambio prodigioso: arg1 = UUID del Pokémon que se envía. */
-    CV_WONDER;
+    CV_WONDER,
+    /** Abre una caja del CobbleCentro: arg1 = id de la caja. */
+    CV_CRATE,
+    /** Tirada de la tragaperras: arg1 = posición de la apuesta. */
+    CV_SPIN,
+    /** Mejora de un Pokémon: arg1 = id de la mejora, arg2 = UUID del Pokémon. */
+    CV_UPGRADE,
+    /** Fusión de objetos: arg1 = id de la fusión. */
+    CV_FUSE;
 
     private static final PhoneAction[] VALUES = values();
 

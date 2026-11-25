@@ -54,13 +54,27 @@ public final class CobbleverseService {
         return List.copyOf(shuffled.subList(0, catalog.dailyOffers()));
     }
 
-    private static void rollDay(PlayerProfile profile, long day) {
+    static void rollDay(PlayerProfile profile, long day) {
         if (profile.cobbleverseDay() != day) {
             profile.setCobbleverseDay(day);
             profile.setSalesToday(0);
             profile.setWondersToday(0);
             profile.boughtToday().clear();
         }
+    }
+
+    /** Contador diario por clave (compras, cajas, tiradas…); vale 0 si es de otro día. */
+    static int counter(PlayerProfile profile, String key, long day) {
+        return profile.cobbleverseDay() == day ? profile.boughtToday().getOrDefault(key, 0) : 0;
+    }
+
+    static void count(PlayerProfile profile, String key, long day) {
+        rollDay(profile, day);
+        profile.boughtToday().merge(key, 1, Integer::sum);
+    }
+
+    public CaricraftConfig config() {
+        return config;
     }
 
     public int boughtToday(PlayerProfile profile, String offerId, long day) {

@@ -166,6 +166,21 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 | Animación | Poké Ball agitándose, destello y el Pokémon recibido girando; el aviso de texto no se adelanta a la animación |
 | Otro intercambio sin quedar | «Ya has hecho hoy todos los intercambios prodigiosos» |
 
+**Cajas, tragaperras, mejoras y fusiones con Cobblemon real** (`tools/cobblemon_qa.py`, rol L, dos pasadas):
+
+| Paso | Resultado |
+|---|---|
+| Catálogo | 3 cajas (8, 8 y 6 premios), apuestas ₽1.000/5.000/20.000, retorno 91,5 %, 3 mejoras y 5 fusiones |
+| Caja Maestra (₽90.000) | Ruleta y premio: una Master Ball (épico) en la primera pasada y ₽87.432 (común) en la segunda; el saldo baja y sube lo justo |
+| Caja Poké (₽8.000) | 7 Poké Balls; 3 caramelos de exp. L |
+| 16 tiradas | Pagos según la tabla: pierde, «recuperas ₽500/700» con dos iguales y ₽8.000 con tres Super Balls (×8) |
+| Subida de nivel | Eevee Nv. 15 → 20 y Nv. 20 → 25 |
+| Entrenamiento de IV | El IV más bajo a 31 (PS; Defensa especial): IV totales 112 → 139 y 139 → 161 |
+| Amuleto variocolor (8 %) | Falló las dos veces: se cobran ₽25.000 y el Pokémon sigue igual, con animación de suspense y «No ha habido suerte» |
+| Fusión 4 Poké → 2 Super Balls | Inventario 12 → 8 Poké Balls y 0 → 2 Super Balls |
+| Fusión 8 Ultra → Master Ball (10 %) | Falló: se gastan 8 Ultra Balls y ₽20.000 |
+| Fusión sin ingredientes | Rechazada: «Te faltan 3 × Cápsula habilidad en el inventario» |
+
 ## Errores encontrados y corregidos durante la QA
 1. **Teléfono borroso (alto):** en 1.21 `Screen.render` vuelve a pintar el fondo desenfocado encima. Corregido en `PhoneScreen`.
 2. **Pestañas de misiones cortadas (bajo):** se quitaron los contadores y se añadió un punto rojo si hay misiones para reclamar.
@@ -175,7 +190,9 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 6. **Mercado (bajo):** el texto de stock quedaba tapado por el botón Comprar. Corregido.
 7. **CobbleCentro: barra lateral congelada (medio):** los recortes anidados de las tarjetas dejaban activo el recorte de pantalla de un fotograma a otro, y fuera del contenido se veía siempre el primer fotograma (la pestaña activa no cambiaba). Corregido con recortes anidados de `GuiGraphics`.
 8. **Cliente de QA en inglés (bajo):** el índice de recursos de Loom se llama `1.21.1-17`; con `17` no se cargaba ningún idioma salvo el inglés del JAR. Corregido en `tools/cobblemon_qa.py`.
-9. **Etiquetas del inicio pegadas (bajo):** con 4 columnas, «Misiones», «Cartera» y «Mercado» se tocaban. Ahora dejan margen y algunas apps usan un nombre corto.
+9. **Suerte (bajo):** porcentajes como «7,0 %», cantidades sin separador de miles en los avisos («₽1000») y botón «¡Genial!» también al fallar. Corregido («7 %», «₽1.000», «Vale»).
+10. **Capas de animación (bajo):** con la animación encima se podía pulsar lo de debajo. Ahora la capa absorbe los clics salvo su botón.
+11. **Etiquetas del inicio pegadas (bajo):** con 4 columnas, «Misiones», «Cartera» y «Mercado» se tocaban. Ahora dejan margen y algunas apps usan un nombre corto.
 
 ## Pendiente (priorizado)
 1. **Medio:** probar captura, evolución y combate con un cliente COBBLEVERSE completo.

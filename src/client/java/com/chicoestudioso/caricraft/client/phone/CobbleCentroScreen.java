@@ -34,8 +34,8 @@ public class CobbleCentroScreen extends Screen {
     static final PhoneTheme THEME = new PhoneTheme(0xFF0E1420, 0xFF070A10, 0xFF141C2B, 0xFF1B998B, 0xFFFFFFFF,
             0xFFFFB703, 0xFF141C2B, 0xFFEDF2F7, 0xFF8A97AD, 0xFF1E293B, 0xFF26344A, 0xFF2EC27E, 0xFFE5484D,
             0xFFFFB703, 0xFF2B3A52);
-    private static final int GOLD = 0xFFFFD166;
-    private static final int SHINY = 0xFFFFE08A;
+    static final int GOLD = 0xFFFFD166;
+    static final int SHINY = 0xFFFFE08A;
     private static final long REVEAL_SHAKE_MS = 1400;
     private static final long REVEAL_FLASH_MS = 350;
     /** Ancho de la barra lateral de pestañas. */
@@ -44,7 +44,10 @@ public class CobbleCentroScreen extends Screen {
     enum Tab {
         HOME("home", "cobblemon:premier_ball"),
         SHOP("shop", "cobblemon:poke_ball"),
+        CRATES("crates", "cobblemon:gilded_chest"),
+        SLOTS("slots", "cobblemon:lucky_egg"),
         WONDER("wonder", "cobblemon:link_cable"),
+        UPGRADES("upgrades", "cobblemon:rare_candy"),
         SELL("sell", "cobblemon:relic_coin");
 
         final String key;
@@ -59,6 +62,8 @@ public class CobbleCentroScreen extends Screen {
     private static Tab lastTab = Tab.HOME;
 
     final PhoneUi ui = new PhoneUi();
+    /** Cajas, tragaperras, mejoras y fusiones. */
+    final CobbleLuckPages luck = new CobbleLuckPages(this);
     private final Screen parent;
     Tab tab = lastTab;
     private int scroll;
@@ -75,7 +80,7 @@ public class CobbleCentroScreen extends Screen {
     private boolean waitingWonder;
     private long waitingSince;
 
-    private int x0, y0, x1, y1;
+    int x0, y0, x1, y1;
 
     public CobbleCentroScreen(Screen parent) {
         super(Component.translatable("caricraft.cc.title"));
@@ -89,6 +94,7 @@ public class CobbleCentroScreen extends Screen {
         if (snap != null && snap.cobbleverse() != null && snap.cobbleverse().lastWonder() != null) {
             seenWonderTime = snap.cobbleverse().lastWonder().time();
         }
+        luck.init(snap == null ? null : snap.cobbleverse());
     }
 
     // ---------------------------------------------------------------- red
@@ -100,14 +106,21 @@ public class CobbleCentroScreen extends Screen {
     }
 
     void send(PhoneAction action, String arg) {
+        send(action, arg, "");
+    }
+
+    /** Envía una acción (con un pequeño freno contra dobles clics). Devuelve si se ha enviado. */
+    boolean send(PhoneAction action, String arg1, String arg2) {
         long now = System.currentTimeMillis();
         if (now - lastActionAt < 300) {
-            return;
+            return false;
         }
         lastActionAt = now;
         if (ClientPlayNetworking.canSend(PhoneActionPayload.TYPE)) {
-            ClientPlayNetworking.send(PhoneActionPayload.of(action, arg));
+            ClientPlayNetworking.send(new PhoneActionPayload(action, arg1, arg2));
+            return true;
         }
+        return false;
     }
 
     @Override
@@ -212,6 +225,9 @@ public class CobbleCentroScreen extends Screen {
         ui.g.fill(x0, y0 + 24, x0 + sideW, y1, PhoneTheme.mix(t.background(), 0xFF000000, 0.35f));
         int ty = y0 + 30;
         for (Tab each : Tab.values()) {
+            if (!visible(cv, each)) {
+                continue;
+            }
             boolean active = each == tab;
             boolean hover = ui.hovered(x0 + 4, ty, x0 + sideW - 4, ty + 22);
             if (active || hover) {
@@ -231,7 +247,7 @@ public class CobbleCentroScreen extends Screen {
             }
             Tab target = each;
             ui.hit(x0 + 4, ty, x0 + sideW - 4, ty + 22, () -> select(target));
-            ty += 25;
+            ty += 24;
         }
 
         // Contenido
@@ -242,10 +258,17 @@ public class CobbleCentroScreen extends Screen {
             ui.wrapped(Component.translatable(snap == null ? "caricraft.phone.loading" : "caricraft.cc.unavailable"), cx, cy, cw, t.textDim());
         } else {
             ui.clip(cx - 2, y0 + 26, x1 - 2, y1 - 2);
+            luck.update(cv);
+            if (!visible(cv, tab)) {
+                tab = Tab.HOME;
+            }
             int used = switch (tab) {
                 case HOME -> home(cv, cx, cy - scroll, cw, partialTick);
                 case SHOP -> shop(cv, cx, cy - scroll, cw, partialTick);
+                case CRATES -> luck.crates(cv, cx, cy - scroll, cw);
+                case SLOTS -> luck.slots(cv, cx, cy - scroll, cw);
                 case WONDER -> wonder(cv, cx, cy - scroll, cw, partialTick);
+                case UPGRADES -> luck.upgrades(cv, cx, cy - scroll, cw, partialTick);
                 case SELL -> sell(cv, cx, cy - scroll, cw, partialTick);
             };
             ui.unclip();
@@ -258,8 +281,23 @@ public class CobbleCentroScreen extends Screen {
                 ui.g.fill(x1 - 4, sy, x1 - 2, sy + thumb, t.track());
             }
             revealOverlay(cv, cx, y0 + 26, cw, y1 - y0 - 28, partialTick);
+            luck.overlay(cv, cx, y0 + 26, cw, y1 - y0 - 28, partialTick);
         }
         banner(snap, t);
+    }
+
+    /** Las pestañas de suerte solo salen si el servidor las tiene activadas. */
+    private static boolean visible(CobbleverseView cv, Tab each) {
+        if (cv == null) {
+            return each == Tab.HOME;
+        }
+        var luck = cv.luck();
+        return switch (each) {
+            case CRATES -> luck != null && !luck.crates().isEmpty();
+            case SLOTS -> luck != null && luck.slots() != null;
+            case UPGRADES -> luck != null && (!luck.upgrades().isEmpty() || !luck.fusions().isEmpty());
+            default -> true;
+        };
     }
 
     private String badge(CobbleverseView cv, Tab each) {
@@ -281,6 +319,9 @@ public class CobbleCentroScreen extends Screen {
         if (latest.key().startsWith("caricraft.result.cv_wonder") && (waitingWonder || revealStart != 0)) {
             return; // la animación ya lo cuenta; el aviso destriparía la sorpresa
         }
+        if (luck.hides(latest.key())) {
+            return;
+        }
         Component text = PhoneText.format(snap, latest.key(), latest.args());
         int bw = Math.min(x1 - x0 - 120, font.width(text) + 16);
         int bx = (x0 + SIDE_W + x1) / 2 - bw / 2;
@@ -295,7 +336,7 @@ public class CobbleCentroScreen extends Screen {
 
     // ---------------------------------------------------------------- ayudas
 
-    private static Set<String> aspects(List<String> aspects, boolean shiny) {
+    static Set<String> aspects(List<String> aspects, boolean shiny) {
         Set<String> set = new HashSet<>(aspects == null ? List.of() : aspects);
         if (shiny) {
             set.add("shiny");
@@ -307,7 +348,7 @@ public class CobbleCentroScreen extends Screen {
      * Dibuja dentro de un recorte anidado. {@code GuiGraphics} apila los recortes y los cruza con el anterior, así que
      * no se sale del área de contenido; no toca el recorte de {@link PhoneUi} (que se usa para los clics).
      */
-    private void stage(int x0, int y0, int x1, int y1, Runnable draw) {
+    void stage(int x0, int y0, int x1, int y1, Runnable draw) {
         ui.g.enableScissor(x0, y0, x1, y1);
         try {
             draw.run();
@@ -317,7 +358,7 @@ public class CobbleCentroScreen extends Screen {
     }
 
     /** Modelo 3D del Pokémon en un hueco cuadrado; sin Cobblemon, una Poké Ball. */
-    private void model(String key, String species, Set<String> aspects, int cx, int top, int size, float yaw, float partialTick) {
+    void model(String key, String species, Set<String> aspects, int cx, int top, int size, float yaw, float partialTick) {
         if (!PokemonModel.draw(ui.g, key, species, aspects, cx, top, size, yaw, partialTick)) {
             ui.g.pose().pushPose();
             ui.g.pose().translate(cx - size / 4f, top + size / 4f, 0);
@@ -327,11 +368,11 @@ public class CobbleCentroScreen extends Screen {
         }
     }
 
-    private static float spin() {
+    static float spin() {
         return 35f + (System.currentTimeMillis() % 7200L) / 20f;
     }
 
-    private static Component species(String id) {
+    static Component species(String id) {
         return PhoneText.idName(id.contains(":") ? id : "cobblemon:" + id);
     }
 
@@ -340,11 +381,11 @@ public class CobbleCentroScreen extends Screen {
         return I18n.exists(key) ? Component.translatable(key) : Component.literal(id);
     }
 
-    private static String money(long amount) {
+    static String money(long amount) {
         return "₽" + PhoneText.number(amount);
     }
 
-    private int sectionTitle(Component title, Component right, int x, int y, int w) {
+    int sectionTitle(Component title, Component right, int x, int y, int w) {
         ui.text(title.copy().withStyle(ChatFormatting.BOLD), x, y, THEME.text());
         if (right != null) {
             ui.textRight(right, x + w, y, THEME.textDim());
@@ -723,6 +764,7 @@ public class CobbleCentroScreen extends Screen {
         ui.g.pose().pushPose();
         ui.g.pose().translate(0, 0, 200);
         ui.g.fill(x - 2, y, x + w + 4, y + h, 0xE0070A10);
+        ui.hit(x - 2, y, x + w + 4, y + h, () -> { }); // lo de debajo no se puede pulsar
         int cx = x + w / 2;
         int cy = y + h / 2;
         long age = waitingWonder ? 0 : now - revealStart;

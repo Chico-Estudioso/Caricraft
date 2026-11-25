@@ -58,6 +58,7 @@ public final class ServerEvents {
             com.chicoestudioso.caricraft.server.lens.PhotoUploads.forget(uuid);
             com.chicoestudioso.caricraft.server.camp.TravelManager.forget(uuid);
             com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseManager.forget(uuid);
+            com.chicoestudioso.caricraft.server.cobbleverse.LuckManager.forget(uuid);
             CaricraftServer mod = CaricraftServer.get();
             if (mod != null) {
                 mod.rateLimiter().forget(uuid);

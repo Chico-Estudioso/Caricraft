@@ -52,6 +52,8 @@ public final class QaAutomation implements ClientModInitializer {
             scriptCobbleverseUi();
         } else if ("W".equals(role)) {
             scriptCobblemonReal();
+        } else if ("L".equals(role)) {
+            scriptLuck();
         } else if ("I".equals(role)) {
             scriptPhoneItem();
         } else {
@@ -691,6 +693,142 @@ public final class QaAutomation implements ClientModInitializer {
         });
         then(30, QaAutomation::logNotices);
         shot("w10_cc_prodigioso_agotado");
+        then(20, () -> Minecraft.getInstance().stop());
+    }
+
+    private static long dollars() {
+        return snap().cobbleverse().cobbleDollars();
+    }
+
+    private static int itemCount(String item) {
+        int total = 0;
+        for (var stack : Minecraft.getInstance().player.getInventory().items) {
+            if (net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString().equals(item)) {
+                total += stack.getCount();
+            }
+        }
+        return total;
+    }
+
+    private static void logLuck(String what) {
+        var luck = snap().cobbleverse().luck();
+        var last = luck == null ? null : luck.last();
+        log("SUERTE " + what + ": ₽" + dollars() + " · último=" + (last == null ? "-" : last.kind() + "/" + last.id() + " premio="
+                + last.reward() + " especie=" + last.species() + " shiny=" + last.shiny() + " cantidad=" + last.amount() + " rodillos="
+                + last.reels() + " pago=" + last.payout() + " éxito=" + last.success()));
+        logNotices();
+    }
+
+    /** Cajas, tragaperras, mejoras y fusiones con Cobblemon y CobbleDollars reales (rol L). */
+    private void scriptLuck() {
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("time set 6000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("tp @s 0 -60 0 0 10");
+            cmd("clear @s");
+            cmd("cobbledollars give @s 600000");
+            cmd("give @s cobblemon:poke_ball 12");
+            cmd("give @s cobblemon:ultra_ball 16");
+            cmd("pokegive eevee level=20");
+        });
+        then(80, () -> phone().openCobbleCentro());
+        then(40, () -> {
+            var luck = snap().cobbleverse().luck();
+            log("SUERTE vista: cajas=" + luck.crates().stream().map(c -> c.id() + ":" + c.rewards().size()).toList()
+                    + " apuestas=" + luck.slots().bets() + " retorno=" + luck.slots().returnToPlayer()
+                    + " mejoras=" + luck.upgrades().stream().map(u -> u.id()).toList()
+                    + " fusiones=" + luck.fusions().stream().map(f -> f.id()).toList());
+            cc().select(CobbleCentroScreen.Tab.CRATES);
+        });
+        shot("l01_cajas");
+        then(5, () -> cc().luck.start("crate", PhoneAction.CV_CRATE, "crate_master", ""));
+        then(25, () -> {
+        });
+        shot("l02_caja_ruleta");
+        then(70, () -> logLuck("caja maestra"));
+        shot("l03_caja_premio");
+        then(5, () -> {
+            cc().luck.dismiss();
+            cc().luck.start("crate", PhoneAction.CV_CRATE, "crate_poke", "");
+        });
+        then(100, () -> logLuck("caja poké"));
+        then(5, () -> {
+            cc().luck.dismiss();
+            cc().select(CobbleCentroScreen.Tab.SLOTS);
+        });
+        shot("l04_tragaperras");
+        then(5, () -> {
+            cc().luck.betIndex = 1;
+            cc().luck.start("spin", PhoneAction.CV_SPIN, "1", "");
+        });
+        then(8, () -> {
+        });
+        shot("l05_girando");
+        then(50, () -> logLuck("tirada 1"));
+        shot("l06_tirada");
+        for (int i = 2; i <= 8; i++) {
+            int n = i;
+            then(5, () -> {
+                cc().luck.dismiss();
+                cc().luck.start("spin", PhoneAction.CV_SPIN, "0", "");
+            });
+            then(20, () -> logLuck("tirada " + n));
+        }
+        then(5, () -> {
+            cc().luck.dismiss();
+            cc().select(CobbleCentroScreen.Tab.UPGRADES);
+            var eevee = snap().cobbleverse().party().stream().filter(m -> m.species().endsWith("eevee")).findFirst().orElse(null);
+            if (eevee != null) {
+                cc().luck.upgradePick = eevee.uuid();
+                log("SUERTE eevee antes: nv." + eevee.level() + " IV=" + eevee.ivTotal() + " shiny=" + eevee.shiny());
+            }
+            log("SUERTE inventario: poké=" + itemCount("cobblemon:poke_ball") + " super=" + itemCount("cobblemon:great_ball")
+                    + " ultra=" + itemCount("cobblemon:ultra_ball") + " master=" + itemCount("cobblemon:master_ball"));
+        });
+        shot("l07_mejoras");
+        then(5, () -> cc().luck.start("upgrade", PhoneAction.CV_UPGRADE, "level_boost", cc().luck.upgradePick));
+        then(40, () -> logLuck("subida de nivel"));
+        shot("l08_mejora_nivel");
+        then(5, () -> {
+            cc().luck.dismiss();
+            cc().luck.start("upgrade", PhoneAction.CV_UPGRADE, "iv_training", cc().luck.upgradePick);
+        });
+        then(30, () -> logLuck("IV"));
+        then(5, () -> {
+            cc().luck.dismiss();
+            cc().luck.start("upgrade", PhoneAction.CV_UPGRADE, "shiny_charm", cc().luck.upgradePick);
+        });
+        then(12, () -> {
+        });
+        shot("l09_variocolor_suspense");
+        then(40, () -> logLuck("amuleto variocolor"));
+        shot("l10_variocolor_resultado");
+        then(5, () -> {
+            cc().luck.dismiss();
+            var eevee = snap().cobbleverse().party().stream().filter(m -> m.uuid().equals(cc().luck.upgradePick)).findFirst().orElse(null);
+            log("SUERTE eevee después: " + (eevee == null ? "-" : "nv." + eevee.level() + " IV=" + eevee.ivTotal() + " shiny=" + eevee.shiny()));
+            cc().luck.start("fusion", PhoneAction.CV_FUSE, "great_balls", "");
+        });
+        then(30, () -> logLuck("fusión super balls"));
+        shot("l11_fusion");
+        then(5, () -> {
+            cc().luck.dismiss();
+            cc().luck.start("fusion", PhoneAction.CV_FUSE, "master_ball", "");
+        });
+        then(40, () -> {
+            logLuck("fusión master ball");
+            log("SUERTE inventario: poké=" + itemCount("cobblemon:poke_ball") + " super=" + itemCount("cobblemon:great_ball")
+                    + " ultra=" + itemCount("cobblemon:ultra_ball") + " master=" + itemCount("cobblemon:master_ball"));
+        });
+        shot("l12_fusion_master");
+        then(5, () -> {
+            cc().luck.dismiss();
+            cc().luck.start("fusion", PhoneAction.CV_FUSE, "ability_patch", "");
+        });
+        then(30, () -> logLuck("fusión sin ingredientes"));
+        then(5, () -> cc().mouseScrolled(0, 0, 0, -20));
+        shot("l13_fusiones_lista");
         then(20, () -> Minecraft.getInstance().stop());
     }
 
