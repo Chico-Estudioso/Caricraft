@@ -12,7 +12,7 @@ Saldo compartido por grupo (dúo o jugador sin vincular). Ledger con los último
 - Comandos de administración (`/carins give|take|set`).
 
 ## Sumideros
-Apps del grupo y cosméticos personales.
+Apps del grupo, cosméticos personales y el **Mercado** (objetos por Carins con stock diario, ver `docs/MARKET.md`).
 
 | Artículo | Tipo | Precio por defecto |
 |---|---|---|

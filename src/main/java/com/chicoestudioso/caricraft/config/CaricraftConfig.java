@@ -56,8 +56,25 @@ public final class CaricraftConfig {
     public Map<String, Long> prices = new LinkedHashMap<>();
     /** Artículos de la tienda desactivados por id. */
     public List<String> disabledItems = new ArrayList<>();
+    /** Mercado: objetos por Carins (ver docs/MARKET.md). */
+    public MarketConfig market = new MarketConfig();
     /** Desafío Dúo: noches con mobs vanilla equipados (ver docs/CHALLENGE.md). */
     public ChallengeConfig challenge = new ChallengeConfig();
+
+    /** Ajustes del Mercado. */
+    public static final class MarketConfig {
+        /** Activa el Mercado. */
+        public boolean enabled = true;
+        /** Incluye objetos de Cobblemon/COBBLEVERSE (Poké Balls, caramelos, piedras…). Desactivado por defecto. */
+        public boolean includeCobblemonItems = false;
+        /** Ofertas que salen cada día. */
+        public int offersPerDay = 8;
+
+        MarketConfig validate() {
+            offersPerDay = clamp(offersPerDay, 1, 30);
+            return this;
+        }
+    }
 
     /** Ajustes del Desafío Dúo. */
     public static final class ChallengeConfig {
@@ -147,6 +164,10 @@ public final class CaricraftConfig {
         if (disabledItems == null) {
             disabledItems = new ArrayList<>();
         }
+        if (market == null) {
+            market = new MarketConfig();
+        }
+        market.validate();
         if (challenge == null) {
             challenge = new ChallengeConfig();
         }

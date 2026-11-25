@@ -14,6 +14,7 @@ public enum PhonePage {
     EXPLORER("explorer"),
     STATS("stats"),
     CHALLENGE("challenge"),
+    MARKET("market"),
     /** App que aún no se tiene o que llegará más adelante. */
     LOCKED(null);
 

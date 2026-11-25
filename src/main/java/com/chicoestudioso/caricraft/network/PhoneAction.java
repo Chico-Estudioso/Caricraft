@@ -35,7 +35,9 @@ public enum PhoneAction {
     /** arg1 = texto de la nota. */
     ADD_NOTE,
     /** Adelanta el Desafío Dúo a la noche actual. */
-    CHALLENGE_BRING_FORWARD;
+    CHALLENGE_BRING_FORWARD,
+    /** arg1 = id de la oferta del Mercado. */
+    MARKET_BUY;
 
     private static final PhoneAction[] VALUES = values();
 

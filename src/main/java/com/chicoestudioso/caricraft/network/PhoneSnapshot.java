@@ -28,7 +28,8 @@ public record PhoneSnapshot(
         List<InviteView> outgoingInvites,
         boolean leavePending,
         boolean cobblemonLoaded,
-        ChallengeView challenge) {
+        ChallengeView challenge,
+        MarketView market) {
 
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
@@ -83,6 +84,13 @@ public record PhoneSnapshot(
     }
 
     public record InviteView(String uuid, String name, long expiresAt) {
+    }
+
+    /** Mercado del día. */
+    public record MarketView(boolean enabled, long refreshAt, List<OfferView> offers) {
+    }
+
+    public record OfferView(String id, String item, int count, long price, int stockLeft, int dailyStock, String source) {
     }
 
     /**

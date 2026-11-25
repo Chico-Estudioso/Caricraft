@@ -32,6 +32,8 @@ public final class Party {
     private final Set<String> discoveredBiomes = new LinkedHashSet<>();
     private final Map<String, Long> stats = new LinkedHashMap<>();
     private final ChallengeState challenge = new ChallengeState();
+    /** Compras del Mercado: clave {@code dia:oferta} → unidades compradas. */
+    private final Map<String, Integer> marketPurchases = new LinkedHashMap<>();
 
     public Party(UUID id, long createdAt) {
         this.id = id;
@@ -80,6 +82,10 @@ public final class Party {
 
     public Map<String, Long> stats() {
         return stats;
+    }
+
+    public Map<String, Integer> marketPurchases() {
+        return marketPurchases;
     }
 
     public ChallengeState challenge() {

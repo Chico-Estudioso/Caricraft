@@ -78,6 +78,8 @@ public final class PhoneActionHandler {
                 }
                 case SELECT_THEME -> validId(payload.arg1()) ? core.shop().selectTheme(state, uuid, payload.arg1()) : invalid();
                 case ADD_NOTE -> core.addNote(uuid, payload.arg1());
+                case MARKET_BUY -> validId(payload.arg1())
+                        ? core.market().buy(state, uuid, payload.arg1(), (item, count) -> giveItem(player, item, count)) : invalid();
                 case CHALLENGE_BRING_FORWARD -> core.challenge().bringForward(core.partyOf(uuid),
                         ChallengeManager.day(mod.server()), ChallengeManager.night(mod.server()));
             };
@@ -130,6 +132,22 @@ public final class PhoneActionHandler {
             mod.notify(target, true, "caricraft.notify.invite_received", List.of(player.getGameProfile().getName()));
         }
         return result;
+    }
+
+    /** Entrega ítems; lo que no cabe en el inventario cae a los pies del jugador. */
+    private static void giveItem(ServerPlayer player, String itemId, int count) {
+        net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.parse(itemId);
+        net.minecraft.world.item.Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(id);
+        int remaining = count;
+        while (remaining > 0) {
+            int size = Math.min(remaining, item.getDefaultMaxStackSize());
+            net.minecraft.world.item.ItemStack stack = new net.minecraft.world.item.ItemStack(item, size);
+            if (!player.getInventory().add(stack) && !stack.isEmpty()) {
+                player.drop(stack, false);
+            }
+            remaining -= size;
+        }
+        player.containerMenu.broadcastChanges();
     }
 
     private static void notifyPartner(CaricraftServer mod, ServerPlayer actor, String key, List<String> args) {

@@ -360,5 +360,21 @@
   "caricraft.mission.milestone_hunter": "Night legend",
   "caricraft.mission.milestone_hunter.desc": "Milestone: 250 challenge mobs defeated by the group.",
   "caricraft.mission.milestone_nights": "Ten sleepless nights",
-  "caricraft.mission.milestone_nights.desc": "Milestone: 10 challenge nights survived."
+  "caricraft.mission.milestone_nights.desc": "Milestone: 10 challenge nights survived.",
+  "caricraft.app.market": "Market",
+  "caricraft.app.market.desc": "Daily deals on materials and useful items for Carins.",
+  "caricraft.phone.market.closed": "The Market is closed on this server.",
+  "caricraft.phone.market.title": "Today's deals",
+  "caricraft.phone.market.refresh": "Change in %s",
+  "caricraft.phone.market.offer": "%s × %s",
+  "caricraft.phone.market.stock": "%s of %s left today",
+  "caricraft.phone.market.sold_out": "Sold out",
+  "caricraft.phone.market.note": "Stock is shared by the duo and refreshes daily. If it doesn't fit in your inventory, the item drops at your feet.",
+  "caricraft.result.market_closed": "The Market is closed.",
+  "caricraft.result.offer_expired": "That deal is no longer available.",
+  "caricraft.result.offer_sold_out": "Deal sold out for today.",
+  "caricraft.result.market_bought": "You bought %s × %s.",
+  "caricraft.ledger.market": "Market: %s",
+  "caricraft.ledger.market_refund": "Market refund: %s",
+  "caricraft.stat.market_purchases": "Market purchases"
 }

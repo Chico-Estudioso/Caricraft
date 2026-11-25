@@ -360,5 +360,21 @@
   "caricraft.mission.milestone_hunter": "Leyenda nocturna",
   "caricraft.mission.milestone_hunter.desc": "Hito: 250 mobs del desafío derrotados por el grupo.",
   "caricraft.mission.milestone_nights": "Diez noches en vela",
-  "caricraft.mission.milestone_nights.desc": "Hito: 10 noches de desafío superadas."
+  "caricraft.mission.milestone_nights.desc": "Hito: 10 noches de desafío superadas.",
+  "caricraft.app.market": "Mercado",
+  "caricraft.app.market.desc": "Ofertas diarias de materiales y objetos útiles a cambio de Carins.",
+  "caricraft.phone.market.closed": "El Mercado está cerrado en este servidor.",
+  "caricraft.phone.market.title": "Ofertas del día",
+  "caricraft.phone.market.refresh": "Cambian en %s",
+  "caricraft.phone.market.offer": "%s × %s",
+  "caricraft.phone.market.stock": "Quedan %s de %s hoy",
+  "caricraft.phone.market.sold_out": "Agotado",
+  "caricraft.phone.market.note": "El stock es del dúo y se renueva cada día. Si no cabe en el inventario, el objeto cae a tus pies.",
+  "caricraft.result.market_closed": "El Mercado está cerrado.",
+  "caricraft.result.offer_expired": "Esa oferta ya no está disponible.",
+  "caricraft.result.offer_sold_out": "Oferta agotada por hoy.",
+  "caricraft.result.market_bought": "Has comprado %s × %s.",
+  "caricraft.ledger.market": "Mercado: %s",
+  "caricraft.ledger.market_refund": "Devolución del Mercado: %s",
+  "caricraft.stat.market_purchases": "Compras en el Mercado"
 }
