@@ -50,6 +50,8 @@ public final class QaAutomation implements ClientModInitializer {
             scriptSquads();
         } else if ("V".equals(role)) {
             scriptCobbleverseUi();
+        } else if ("I".equals(role)) {
+            scriptPhoneItem();
         } else {
             scriptB();
         }
@@ -586,6 +588,42 @@ public final class QaAutomation implements ClientModInitializer {
         shot("m03_caribox_companero");
         closePhone();
         then(1200, () -> Minecraft.getInstance().stop());
+    }
+
+    // ------------------------------------------------------------------ modelo del CariPhone
+
+    /** Cómo se ve el ítem del CariPhone: barra, mano, tercera persona e inventario (rol I). */
+    private void scriptPhoneItem() {
+        then(0, () -> {
+            cmd("gamemode survival");
+            cmd("time set 6000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("weather clear");
+            cmd("fill -3 119 -3 3 119 3 minecraft:grass_block");
+            cmd("tp @s 0 120 0 0 10");
+        });
+        then(40, () -> Minecraft.getInstance().player.getInventory().selected = phoneSlot());
+        then(20, () -> {
+        });
+        shot("i01_primera_persona");
+        then(5, () -> Minecraft.getInstance().options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_FRONT));
+        then(20, () -> {
+        });
+        shot("i02_tercera_persona_frente");
+        then(5, () -> Minecraft.getInstance().options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK));
+        then(20, () -> {
+        });
+        shot("i03_tercera_persona_espalda");
+        then(5, () -> {
+            var mc = Minecraft.getInstance();
+            mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+            mc.setScreen(new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player));
+        });
+        then(20, () -> {
+        });
+        shot("i04_inventario");
+        closePhone();
+        then(40, () -> Minecraft.getInstance().stop());
     }
 
     // ------------------------------------------------------------------ cobbleverse (solo interfaz)
