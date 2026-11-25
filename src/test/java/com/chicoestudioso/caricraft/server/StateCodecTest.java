@@ -18,6 +18,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StateCodecTest {
@@ -98,5 +99,25 @@ class StateCodecTest {
         CompoundTag future = new CompoundTag();
         future.putInt("schemaVersion", CaricraftState.SCHEMA_VERSION + 5);
         assertTrue(StateCodec.read(future).profiles().isEmpty());
+    }
+
+    @Test
+    void oldSavesWithCariCampGetTpDuo() {
+        TestFixture f = TestFixture.withDefaultMissions();
+        f.formDuo();
+        f.give(f.alice, 2000);
+        f.core.shop().buy(f.state, f.alice, AppCatalog.CARICAMP);
+        f.core.shop().buy(f.state, f.carol, AppCatalog.STATS);
+
+        CompoundTag v1 = StateCodec.write(f.state);
+        v1.putInt("schemaVersion", 1);
+        CaricraftState migrated = StateCodec.read(v1);
+        assertTrue(migrated.partyOf(f.alice).ownedApps().contains(AppCatalog.TPDUO),
+                "quien compró CariCamp antes de TP Dúo no pierde los viajes con el compañero");
+        assertFalse(migrated.partyOf(f.carol).ownedApps().contains(AppCatalog.TPDUO));
+
+        // Con el esquema actual no se regala nada: CariCamp ya no incluye los viajes al compañero.
+        CaricraftState current = StateCodec.read(StateCodec.write(f.state));
+        assertFalse(current.partyOf(f.alice).ownedApps().contains(AppCatalog.TPDUO));
     }
 }

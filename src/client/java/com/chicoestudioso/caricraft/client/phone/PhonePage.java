@@ -8,6 +8,7 @@ public enum PhonePage {
     MISSIONS("missions"),
     WALLET("wallet"),
     DUO("duo"),
+    TPDUO("tpduo"),
     SHOP("shop"),
     SETTINGS("settings"),
     CHRONICLES("chronicles"),
@@ -33,10 +34,6 @@ public enum PhonePage {
 
     public Component title() {
         return appId == null ? Component.translatable("screen.caricraft.phone") : PhoneText.appName(appId);
-    }
-
-    public PhonePage parent() {
-        return HOME;
     }
 
     /** Página de una app del catálogo, o {@code null} si no tiene pantalla. */

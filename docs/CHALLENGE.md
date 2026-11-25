@@ -11,7 +11,7 @@ Noches de desafío con mobs vanilla equipados. Es una app de serie del CariPhone
   - **No se puede dormir** (evento `ALLOW_SLEEPING` de Fabric). Cubre las camas; los sacos de Comforts también, si usan el sueño vanilla (sin probar).
   - Aparecen los mobs de `challenge.mobs` (por defecto zombi, momia, ahogado, esqueleto, esqueleto glacial, araña, araña de cueva, bruja, slime y enderman) **equipados y reforzados**.
   - Cada mob derrotado da `killReward + nivel - 1` Carins (por defecto 2–6).
-  - Los viajes de CariCamp están bloqueados.
+  - Los viajes de CariCamp y TP Dúo están bloqueados.
 - **Al amanecer**:
   - Si el dúo sigue conectado, gana `nightReward` (por defecto 50) y la noche cuenta como superada.
   - Los mobs del desafío desaparecen.

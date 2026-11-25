@@ -114,9 +114,7 @@ public final class QaAutomation implements ClientModInitializer {
 
     private void lockedPage(String appId) {
         then(10, () -> {
-            PhoneScreen phone = phone();
-            phone.lockedAppId = appId;
-            phone.navigate(PhonePage.LOCKED);
+            phone().openApp(appId, "LOCKED");
         });
     }
 
@@ -363,6 +361,8 @@ public final class QaAutomation implements ClientModInitializer {
             cmd("tp @s 0 120 0 -90 15");
             cmd("carins give @s 5000");
         });
+        then(20, () -> phone().goHome());
+        shot("n00_inicio_secciones");
         page(PhonePage.MARKET, 0);
         shot("n01_mercado");
         then(10, () -> {
@@ -375,11 +375,33 @@ public final class QaAutomation implements ClientModInitializer {
         page(PhonePage.MARKET, 0);
         shot("n02_mercado_comprado");
         then(5, () -> act(PhoneAction.BUY_ITEM, "caricamp"));
+        then(10, () -> act(PhoneAction.BUY_ITEM, "tpduo"));
         then(10, () -> act(PhoneAction.BUY_ITEM, "carilens"));
         then(10, () -> act(PhoneAction.BUY_ITEM, "carilens_album"));
         then(10, () -> act(PhoneAction.BUY_ITEM, "caribox"));
         page(PhonePage.SHOP, 0);
         shot("n03_tienda_mejoras");
+        then(10, () -> phone().goHome());
+        shot("n03b_inicio_con_apps");
+        // Navegación: inicio → CariCamp → TP Dúo (desde el aviso) → atrás → atrás.
+        then(10, () -> {
+            PhoneScreen phone = phone();
+            phone.navigate(PhonePage.CARICAMP);
+            phone.navigate(PhonePage.TPDUO);
+            phone.back();
+            log("NAV atrás desde TP Dúo → " + phone.page + " (debe ser CARICAMP)");
+            phone.keyPressed(256, 0, 0);
+            log("NAV Esc desde CariCamp → " + phone.page + " (debe ser HOME)");
+            phone.navigate(PhonePage.SHOP);
+            phone.openApp("stats", "AVAILABLE");
+            phone.navigate(PhonePage.SHOP);
+            phone.mouseClicked(0, 0, 3);
+            log("NAV botón lateral desde Tienda → " + phone.page + " / " + phone.lockedAppId + " (debe ser LOCKED / stats)");
+            phone.mouseClicked(0, 0, 3);
+            log("NAV botón lateral → " + phone.page + " (debe ser SHOP)");
+            phone.goHome();
+            log("NAV inicio → " + phone.page + "; Esc en inicio cierra: " + !phone.back());
+        });
         // Campamento
         then(10, () -> {
             var mc = Minecraft.getInstance();
@@ -417,10 +439,17 @@ public final class QaAutomation implements ClientModInitializer {
         });
         page(PhonePage.CARICAMP, 0);
         shot("n05_caricamp_en_campamento");
-        // Viajes estilo /tpa: Dev2 tiene que aceptar.
-        then(140, () -> act(PhoneAction.TRAVEL_REQUEST, "go"));
-        page(PhonePage.CARICAMP, 0);
-        shot("n05b_peticion_enviada");
+        // Viajes estilo /tpa con TP Dúo: Dev2 tiene que aceptar.
+        then(10, () -> cmd("tp @s 0 120 0 -90 15"));
+        page(PhonePage.TPDUO, 0);
+        then(40, () -> {
+        });
+        shot("n05a_tpduo_companero");
+        then(100, () -> act(PhoneAction.TRAVEL_REQUEST, "go"));
+        page(PhonePage.TPDUO, 0);
+        shot("n05b_tpduo_peticion_enviada");
+        then(10, () -> phone().goHome());
+        shot("n05c_inicio_aviso_enviado");
         when(() -> distanceTo("Dev2") >= 0 && distanceTo("Dev2") < 3, () ->
                 log("IR: distancia a Dev2 tras aceptar y esperar (debe ser < 3): " + String.format("%.1f", distanceTo("Dev2"))));
         closePhone();
@@ -484,6 +513,10 @@ public final class QaAutomation implements ClientModInitializer {
         then(60, () -> act(PhoneAction.CAMP_TRAVEL, "camp"));
         page(PhonePage.CARICAMP, 0);
         shot("n10_caricamp_desafio");
+        page(PhonePage.TPDUO, 0);
+        shot("n10b_tpduo_desafio");
+        then(5, () -> phone().goHome());
+        shot("n10c_inicio_desafio");
         then(10, () -> cmd("time set 23500"));
         page(PhonePage.WALLET, 0);
         shot("n11_cartera");
@@ -500,18 +533,24 @@ public final class QaAutomation implements ClientModInitializer {
         when(() -> snap() != null && !snap().incomingInvites().isEmpty(),
                 () -> act(PhoneAction.ACCEPT_INVITE, snap().incomingInvites().getFirst().uuid()));
         // Petición "ir": la vemos en el chat (botones clicables) y en el teléfono, y aceptamos.
-        when(() -> snap() != null && snap().camp() != null && snap().camp().incoming() != null, () -> {
+        when(() -> snap() != null && snap().tpduo() != null && snap().tpduo().incoming() != null, () -> {
         });
         shot("m00_chat_peticion");
-        page(PhonePage.CARICAMP, 0);
+        then(5, () -> phone().goHome());
+        shot("m00a_inicio_aviso");
+        page(PhonePage.TPDUO, 0);
         shot("m00b_peticion_recibida");
         then(10, () -> act(PhoneAction.TRAVEL_ACCEPT, ""));
         closePhone();
         // Petición "traer": aceptamos y nos quedamos quietos durante la cuenta atrás.
-        when(() -> snap() != null && snap().camp() != null && snap().camp().incoming() != null, () -> {
-            log("petición recibida: " + snap().camp().incoming().kind());
+        when(() -> snap() != null && snap().tpduo() != null && snap().tpduo().incoming() != null, () -> {
+            log("petición recibida: " + snap().tpduo().incoming().kind());
             act(PhoneAction.TRAVEL_ACCEPT, "");
         });
+        page(PhonePage.TPDUO, 0);
+        then(10, () -> {
+        });
+        shot("m00c_cuenta_atras_traer");
         when(() -> snap() != null && snap().lens() != null && !snap().lens().photos().isEmpty(), () -> {
         });
         page(PhonePage.CARILENS, 0);

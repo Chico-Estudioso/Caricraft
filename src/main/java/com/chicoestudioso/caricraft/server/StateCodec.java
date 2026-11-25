@@ -10,6 +10,7 @@ import com.chicoestudioso.caricraft.core.mission.MissionState;
 import com.chicoestudioso.caricraft.core.mission.MissionStatus;
 import com.chicoestudioso.caricraft.core.party.Party;
 import com.chicoestudioso.caricraft.core.party.PlayerProfile;
+import com.chicoestudioso.caricraft.core.shop.AppCatalog;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -76,9 +77,33 @@ public final class StateCodec {
             LOGGER.warn("Datos guardados con un esquema más nuevo ({} > {}). Se intentará leer igualmente.",
                     version, CaricraftState.SCHEMA_VERSION);
         }
-        // Sin migraciones todavía: la versión 1 es la primera.
+        if (version < 2) {
+            migrateV1ToV2(root);
+        }
         root.putInt("schemaVersion", CaricraftState.SCHEMA_VERSION);
         return root;
+    }
+
+    /**
+     * v1 → v2: los viajes con el compañero pasan de CariCamp a la app TP Dúo. Quien ya compró CariCamp
+     * no pierde esa función: se le da TP Dúo.
+     */
+    private static void migrateV1ToV2(CompoundTag root) {
+        ListTag parties = root.getList("parties", Tag.TAG_COMPOUND);
+        for (int i = 0; i < parties.size(); i++) {
+            CompoundTag party = parties.getCompound(i);
+            ListTag apps = party.getList("apps", Tag.TAG_STRING);
+            boolean camp = false;
+            boolean travel = false;
+            for (int j = 0; j < apps.size(); j++) {
+                camp |= AppCatalog.CARICAMP.equals(apps.getString(j));
+                travel |= AppCatalog.TPDUO.equals(apps.getString(j));
+            }
+            if (camp && !travel) {
+                apps.add(StringTag.valueOf(AppCatalog.TPDUO));
+                party.put("apps", apps);
+            }
+        }
     }
 
     private static CompoundTag writeParty(Party party) {

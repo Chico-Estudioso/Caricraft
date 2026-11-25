@@ -1,6 +1,17 @@
 # Changelog
 
 ## Unreleased
+- **CariPhone ordenado:**
+  - Inicio por secciones (Día a día, Dúo, Aventura, Sistema) en 4 columnas.
+  - Fila de avisos con acceso directo: petición de viaje, invitación, desafío y misiones por cobrar. Globo «!» en Desafío Dúo.
+  - Navegación con historial: la flecha, Esc y el botón lateral del ratón vuelven a la página anterior con su desplazamiento; el botón de inicio vacía el historial.
+  - Tienda ordenada: primero lo que se puede comprar, al final lo que ya tienes, con contador por sección.
+- **TP Dúo (nueva app, 300 Carins):**
+  - Los viajes con el compañero salen de CariCamp y pasan a una app propia.
+  - Tarjeta del compañero con su cara, bioma, dimensión, distancia y brújula; botones Ir/Traer; peticiones con barra de tiempo; cuenta atrás y pasos de cómo funciona.
+  - CariCamp baja a 400 Carins y queda para el campamento. La espera entre viajes es compartida.
+  - Migración de guardado (esquema 2): quien ya tenía CariCamp recibe TP Dúo.
+  - Protocolo de red 3.
 - **CariBox:**
   - Cofre compartido del dúo que se abre desde el teléfono en cualquier lugar.
   - 27 huecos ampliables hasta 54.

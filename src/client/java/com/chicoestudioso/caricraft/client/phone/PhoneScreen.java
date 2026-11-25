@@ -12,6 +12,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 /**
  * Pantalla del CariPhone. Solo presenta el último snapshot del servidor y envía acciones tipadas.
  */
@@ -19,6 +22,14 @@ public class PhoneScreen extends Screen {
     private static final int REFRESH_TICKS = 40;
     private static final long ACTION_COOLDOWN_MS = 250;
     private static final long BANNER_MS = 4000;
+    private static final int MAX_HISTORY = 16;
+    private static final int KEY_ESCAPE = 256;
+    /** Botón lateral "atrás" del ratón (GLFW_MOUSE_BUTTON_4). */
+    private static final int MOUSE_BACK = 3;
+
+    /** Paso del historial: página, desplazamiento y app bloqueada que se estaba viendo. */
+    private record NavEntry(PhonePage page, int scroll, String lockedAppId) {
+    }
 
     /** Página que se recuerda entre aperturas. */
     private static PhonePage lastPage = PhonePage.HOME;
@@ -33,6 +44,10 @@ public class PhoneScreen extends Screen {
     long deleteArmedAt;
     private int scroll;
     private int maxScroll;
+    /** Desplazamiento de la cuadrícula de CariLens antes de abrir una foto. */
+    private int photoReturnScroll;
+    /** Páginas anteriores (la más reciente primero). El inicio es la raíz y no se apila. */
+    private final Deque<NavEntry> history = new ArrayDeque<>();
     private int ticks;
     private long lastActionAt;
 
@@ -70,23 +85,82 @@ public class PhoneScreen extends Screen {
 
     // ---------------------------------------------------------------- navegación y red
 
+    /** Abre una página y guarda la actual en el historial. Ir al inicio vacía el historial. */
     void navigate(PhonePage target) {
-        if (page != target) {
-            page = target;
-            lastPage = target == PhonePage.LOCKED ? PhonePage.HOME : target;
-            scroll = 0;
-            openPhotoId = null;
-            rebuildInput();
+        navigate(target, null);
+    }
+
+    private void navigate(PhonePage target, String lockedApp) {
+        if (target == PhonePage.HOME) {
+            goHome();
+            return;
+        }
+        if (page == target && openPhotoId == null && (target != PhonePage.LOCKED || lockedApp == null
+                || lockedApp.equals(lockedAppId))) {
+            return;
+        }
+        if (page != PhonePage.HOME || !history.isEmpty()) {
+            history.push(new NavEntry(page, scroll, lockedAppId));
+            while (history.size() > MAX_HISTORY) {
+                history.removeLast();
+            }
+        }
+        if (target == PhonePage.LOCKED && lockedApp != null) {
+            lockedAppId = lockedApp;
+        }
+        show(target, 0);
+    }
+
+    private void show(PhonePage target, int newScroll) {
+        page = target;
+        lastPage = target == PhonePage.LOCKED ? PhonePage.HOME : target;
+        scroll = newScroll;
+        openPhotoId = null;
+        deleteArmedAt = 0;
+        rebuildInput();
+    }
+
+    /** Botón de inicio: vuelve a la pantalla principal y olvida el historial. */
+    void goHome() {
+        history.clear();
+        if (page != PhonePage.HOME || openPhotoId != null) {
+            show(PhonePage.HOME, 0);
         }
     }
 
-    /** Abre directamente una página (p. ej. al volver de hacer una foto). */
+    /**
+     * Vuelve atrás un paso: primero cierra la foto abierta y luego regresa a la página anterior (con su
+     * desplazamiento). Devuelve {@code false} si ya estaba en el inicio.
+     */
+    boolean back() {
+        if (openPhotoId != null) {
+            openPhotoId = null;
+            deleteArmedAt = 0;
+            scroll = photoReturnScroll;
+            return true;
+        }
+        if (page == PhonePage.HOME) {
+            return false;
+        }
+        NavEntry previous = history.poll();
+        if (previous == null) {
+            show(PhonePage.HOME, 0);
+            return true;
+        }
+        lockedAppId = previous.lockedAppId();
+        show(previous.page(), previous.scroll());
+        return true;
+    }
+
+    /** Abre directamente una página (p. ej. al volver de hacer una foto). Atrás lleva al inicio. */
     public void openPage(PhonePage target) {
+        history.clear();
         this.page = target;
         lastPage = target;
     }
 
     void openPhoto(String photoId) {
+        photoReturnScroll = scroll;
         openPhotoId = photoId;
         deleteArmedAt = 0;
         scroll = 0;
@@ -94,12 +168,8 @@ public class PhoneScreen extends Screen {
 
     void openApp(String appId, String state) {
         PhonePage target = PhonePage.forApp(appId);
-        if ("COMING_SOON".equals(state)) {
-            lockedAppId = appId;
-            navigate(PhonePage.LOCKED);
-        } else if (target == null || "LOCKED".equals(state) || "AVAILABLE".equals(state)) {
-            lockedAppId = appId;
-            navigate(PhonePage.LOCKED);
+        if (target == null || "COMING_SOON".equals(state) || "LOCKED".equals(state) || "AVAILABLE".equals(state)) {
+            navigate(PhonePage.LOCKED, appId);
         } else {
             navigate(target);
         }
@@ -203,6 +273,10 @@ public class PhoneScreen extends Screen {
             playClick();
             return true;
         }
+        if (button == MOUSE_BACK && back()) {
+            playClick();
+            return true;
+        }
         return false;
     }
 
@@ -217,6 +291,16 @@ public class PhoneScreen extends Screen {
         boolean typing = input != null && input.isFocused();
         if (typing && (keyCode == 257 || keyCode == 335)) { // Intro
             submitInput();
+            return true;
+        }
+        if (keyCode == KEY_ESCAPE) {
+            // Esc: deja de escribir, luego vuelve atrás y, en el inicio, cierra.
+            if (typing) {
+                input.setFocused(false);
+                setFocused(null);
+            } else if (!back()) {
+                onClose();
+            }
             return true;
         }
         if (!typing && CaricraftClient.openPhoneKey().matches(keyCode, scanCode)) {
@@ -326,7 +410,7 @@ public class PhoneScreen extends Screen {
         boolean hover = ui.hovered(cx - 12, by, cx + 12, by + 9);
         ui.round(cx - 12, by, cx + 12, by + 9, hover ? PhoneTheme.mix(theme.bezel(), 0xFFFFFFFF, 0.35f)
                 : PhoneTheme.mix(theme.bezel(), 0xFFFFFFFF, 0.15f));
-        ui.hit(cx - 12, by, cx + 12, by + 9, () -> navigate(PhonePage.HOME));
+        ui.hit(cx - 12, by, cx + 12, by + 9, this::goHome);
     }
 
     private void drawStatusBar(PhoneSnapshot snapshot, PhoneTheme theme) {
@@ -361,7 +445,7 @@ public class PhoneScreen extends Screen {
             ui.g.fill(sx0, y, sx0 + 18, y + 17, PhoneTheme.mix(theme.header(), 0xFFFFFFFF, 0.2f));
         }
         ui.text("◀", sx0 + 5, y + 5, theme.headerText());
-        ui.hit(sx0, y, sx0 + 18, y + 17, () -> navigate(page.parent()));
+        ui.hit(sx0, y, sx0 + 18, y + 17, this::back);
         Component title = page == PhonePage.LOCKED && lockedAppId != null ? PhoneText.appName(lockedAppId) : page.title();
         ui.textCentered(title, (sx0 + sx1) / 2, y + 5, theme.headerText());
     }

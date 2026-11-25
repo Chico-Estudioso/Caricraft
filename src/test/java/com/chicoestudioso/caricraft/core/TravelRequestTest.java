@@ -12,17 +12,29 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TravelRequestTest {
-    private TestFixture duoWithCamp() {
+    private TestFixture duoWithTpDuo() {
         TestFixture f = TestFixture.withDefaultMissions();
         f.formDuo();
         f.give(f.alice, 2000);
-        f.core.shop().buy(f.state, f.alice, AppCatalog.CARICAMP);
+        assertTrue(f.core.shop().buy(f.state, f.alice, AppCatalog.TPDUO).success());
         return f;
     }
 
     @Test
+    void needsTpDuoNotCariCamp() {
+        TestFixture f = TestFixture.withDefaultMissions();
+        f.formDuo();
+        f.give(f.alice, 2000);
+        f.core.shop().buy(f.state, f.alice, AppCatalog.CARICAMP);
+        ActionResult result = f.core.camp().request(f.state, f.alice, f.bob, TravelRequest.Kind.GO, false);
+        assertEquals("caricraft.result.app_locked", result.key());
+        assertEquals(java.util.List.of(AppCatalog.TPDUO), result.args());
+        assertTrue(f.state.travelRequests().isEmpty());
+    }
+
+    @Test
     void requestMustBeAcceptedByThePartner() {
-        TestFixture f = duoWithCamp();
+        TestFixture f = duoWithTpDuo();
         CampService camp = f.core.camp();
         assertTrue(camp.request(f.state, f.alice, f.bob, TravelRequest.Kind.GO, false).success());
         assertTrue(camp.incoming(f.state, f.bob).isPresent());
@@ -38,7 +50,7 @@ class TravelRequestTest {
 
     @Test
     void bringMakesThePartnerTravel() {
-        TestFixture f = duoWithCamp();
+        TestFixture f = duoWithTpDuo();
         f.core.camp().request(f.state, f.alice, f.bob, TravelRequest.Kind.BRING, false);
         TravelRequest request = f.core.camp().accept(f.state, f.bob).request();
         assertEquals(f.bob, request.traveler());
@@ -47,7 +59,7 @@ class TravelRequestTest {
 
     @Test
     void requestsExpireAndCanBeDeclined() {
-        TestFixture f = duoWithCamp();
+        TestFixture f = duoWithTpDuo();
         CampService camp = f.core.camp();
         camp.request(f.state, f.alice, f.bob, TravelRequest.Kind.GO, false);
         assertTrue(camp.decline(f.state, f.bob).success());
@@ -59,7 +71,7 @@ class TravelRequestTest {
 
     @Test
     void rulesAreCheckedBeforeAsking() {
-        TestFixture f = duoWithCamp();
+        TestFixture f = duoWithTpDuo();
         CampService camp = f.core.camp();
         assertEquals("caricraft.result.travel_challenge", camp.request(f.state, f.alice, f.bob, TravelRequest.Kind.GO, true).key());
         assertEquals("caricraft.result.not_in_duo", camp.request(f.state, f.alice, f.carol, TravelRequest.Kind.GO, false).key());
@@ -75,7 +87,7 @@ class TravelRequestTest {
 
     @Test
     void newRequestReplacesThePreviousOne() {
-        TestFixture f = duoWithCamp();
+        TestFixture f = duoWithTpDuo();
         CampService camp = f.core.camp();
         camp.request(f.state, f.alice, f.bob, TravelRequest.Kind.GO, false);
         camp.request(f.state, f.alice, f.bob, TravelRequest.Kind.BRING, false);

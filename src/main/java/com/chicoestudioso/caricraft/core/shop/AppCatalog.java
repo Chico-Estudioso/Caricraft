@@ -23,6 +23,7 @@ public final class AppCatalog {
     public static final String STATS = "stats";
     public static final String CARILENS = "carilens";
     public static final String CARICAMP = "caricamp";
+    public static final String TPDUO = "tpduo";
     public static final String CHALLENGE = "challenge";
     public static final String CARILENS_ALBUM = "carilens_album";
     public static final String CARIBOX = "caribox";
@@ -51,7 +52,8 @@ public final class AppCatalog {
         catalog.register(app(CARILENS, 300, "minecraft:spyglass", 0xFF00B4D8));
         catalog.register(new ShopItem(CARILENS_ALBUM, Kind.UPGRADE, Ownership.PARTY, 200, false, false, List.of(CARILENS),
                 "minecraft:writable_book", 0xFF48CAE4, 4));
-        catalog.register(app(CARICAMP, 500, "minecraft:campfire", 0xFFFB5607));
+        catalog.register(app(TPDUO, 300, "minecraft:ender_pearl", 0xFF7209B7));
+        catalog.register(app(CARICAMP, 400, "minecraft:campfire", 0xFFFB5607));
         catalog.register(app(CARIBOX, 400, "minecraft:ender_chest", 0xFF3D5A80));
         catalog.register(new ShopItem(CARIBOX_ROWS, Kind.UPGRADE, Ownership.PARTY, 250, false, false, List.of(CARIBOX),
                 "minecraft:chest", 0xFF5C7AA6, 3));

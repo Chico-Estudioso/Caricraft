@@ -38,7 +38,7 @@ public final class CampTravel {
         CaricraftCore core = mod.core();
         Party party = core.partyOf(player.getUUID());
         if (!core.camp().hasApp(party)) {
-            return ActionResult.fail("app_locked", "caricamp");
+            return ActionResult.fail("app_locked", com.chicoestudioso.caricraft.core.shop.AppCatalog.CARICAMP);
         }
         int r = core.config().camp.campfireRadius;
         BlockPos origin = player.blockPosition();
