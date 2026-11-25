@@ -16,6 +16,8 @@ public final class PlayerProfile {
     /** Hasta cuándo no puede vincularse (tras desvincular). */
     private long linkCooldownUntil;
     private boolean starterPhoneGiven;
+    /** Número de serie del CariPhone vigente (0 = aún no tiene ninguno vinculado). */
+    private int phoneSerial;
     /** Momento de la primera pulsación de "desvincular" (no se persiste). */
     private transient long leaveRequestedAt;
 
@@ -72,6 +74,14 @@ public final class PlayerProfile {
 
     public void setStarterPhoneGiven(boolean starterPhoneGiven) {
         this.starterPhoneGiven = starterPhoneGiven;
+    }
+
+    public int phoneSerial() {
+        return phoneSerial;
+    }
+
+    public void setPhoneSerial(int phoneSerial) {
+        this.phoneSerial = Math.max(0, phoneSerial);
     }
 
     public long leaveRequestedAt() {

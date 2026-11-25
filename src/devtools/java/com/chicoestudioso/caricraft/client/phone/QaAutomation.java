@@ -42,6 +42,8 @@ public final class QaAutomation implements ClientModInitializer {
             scriptCampOnly();
         } else if ("M".equals(role)) {
             scriptNewAppsPartner();
+        } else if ("P".equals(role)) {
+            scriptPhone();
         } else {
             scriptB();
         }
@@ -577,6 +579,147 @@ public final class QaAutomation implements ClientModInitializer {
         shot("m03_caribox_companero");
         closePhone();
         then(1200, () -> Minecraft.getInstance().stop());
+    }
+
+    // ------------------------------------------------------------------ CariPhone personal
+
+    /** Teléfonos del inventario: cuántos y de quién (dueño#serie@hueco). */
+    private static String phones() {
+        var player = Minecraft.getInstance().player;
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            var stack = player.getInventory().getItem(i);
+            if (com.chicoestudioso.caricraft.item.PhoneBinding.isPhone(stack)) {
+                var tag = com.chicoestudioso.caricraft.item.PhoneBinding.read(stack);
+                out.add((tag.bound() ? tag.ownerName() + "#" + tag.serial() : "sin-dueño") + "@" + i);
+            }
+        }
+        return out.size() + " " + out;
+    }
+
+    private static int groundPhones() {
+        var mc = Minecraft.getInstance();
+        return mc.level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                mc.player.getBoundingBox().inflate(32), e -> com.chicoestudioso.caricraft.item.PhoneBinding.isPhone(e.getItem())).size();
+    }
+
+    private static int phoneSlot() {
+        var player = Minecraft.getInstance().player;
+        for (int i = 0; i < 36; i++) {
+            if (com.chicoestudioso.caricraft.item.PhoneBinding.isPhone(player.getInventory().getItem(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** CariPhone personal: único, no se tira ni se guarda, vuelve al morir y se repone (rol P). */
+    private void scriptPhone() {
+        then(0, () -> {
+            cmd("gamemode survival");
+            cmd("time set 1000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("weather clear");
+            cmd("fill -4 119 -4 4 119 4 minecraft:stone");
+            cmd("tp @s 0 120 0 -90 15");
+        });
+        then(40, () -> {
+            log("PHONE inicial (1 propio): " + phones());
+            var stack = Minecraft.getInstance().player.getInventory().getItem(phoneSlot());
+            var lines = stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(Minecraft.getInstance().level),
+                    Minecraft.getInstance().player, net.minecraft.world.item.TooltipFlag.NORMAL);
+            log("PHONE descripción: " + lines.stream().map(net.minecraft.network.chat.Component::getString).toList());
+        });
+        // 1. Tecla de tirar con el teléfono en la mano
+        then(10, () -> {
+            var player = Minecraft.getInstance().player;
+            player.getInventory().selected = phoneSlot();
+        });
+        then(10, () -> Minecraft.getInstance().player.drop(false));
+        then(5, () -> {
+        });
+        shot("p01_no_se_tira");
+        then(20, () -> log("PHONE tras Q (1, 0 en el suelo): " + phones() + " · suelo=" + groundPhones()));
+        // 2. Tirarlo desde el inventario
+        then(10, () -> {
+            var mc = Minecraft.getInstance();
+            int slot = phoneSlot();
+            int menuSlot = slot < 9 ? 36 + slot : slot;
+            mc.gameMode.handleInventoryMouseClick(mc.player.inventoryMenu.containerId, menuSlot, 1,
+                    net.minecraft.world.inventory.ClickType.THROW, mc.player);
+        });
+        then(30, () -> log("PHONE tras tirarlo desde el inventario (1, 0 en el suelo): " + phones() + " · suelo=" + groundPhones()));
+        // 3. Cofre: mayúsculas+clic y colocarlo a mano
+        then(10, () -> cmd("setblock 2 120 0 minecraft:chest"));
+        then(20, () -> {
+            var mc = Minecraft.getInstance();
+            mc.player.getInventory().selected = 8;
+            var pos = new net.minecraft.core.BlockPos(2, 120, 0);
+            mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                    new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos),
+                            net.minecraft.core.Direction.WEST, pos, false));
+        });
+        when(() -> Minecraft.getInstance().player.containerMenu instanceof net.minecraft.world.inventory.ChestMenu, () -> {
+            var mc = Minecraft.getInstance();
+            var menu = mc.player.containerMenu;
+            int slot = phoneSlot();
+            int menuSlot = slot < 9 ? 54 + slot : 27 + slot - 9;
+            mc.gameMode.handleInventoryMouseClick(menu.containerId, menuSlot, 0, net.minecraft.world.inventory.ClickType.QUICK_MOVE, mc.player);
+            mc.gameMode.handleInventoryMouseClick(menu.containerId, menuSlot, 0, net.minecraft.world.inventory.ClickType.PICKUP, mc.player);
+            mc.gameMode.handleInventoryMouseClick(menu.containerId, 4, 0, net.minecraft.world.inventory.ClickType.PICKUP, mc.player);
+        });
+        then(10, () -> {
+        });
+        shot("p02_cofre");
+        then(10, () -> {
+            var mc = Minecraft.getInstance();
+            var menu = mc.player.containerMenu;
+            int inChest = 0;
+            for (int i = 0; i < 27; i++) {
+                if (com.chicoestudioso.caricraft.item.PhoneBinding.isPhone(menu.slots.get(i).getItem())) {
+                    inChest++;
+                }
+            }
+            boolean carried = com.chicoestudioso.caricraft.item.PhoneBinding.isPhone(menu.getCarried());
+            log("PHONE en el cofre (0): " + inChest + " · en el cursor: " + carried);
+            // Lo devolvemos a un hueco libre del inventario.
+            for (int i = 27; i < 63 && carried; i++) {
+                if (menu.slots.get(i).getItem().isEmpty()) {
+                    mc.gameMode.handleInventoryMouseClick(menu.containerId, i, 0, net.minecraft.world.inventory.ClickType.PICKUP, mc.player);
+                    break;
+                }
+            }
+        });
+        then(10, () -> Minecraft.getInstance().player.closeContainer());
+        then(30, () -> log("PHONE tras el cofre (1): " + phones()));
+        // 4. Uno de más y uno de otro jugador
+        then(10, () -> cmd("give @s caricraft:cariphone"));
+        then(10, () -> cmd("give @s caricraft:cariphone[minecraft:custom_data={caricraft_phone:{owner:[I;1,2,3,4],name:\"Otro\",serial:1}}]"));
+        then(50, () -> log("PHONE tras /give extra y ajeno (1, el mismo): " + phones()));
+        // 5. Desaparece: vuelve con la serie siguiente
+        then(10, () -> cmd("clear @s caricraft:cariphone"));
+        then(10, () -> log("PHONE justo tras /clear (0): " + phones()));
+        then(100, () -> log("PHONE tras esperar (1, serie +1): " + phones()));
+        // 6. Morir sin keepInventory
+        then(10, () -> {
+            cmd("gamerule keepInventory false");
+            cmd("give @s minecraft:dirt 5");
+        });
+        then(10, () -> cmd("kill @s"));
+        then(40, () -> Minecraft.getInstance().player.respawn());
+        then(10, () -> cmd("tp @s 0 120 0 -90 15"));
+        then(30, () -> {
+        });
+        shot("p03_tras_morir");
+        then(10, () -> log("PHONE tras morir (1, misma serie, 0 en el suelo): " + phones() + " · suelo=" + groundPhones()));
+        // 7. La tecla abre el teléfono
+        then(10, () -> {
+            var mc = Minecraft.getInstance();
+            mc.setScreen(new PhoneScreen());
+        });
+        then(30, () -> log("PHONE la pantalla se abre: " + (Minecraft.getInstance().screen instanceof PhoneScreen)));
+        closePhone();
+        then(60, () -> Minecraft.getInstance().stop());
     }
 
     /** Guion corto solo para el campamento. */

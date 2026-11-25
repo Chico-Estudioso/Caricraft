@@ -1,6 +1,36 @@
 # CariPhone
 
-Ítem `caricraft:cariphone`. Se fabrica con 5 lingotes de hierro, 1 panel de cristal y 1 polvo de redstone, y cada jugador recibe uno al entrar por primera vez (configurable). Se abre con clic derecho o con la tecla configurable (por defecto `O`, si se lleva un CariPhone en el inventario).
+Ítem `caricraft:cariphone`. Se abre con clic derecho o con la tecla configurable (por defecto `O`, si se lleva el CariPhone propio en el inventario).
+
+## Un CariPhone personal, único e indestructible
+Con `phone.personal` activado (por defecto), el servidor da a cada jugador **su** CariPhone y se encarga de que tenga uno y solo uno. No se fabrica (no hay receta) ni aparece en las pestañas del modo creativo.
+
+- **Ligado a su dueño:**
+  - El ítem guarda el dueño, su nombre y un número de serie (`custom_data.caricraft_phone`).
+  - La descripción muestra «De Nombre · Personal e intransferible».
+  - Un teléfono sin dueño (de un `/give`, por ejemplo) se vincula a quien lo lleve si no tiene ya el suyo.
+- **Único:** cada segundo el servidor revisa el inventario, el objeto del cursor y el contenedor abierto. Retira:
+  - Los duplicados.
+  - Los teléfonos de otros jugadores.
+  - Los de una serie anterior.
+- **No se pierde:**
+  - **No se puede tirar:** ni con la tecla de tirar, ni arrastrándolo fuera del inventario, ni desde el modo creativo.
+  - **No se puede guardar** en cofres, cofres de ender, cajas de shulker, sacos, hornos, mesas, marcos, soportes de armadura, allays, vasijas ni la vitrina de Cobblemon.
+  - Si algo de otro mod lo deja en un hueco de su contenedor, vuelve al inventario.
+  - **Al morir no cae:** se aparta antes de soltar el inventario y vuelve al reaparecer, con `keepInventory` o sin él.
+- **Si desaparece igualmente** (un `/clear`, un objeto de otro mod que se lo quede…):
+  - Tras `phone.replaceAfterSeconds` (3 s) sin él, el servidor da uno nuevo con el número de serie siguiente.
+  - El anterior **deja de valer**: si alguien lo encuentra, se retira de su inventario.
+- **Indestructible:** resiste el fuego y la lava. Si alguna vez acaba en el suelo (inventario lleno al devolverlo):
+  - No recibe daño.
+  - Solo su dueño puede cogerlo.
+
+Las reglas están en `core/phone/PhonePolicy` (Java puro, con tests) y se aplican en `server/phone/PhoneGuard`, con tres mixins:
+- `ServerPlayerPhoneMixin`: tirar.
+- `PlayerPhoneDeathMixin`: morir.
+- `SlotPhoneMixin`: contenedores.
+
+Con `phone.personal: false` vuelve el comportamiento anterior: un teléfono de regalo al entrar por primera vez (`giveStarterPhone`), que se puede tirar y guardar. En ese caso, los teléfonos extra se dan con `/give`.
 
 ## Pantalla
 - Marco de teléfono centrado que se adapta a la escala de la GUI.

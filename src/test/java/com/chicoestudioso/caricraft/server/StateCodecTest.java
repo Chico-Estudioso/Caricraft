@@ -30,6 +30,7 @@ class StateCodecTest {
         f.core.shop().buy(f.state, f.alice, AppCatalog.CHRONICLES);
         f.core.shop().buy(f.state, f.bob, "theme_sunset");
         f.core.shop().selectTheme(f.state, f.bob, "theme_sunset");
+        f.state.profiles().get(f.bob).setPhoneSerial(4);
         f.core.addNote(f.alice, "Nota de prueba");
         f.core.onBiomeSampled(f.alice, "minecraft:plains", true);
         f.core.missions().accept(f.state, f.alice, "duo_expedition");
@@ -70,6 +71,7 @@ class StateCodecTest {
         assertEquals(1, loadedDuo.challenge().nightKills());
         assertEquals(duo.challenge().totalCarins(), loadedDuo.challenge().totalCarins());
         assertEquals("theme_sunset", loaded.profiles().get(f.bob).theme());
+        assertEquals(4, loaded.profiles().get(f.bob).phoneSerial());
         assertTrue(loaded.profiles().get(f.bob).ownedCosmetics().contains("theme_sunset"));
         assertEquals(f.state.profiles().keySet(), loaded.profiles().keySet());
         assertEquals(f.state.parties().keySet(), loaded.parties().keySet());

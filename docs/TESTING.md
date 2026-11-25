@@ -28,6 +28,13 @@ Guion B: recibir y aceptar la invitación y viajar.
 
 ### Guiones adicionales
 - `./gradlew runQaChallenge`: Desafío Dúo. Comprueba que los mobs no aparecen fuera del desafío, que salen equipados durante él, las recompensas y que desaparecen al amanecer.
+- `./gradlew runQaChallenge -DqaRole=P` (con `runServer`): CariPhone personal. Comprueba que:
+  - Hay uno vinculado al entrar.
+  - La tecla de tirar y tirarlo desde el inventario no lo sueltan.
+  - No entra en un cofre.
+  - Un `/give` extra y uno ajeno se retiran.
+  - Tras `/clear` vuelve con la serie siguiente.
+  - Al morir no cae y vuelve al reaparecer.
 - `./gradlew runQaNewApps` + `./gradlew runQaNewAppsPartner`: inicio por secciones, navegación con historial, Mercado, CariCamp, TP Dúo, CariLens y CariBox con dos jugadores. Cubre:
   - Compra y entrega.
   - Fijar campamento, brújula y viaje al campamento.

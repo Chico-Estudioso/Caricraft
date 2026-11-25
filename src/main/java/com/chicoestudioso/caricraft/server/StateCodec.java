@@ -315,6 +315,7 @@ public final class StateCodec {
         tag.putString("theme", profile.theme());
         tag.putLong("cooldown", profile.linkCooldownUntil());
         tag.putBoolean("starterPhone", profile.starterPhoneGiven());
+        tag.putInt("phoneSerial", profile.phoneSerial());
         return tag;
     }
 
@@ -327,6 +328,7 @@ public final class StateCodec {
         profile.setTheme(tag.getString("theme"));
         profile.setLinkCooldownUntil(tag.getLong("cooldown"));
         profile.setStarterPhoneGiven(tag.getBoolean("starterPhone"));
+        profile.setPhoneSerial(tag.getInt("phoneSerial"));
         return profile;
     }
 
