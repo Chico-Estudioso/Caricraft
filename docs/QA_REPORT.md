@@ -100,6 +100,19 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 | Petición «Traer» | Cuenta atrás visible en TP Dúo; el compañero llega a 0 bloques |
 | Noche de desafío | CariCamp y TP Dúo bloquean el viaje con aviso rojo; aviso «¡Desafío en curso!» en el inicio |
 
+**CariPhone personal** (`runQaChallenge -DqaRole=P`, supervivencia):
+
+| Paso | Resultado |
+|---|---|
+| Entrar | 1 CariPhone propio (serie 1), con la descripción «De Dev1 · Personal e intransferible» |
+| Tecla de tirar con el teléfono en la mano | No cae; aviso «no se puede tirar»; 0 en el suelo |
+| Tirarlo desde el inventario | Vuelve al inventario; 0 en el suelo |
+| Cofre: mayúsculas+clic y colocarlo a mano | 0 en el cofre; se queda en el cursor y vuelve al inventario |
+| `/give` uno sin dueño y otro de otro jugador | Se retiran los dos; sigue el mismo (serie 1) |
+| `/clear` | 0 al momento; a los 3 s, uno nuevo con la serie 2 |
+| Morir sin `keepInventory` | La tierra cae y el teléfono no; al reaparecer lo tiene (serie 2) y hay 0 en el suelo |
+| Abrir el teléfono después | OK |
+
 **Servidor COBBLEVERSE 1.8.0 real** (251 mods, Java 21):
 - Avisa al arrancar de que MobsBeGone bloquea los 10 mobs del desafío.
 - `/caricraft desafio preparar` (consola) los quita: la lista pasa de 84 a 74 entradas y se guarda copia `.caricraft.bak`. Tras reiniciar, sin aviso.

@@ -8,10 +8,10 @@ Estado: aprobada para el MVP (M1). Versiones en `docs/ENVIRONMENT_AUDIT.md`.
 |---|---|---|
 | `core` | común, **Java puro** | Modelo y reglas: grupos, Carins/ledger, catálogo de apps, tienda, misiones, crónicas, exploración. Sin clases de Minecraft → tests JUnit rápidos. |
 | `config` | común | `config/caricraft.json` (precios, recompensas, límites). |
-| `item` | común | Registro del ítem CariPhone. |
+| `item` | común | Registro del ítem CariPhone y su vínculo con el dueño (`PhoneBinding`). |
 | `network` | común | Payloads tipados y DTO del snapshot. |
 | `server` | servidor | `SavedData`, códec NBT, manejador de acciones, constructor de snapshots, seguimiento de progreso, comandos `/carins` y `/caricraft`. |
-| `mixin` | común (efecto en servidor) | `ItemStack.onCraftedBy` para el objetivo de fabricar. |
+| `mixin` | común (efecto en servidor) | `ItemStack.onCraftedBy` (objetivo de fabricar), filtro de mobs del desafío y CariPhone personal (no tirar, no guardar en contenedores, no perder al morir). |
 | `integration.cobblemon` | servidor | Adaptador opcional; se carga solo si Cobblemon está presente. |
 | `client` (source set `client`) | cliente | Pantalla del CariPhone, temas, caché del snapshot, tecla. |
 
@@ -37,6 +37,7 @@ Cliente (CariPhone)                       Servidor
 - `MissionCatalog` + `MissionService`: definiciones declarativas (JSON) y máquina de estados.
 - `ProgressEvent`: evento neutral (tipo, objetivo, cantidad, jugador) que alimentan Minecraft y Cobblemon.
 - `Clock`: abstracción de tiempo para tests y caducidad diaria/semanal.
+- `PhonePolicy`: reglas del CariPhone personal. Hay uno válido por jugador según su número de serie; se retiran duplicados, ajenos y viejos, se vinculan los que no tienen dueño y se repone si falta. Lo aplica `server/phone/PhoneGuard`.
 
 ## Concurrencia
 

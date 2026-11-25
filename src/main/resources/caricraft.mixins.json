@@ -5,7 +5,10 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ItemStackCraftMixin",
-    "ServerLevelChallengeMixin"
+    "PlayerPhoneDeathMixin",
+    "ServerLevelChallengeMixin",
+    "ServerPlayerPhoneMixin",
+    "SlotPhoneMixin"
   ],
   "injectors": {
     "defaultRequire": 1

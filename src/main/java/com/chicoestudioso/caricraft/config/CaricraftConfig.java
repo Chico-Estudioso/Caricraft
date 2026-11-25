@@ -31,8 +31,10 @@ public final class CaricraftConfig {
     /** Versión con la que se escribió el archivo (0 = anterior a las migraciones). */
     public int configVersion = CURRENT_VERSION;
 
-    /** Entregar un CariPhone la primera vez que un jugador entra al servidor. */
+    /** Entregar un CariPhone la primera vez que un jugador entra al servidor (solo si {@code phone.personal} es falso). */
     public boolean giveStarterPhone = true;
+    /** CariPhone personal: uno por jugador (ver docs/PHONE_AND_APPS.md). */
+    public PhoneConfig phone = new PhoneConfig();
     /** Saldo inicial de un grupo nuevo. */
     public long startingBalance = 0;
     /** Tamaño máximo de grupo. El MVP está pensado para dúos (2). */
@@ -69,6 +71,21 @@ public final class CaricraftConfig {
     public MarketConfig market = new MarketConfig();
     /** Desafío Dúo: noches con mobs vanilla equipados (ver docs/CHALLENGE.md). */
     public ChallengeConfig challenge = new ChallengeConfig();
+
+    /** Ajustes del CariPhone personal. */
+    public static final class PhoneConfig {
+        /**
+         * Cada jugador tiene un único CariPhone ligado a él: no se puede tirar ni guardar en contenedores, no se
+         * pierde al morir y, si falta, el servidor da otro y el anterior deja de valer.
+         */
+        public boolean personal = true;
+        /** Segundos sin CariPhone antes de dar uno nuevo (cubre el rato en que está fuera del inventario). */
+        public int replaceAfterSeconds = 3;
+
+        void validate() {
+            replaceAfterSeconds = clamp(replaceAfterSeconds, 1, 300);
+        }
+    }
 
     /** Ajustes de CariLens. */
     public static final class LensConfig {
@@ -250,6 +267,10 @@ public final class CaricraftConfig {
         if (disabledItems == null) {
             disabledItems = new ArrayList<>();
         }
+        if (phone == null) {
+            phone = new PhoneConfig();
+        }
+        phone.validate();
         if (lens == null) {
             lens = new LensConfig();
         }

@@ -214,7 +214,7 @@
   "caricraft.notify.partner_bought": "%s ha comprado %s.",
   "caricraft.notify.invite_accepted": "%s ha aceptado tu invitación.",
   "caricraft.notify.invite_received": "%s te invita a formar un dúo. Abre el CariPhone.",
-  "caricraft.notify.welcome": "Tienes un CariPhone en el inventario. ¡Úsalo!",
+  "caricraft.notify.welcome": "Tienes tu CariPhone en el inventario. Es personal: no se pierde ni se puede tirar. ¡Úsalo!",
   "caricraft.command.not_ready": "Caricraft Mod todavía no está listo.",
   "caricraft.command.balance": "Saldo de tu grupo: %s Carins",
   "caricraft.command.adjusted": "Saldo de %s: %s Carins",
@@ -518,5 +518,16 @@
   "caricraft.dimension.minecraft.the_nether": "En el Nether",
   "caricraft.dimension.minecraft.the_end": "En el End",
   "caricraft.dimension.other": "En %s",
-  "caricraft.phone.settings.navigation": "Esc o el botón lateral del ratón vuelven atrás; el botón de abajo te lleva al inicio y %s cierra el CariPhone."
+  "caricraft.phone.settings.navigation": "Esc o el botón lateral del ratón vuelven atrás; el botón de abajo te lleva al inicio y %s cierra el CariPhone.",
+  "caricraft.notify.phone_replaced": "Tienes un CariPhone nuevo. El anterior ya no funciona.",
+  "caricraft.phone.no_drop": "Tu CariPhone es personal: no se puede tirar.",
+  "caricraft.phone.no_store": "Tu CariPhone es personal: no se puede guardar ahí.",
+  "caricraft.phone.removed": "Se ha retirado un CariPhone que no era tuyo o ya no valía.",
+  "caricraft.phone.kept": "Tu CariPhone sigue contigo.",
+  "caricraft.phone.at_feet": "Tienes el inventario lleno: tu CariPhone está a tus pies (solo tú puedes cogerlo).",
+  "caricraft.phone.not_yours": "Este CariPhone es de %s.",
+  "caricraft.phone.tooltip.owner": "De %s",
+  "caricraft.phone.tooltip.personal": "Personal e intransferible",
+  "caricraft.phone.tooltip.serial": "Nº de serie %s",
+  "caricraft.phone.tooltip.unbound": "Sin dueño: será de quien lo lleve"
 }

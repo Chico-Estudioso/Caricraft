@@ -8,7 +8,11 @@ import com.chicoestudioso.caricraft.core.mission.ProgressEvent;
 import com.chicoestudioso.caricraft.core.party.PlayerProfile;
 import com.chicoestudioso.caricraft.item.ModItems;
 import com.chicoestudioso.caricraft.server.challenge.ChallengeManager;
+import com.chicoestudioso.caricraft.server.phone.PhoneGuard;
 import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.minecraft.ChatFormatting;
@@ -44,6 +48,7 @@ public final class ServerEvents {
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             UUID uuid = handler.getPlayer().getUUID();
             TRACKER.forget(uuid);
+            PhoneGuard.forget(uuid);
             com.chicoestudioso.caricraft.server.lens.PhotoUploads.forget(uuid);
             com.chicoestudioso.caricraft.server.camp.TravelManager.forget(uuid);
             CaricraftServer mod = CaricraftServer.get();
@@ -58,8 +63,15 @@ public final class ServerEvents {
                 TRACKER.tick(server, mod);
                 ChallengeManager.tick(server, mod);
                 com.chicoestudioso.caricraft.server.camp.TravelManager.tick(mod);
+                PhoneGuard.tick(server, mod);
             }
         });
+
+        // CariPhone personal: vuelve al reaparecer y no se coloca en marcos, soportes, allays ni vasijas.
+        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> PhoneGuard.onRespawn(newPlayer));
+        UseEntityCallback.EVENT.register((player, level, hand, entity, hit) -> PhoneGuard.onUseEntity(player, hand, entity));
+        UseBlockCallback.EVENT.register((player, level, hand, hit) ->
+                PhoneGuard.onUseBlock(player, hand, level.getBlockState(hit.getBlockPos())));
 
         ServerEntityEvents.ENTITY_LOAD.register(ChallengeManager::onEntityLoad);
 
@@ -99,7 +111,10 @@ public final class ServerEvents {
         }
         CaricraftCore core = mod.core();
         PlayerProfile profile = core.onPlayerJoin(player.getUUID(), player.getGameProfile().getName());
-        if (core.config().giveStarterPhone && !profile.starterPhoneGiven()) {
+        if (core.config().phone.personal) {
+            // Vincula o entrega su CariPhone nada más entrar (y da la bienvenida la primera vez).
+            PhoneGuard.scan(mod, player);
+        } else if (core.config().giveStarterPhone && !profile.starterPhoneGiven()) {
             ItemStack phone = new ItemStack(ModItems.CARIPHONE);
             if (!player.getInventory().add(phone)) {
                 player.drop(phone, false);

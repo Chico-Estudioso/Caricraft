@@ -58,6 +58,7 @@ public final class CaricraftServer {
 
     public static void stop() {
         instance = null;
+        com.chicoestudioso.caricraft.item.PhoneBinding.setPersonal(true);
     }
 
     /** {@code null} si el servidor no está en marcha. */
@@ -73,6 +74,7 @@ public final class CaricraftServer {
         MarketCatalog market = loadMarket(configDir, config);
         this.core = new CaricraftCore(savedData.state(), config, catalog, market, Clock.SYSTEM);
         this.rateLimiter = new ActionRateLimiter(config.actionsPerSecond, System::currentTimeMillis);
+        com.chicoestudioso.caricraft.server.phone.PhoneGuard.configure(config);
     }
 
     private static MissionCatalog loadMissions(Path configDir, CaricraftConfig config) {

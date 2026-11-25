@@ -2,7 +2,7 @@ package com.chicoestudioso.caricraft.client;
 
 import com.chicoestudioso.caricraft.client.phone.PhoneScreen;
 import com.chicoestudioso.caricraft.item.CariPhoneItem;
-import com.chicoestudioso.caricraft.item.ModItems;
+import com.chicoestudioso.caricraft.item.PhoneBinding;
 import com.chicoestudioso.caricraft.network.PhoneNotifyPayload;
 import com.chicoestudioso.caricraft.network.PhoneSnapshotPayload;
 import com.chicoestudioso.caricraft.network.PhotoDataPayload;
@@ -33,7 +33,7 @@ public final class CaricraftClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (openPhoneKey.consumeClick()) {
                 if (client.player != null && client.screen == null
-                        && client.player.getInventory().contains(ModItems.CARIPHONE.getDefaultInstance())) {
+                        && client.player.getInventory().contains(stack -> PhoneBinding.usableBy(stack, client.player.getUUID()))) {
                     openPhone();
                 }
             }

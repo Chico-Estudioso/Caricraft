@@ -1,6 +1,14 @@
 # Changelog
 
 ## Unreleased
+- **CariPhone personal, único e indestructible** (`phone.personal`, activado por defecto):
+  - Cada jugador tiene su CariPhone, ligado a él con número de serie. La descripción muestra el dueño.
+  - No se puede tirar ni guardar en contenedores, marcos, soportes, allays ni vasijas.
+  - No cae al morir: vuelve al reaparecer.
+  - Duplicados, teléfonos ajenos y de series anteriores se retiran solos.
+  - Si falta, el servidor da otro a los 3 s y el anterior deja de valer.
+  - Resiste fuego y lava.
+  - Sin receta ni pestaña de creativo.
 - **CariPhone ordenado:**
   - Inicio por secciones (Día a día, Dúo, Aventura, Sistema) en 4 columnas.
   - Fila de avisos con acceso directo: petición de viaje, invitación, desafío y misiones por cobrar. Globo «!» en Desafío Dúo.
