@@ -34,6 +34,7 @@ import java.util.UUID;
 public final class CaricraftServer {
     public static final String MISSIONS_FILE = "caricraft_missions.json";
     public static final String MARKET_FILE = "caricraft_market.json";
+    public static final String COBBLEVERSE_FILE = "caricraft_cobbleverse.json";
     private static CaricraftServer instance;
 
     private final MinecraftServer server;
@@ -72,7 +73,8 @@ public final class CaricraftServer {
         CaricraftConfig config = CaricraftConfig.loadOrCreate(configDir);
         MissionCatalog catalog = loadMissions(configDir, config);
         MarketCatalog market = loadMarket(configDir, config);
-        this.core = new CaricraftCore(savedData.state(), config, catalog, market, Clock.SYSTEM);
+        com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog cobbleverse = loadCobbleverse(configDir, config);
+        this.core = new CaricraftCore(savedData.state(), config, catalog, market, cobbleverse, Clock.SYSTEM);
         this.rateLimiter = new ActionRateLimiter(config.actionsPerSecond, System::currentTimeMillis);
         com.chicoestudioso.caricraft.server.phone.PhoneGuard.configure(config);
     }
@@ -99,9 +101,36 @@ public final class CaricraftServer {
         }
     }
 
+    private static com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog loadCobbleverse(Path configDir, CaricraftConfig config) {
+        var backend = com.chicoestudioso.caricraft.integration.cobblemon.CobblemonCompat.backend();
+        if (!config.cobbleverse.enabled || backend == null) {
+            return com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog.empty();
+        }
+        java.util.function.Predicate<String> exists = item -> {
+            net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.tryParse(item);
+            return id != null && net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(id);
+        };
+        Path custom = configDir.resolve(COBBLEVERSE_FILE);
+        if (Files.exists(custom)) {
+            try (Reader reader = Files.newBufferedReader(custom, StandardCharsets.UTF_8)) {
+                return com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog.fromJson(reader, exists, backend::speciesExists);
+            } catch (IOException | IllegalArgumentException e) {
+                CaricraftMod.LOGGER.error("{} no es válido; se usa el catálogo de Cobbleverse por defecto.", custom, e);
+            }
+        }
+        try (InputStream in = Objects.requireNonNull(CaricraftServer.class.getResourceAsStream("/caricraft/default_cobbleverse.json"));
+             Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+            var loaded = com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog.fromJson(reader, exists, backend::speciesExists);
+            CaricraftMod.LOGGER.info("Cobbleverse: {} ofertas y {} premios de regalo misterioso.", loaded.offers().size(), loaded.gifts().size());
+            return loaded;
+        } catch (IOException e) {
+            throw new IllegalStateException("No se pudo leer el catálogo de Cobbleverse por defecto", e);
+        }
+    }
+
     private static MarketCatalog loadMarket(Path configDir, CaricraftConfig config) {
         java.util.function.Predicate<String> sources = source -> "vanilla".equals(source)
-                || ("cobblemon".equals(source) && config.market.includeCobblemonItems
+                || ("cobblemon".equals(source) && (config.market.includeCobblemonItems || config.cobbleverse.enabled)
                 && FabricLoader.getInstance().isModLoaded("cobblemon"));
         java.util.function.Predicate<String> exists = item -> {
             net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.tryParse(item);

@@ -55,7 +55,13 @@ public enum PhoneAction {
     /** Abre el CariBox (cofre compartido). */
     CARIBOX_OPEN,
     /** Activa o desactiva los consejos del CariPhone en el chat (personal). */
-    TOGGLE_TIPS;
+    TOGGLE_TIPS,
+    /** Abre el regalo misterioso del día (Cobbleverse). */
+    CV_GIFT,
+    /** Compra en la tienda Cobbleverse: arg1 = id de la oferta. */
+    CV_BUY,
+    /** Vende un Pokémon del equipo por CobbleDollars: arg1 = UUID del Pokémon. */
+    CV_SELL;
 
     private static final PhoneAction[] VALUES = values();
 

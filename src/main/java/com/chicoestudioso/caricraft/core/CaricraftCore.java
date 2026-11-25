@@ -42,6 +42,7 @@ public final class CaricraftCore {
     private final PartyService parties;
     private final ChallengeService challenge;
     private final MarketService market;
+    private final com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseService cobbleverse;
     private final CampService camp;
     private final LensService lens;
     private final BoxService box;
@@ -52,6 +53,14 @@ public final class CaricraftCore {
 
     public CaricraftCore(CaricraftState state, CaricraftConfig config, MissionCatalog missionCatalog,
                          MarketCatalog marketCatalog, Clock clock) {
+        this(state, config, missionCatalog, marketCatalog,
+                com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog.empty(), clock);
+    }
+
+    public CaricraftCore(CaricraftState state, CaricraftConfig config, MissionCatalog missionCatalog,
+                         MarketCatalog marketCatalog, com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog cobbleverseCatalog,
+                         Clock clock) {
+        this.cobbleverse = new com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseService(config, cobbleverseCatalog, clock);
         this.state = state;
         this.config = config;
         this.clock = clock;
@@ -77,6 +86,10 @@ public final class CaricraftCore {
 
     public CampService camp() {
         return camp;
+    }
+
+    public com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseService cobbleverse() {
+        return cobbleverse;
     }
 
     public MarketService market() {

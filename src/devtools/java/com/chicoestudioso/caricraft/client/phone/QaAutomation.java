@@ -48,10 +48,13 @@ public final class QaAutomation implements ClientModInitializer {
             scriptNotices();
         } else if ("S".equals(role)) {
             scriptSquads();
+        } else if ("V".equals(role)) {
+            scriptCobbleverseUi();
         } else {
             scriptB();
         }
         ClientTickEvents.END_CLIENT_TICK.register(this::tick);
+        ClientTickEvents.START_CLIENT_TICK.register(mc -> keepFakeCobbleverse());
     }
 
     private void tick(Minecraft mc) {
@@ -583,6 +586,89 @@ public final class QaAutomation implements ClientModInitializer {
         shot("m03_caribox_companero");
         closePhone();
         then(1200, () -> Minecraft.getInstance().stop());
+    }
+
+    // ------------------------------------------------------------------ cobbleverse (solo interfaz)
+
+    /** Mientras no sea null, se vuelve a poner el snapshot de ejemplo cada vez que el servidor manda uno nuevo. */
+    private static Boolean fakeCobbleverseGift;
+
+    private static void keepFakeCobbleverse() {
+        if (fakeCobbleverseGift != null && snap() != null && snap().cobbleverse() == null) {
+            injectCobbleverse(fakeCobbleverseGift);
+        }
+    }
+
+    /** Snapshot de ejemplo con la parte Cobbleverse (en desarrollo no hay Cobblemon). */
+    private static void injectCobbleverse(boolean giftAvailable) {
+        fakeCobbleverseGift = giftAvailable;
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(snap().toJson()).getAsJsonObject();
+        String cv = """
+                {"cobbleDollarsInstalled":true,"cobbleDollars":42350,"giftEnabled":true,"giftAvailable":%s,
+                 "nextDayAt":%d,"shopEnabled":true,"offers":[
+                  {"id":"shiny_mystery","icon":"minecraft:ender_eye","count":1,"species":["eevee","dratini","gible"],"level":15,"shiny":true,"perfectIvs":2,"moves":[],"price":80000,"boughtToday":0,"dailyLimit":1},
+                  {"id":"eevee_extremespeed","icon":"minecraft:snowball","count":1,"species":["eevee"],"level":15,"shiny":false,"perfectIvs":2,"moves":["extremespeed","quickattack","bite","protect"],"price":30000,"boughtToday":0,"dailyLimit":1},
+                  {"id":"ditto_6iv","icon":"minecraft:slime_ball","count":1,"species":["ditto"],"level":20,"shiny":false,"perfectIvs":6,"moves":[],"price":60000,"boughtToday":1,"dailyLimit":1},
+                  {"id":"rare_candy","icon":"minecraft:sugar","item":"minecraft:sugar","count":5,"species":[],"level":0,"shiny":false,"perfectIvs":0,"moves":[],"price":12500,"boughtToday":0,"dailyLimit":2}],
+                 "sellEnabled":true,"party":[
+                  {"uuid":"11111111-1111-1111-1111-111111111111","species":"cobblemon:pikachu","nickname":"Chispa","level":24,"shiny":false,"ivTotal":112,"price":1700},
+                  {"uuid":"22222222-2222-2222-2222-222222222222","species":"cobblemon:gible","nickname":"","level":31,"shiny":true,"ivTotal":140,"price":57870},
+                  {"uuid":"33333333-3333-3333-3333-333333333333","species":"cobblemon:mewtwo","nickname":"","level":70,"shiny":false,"ivTotal":150,"price":0,"blocked":"legendary"}],
+                 "salesToday":3,"maxSales":10}
+                """.formatted(giftAvailable, snap().serverTime() + 5L * 3_600_000L + 1_200_000L);
+        json.add("cobbleverse", com.google.gson.JsonParser.parseString(cv));
+        com.chicoestudioso.caricraft.client.ClientPhoneState.acceptSnapshot(json.toString());
+    }
+
+    /** Pestaña Cobbleverse del Mercado con datos de ejemplo (rol V). */
+    private void scriptCobbleverseUi() {
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("time set 1000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("tp @s 0 120 0 -90 15");
+        });
+        page(PhonePage.MARKET, 0);
+        then(20, () -> {
+            injectCobbleverse(true);
+            phone().marketTab = 1;
+        });
+        then(5, () -> {
+        });
+        shot("v01_cobbleverse_regalo");
+        then(5, () -> {
+            injectCobbleverse(true);
+            phone().mouseScrolled(0, 0, 0, -12);
+        });
+        then(5, () -> {
+        });
+        shot("v02_cobbleverse_tienda");
+        then(5, () -> {
+            injectCobbleverse(false);
+            phone().mouseScrolled(0, 0, 0, -30);
+            phone().sellArmed = "11111111-1111-1111-1111-111111111111";
+            phone().sellArmedAt = System.currentTimeMillis();
+        });
+        then(5, () -> {
+        });
+        shot("v03_cobbleverse_vender");
+        then(5, () -> {
+            injectCobbleverse(false);
+            phone().mouseScrolled(0, 0, 0, 100);
+        });
+        then(5, () -> {
+        });
+        shot("v04_cobbleverse_regalo_abierto");
+        then(5, () -> {
+            injectCobbleverse(true);
+            phone().goHome();
+            phone().navigate(PhonePage.MARKET);
+            phone().marketTab = 0;
+        });
+        then(5, () -> {
+        });
+        shot("v05_mercado_pestanas");
+        then(40, () -> Minecraft.getInstance().stop());
     }
 
     // ------------------------------------------------------------------ escuadrones con botín

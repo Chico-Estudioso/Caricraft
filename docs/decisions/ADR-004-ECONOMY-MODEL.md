@@ -14,4 +14,4 @@ Estado: **aceptada**.
 - Saldo individual + fondo común: más pantallas, más transferencias y más estados de error para un servidor de dos personas.
 
 ## Relación con CobbleDollars
-Los Carins no se convierten en CobbleDollars ni al revés (ver `MODPACK_FEATURE_AUDIT.md`).
+Los Carins no se convierten en CobbleDollars ni al revés (ver `MODPACK_FEATURE_AUDIT.md`). La pestaña opcional Cobbleverse del Mercado sí usa CobbleDollars para su tienda y para vender Pokémon (ADR-006).

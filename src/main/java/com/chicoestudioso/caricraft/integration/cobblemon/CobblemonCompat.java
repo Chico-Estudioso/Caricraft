@@ -9,6 +9,7 @@ import net.fabricmc.loader.api.FabricLoader;
  */
 public final class CobblemonCompat {
     private static boolean active;
+    private static com.chicoestudioso.caricraft.server.cobbleverse.PokemonBackend backend;
 
     private CobblemonCompat() {
     }
@@ -20,6 +21,7 @@ public final class CobblemonCompat {
         }
         try {
             CobblemonHooks.register();
+            backend = new CobblemonBackend();
             active = true;
             String version = FabricLoader.getInstance().getModContainer("cobblemon")
                     .map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("?");
@@ -32,5 +34,10 @@ public final class CobblemonCompat {
 
     public static boolean active() {
         return active;
+    }
+
+    /** Equipo, PC y creación de Pokémon para la tienda Cobbleverse, o {@code null} sin Cobblemon. */
+    public static com.chicoestudioso.caricraft.server.cobbleverse.PokemonBackend backend() {
+        return backend;
     }
 }

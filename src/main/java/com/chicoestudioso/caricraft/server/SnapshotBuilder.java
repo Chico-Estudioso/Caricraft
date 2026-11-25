@@ -105,7 +105,8 @@ public final class SnapshotBuilder {
                 missions, ledger, chronicle, exploration, stats, incoming, outgoing,
                 core.parties().leavePending(state, viewer), FabricLoader.getInstance().isModLoaded("cobblemon"),
                 profile.tipsEnabled(),
-                challengeView(mod, party), marketView(core, party), campView(mod, party, player),
+                challengeView(mod, party), marketView(core, party),
+                com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseManager.view(mod, player), campView(mod, party, player),
                 duoTravelView(mod, party, player), lensView(core, party),
                 new PhoneSnapshot.BoxView(core.box().hasApp(party), core.box().rows(party),
                         com.chicoestudioso.caricraft.server.box.CariBoxManager.usedSlots(mod, party)));

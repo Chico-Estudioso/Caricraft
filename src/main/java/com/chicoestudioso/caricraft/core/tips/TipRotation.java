@@ -17,7 +17,11 @@ import java.util.function.Predicate;
  */
 public final class TipRotation {
     /** Lo que se sabe del jugador para elegir consejos. */
-    public record TipContext(boolean duo, Set<String> ownedApps, boolean challengeEnabled, boolean cobblemon) {
+    public record TipContext(boolean duo, Set<String> ownedApps, boolean challengeEnabled, boolean cobblemon, boolean cobbleverse) {
+        public TipContext(boolean duo, Set<String> ownedApps, boolean challengeEnabled, boolean cobblemon) {
+            this(duo, ownedApps, challengeEnabled, cobblemon, false);
+        }
+
         public boolean owns(String app) {
             return ownedApps.contains(app);
         }
@@ -51,6 +55,7 @@ public final class TipRotation {
             Tip.always("notices"),
             Tip.always("phone_personal"),
             new Tip("cobblemon", TipContext::cobblemon),
+            new Tip("cobbleverse", TipContext::cobbleverse),
             Tip.always("tips_off"));
 
     private final List<Tip> tips;

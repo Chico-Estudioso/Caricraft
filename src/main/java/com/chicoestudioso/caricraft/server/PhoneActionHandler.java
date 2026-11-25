@@ -87,6 +87,11 @@ public final class PhoneActionHandler {
                 }
                 case SELECT_THEME -> validId(payload.arg1()) ? core.shop().selectTheme(state, uuid, payload.arg1()) : invalid();
                 case ADD_NOTE -> core.addNote(uuid, payload.arg1());
+                case CV_GIFT -> com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseManager.claimGift(mod, player);
+                case CV_BUY -> validId(payload.arg1())
+                        ? com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseManager.buy(mod, player, payload.arg1()) : invalid();
+                case CV_SELL -> payload.arg1().length() <= 36
+                        ? com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseManager.sell(mod, player, payload.arg1()) : invalid();
                 case TOGGLE_TIPS -> {
                     var profile = core.onPlayerJoin(uuid, player.getGameProfile().getName());
                     profile.setTipsEnabled(!profile.tipsEnabled());
@@ -172,6 +177,11 @@ public final class PhoneActionHandler {
     }
 
     /** Entrega ítems; lo que no cabe en el inventario cae a los pies del jugador. */
+    /** Da un objeto (lo que no cabe cae al suelo). Lo usa también la tienda Cobbleverse. */
+    public static void giveItemTo(ServerPlayer player, String itemId, int count) {
+        giveItem(player, itemId, count);
+    }
+
     private static void giveItem(ServerPlayer player, String itemId, int count) {
         net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.parse(itemId);
         net.minecraft.world.item.Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(id);

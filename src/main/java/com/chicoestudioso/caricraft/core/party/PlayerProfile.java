@@ -20,6 +20,12 @@ public final class PlayerProfile {
     private int phoneSerial;
     /** Recibir consejos del CariPhone en el chat. */
     private boolean tipsEnabled = true;
+    /** Día (índice) del último regalo misterioso abierto; -1 si nunca. */
+    private long giftDay = -1;
+    /** Día al que se refieren los contadores de la tienda Cobbleverse. */
+    private long cobbleverseDay = -1;
+    private int salesToday;
+    private final java.util.Map<String, Integer> boughtToday = new java.util.HashMap<>();
     /** Momento de la primera pulsación de "desvincular" (no se persiste). */
     private transient long leaveRequestedAt;
 
@@ -92,6 +98,35 @@ public final class PlayerProfile {
 
     public void setTipsEnabled(boolean tipsEnabled) {
         this.tipsEnabled = tipsEnabled;
+    }
+
+    public long giftDay() {
+        return giftDay;
+    }
+
+    public void setGiftDay(long giftDay) {
+        this.giftDay = giftDay;
+    }
+
+    public long cobbleverseDay() {
+        return cobbleverseDay;
+    }
+
+    public void setCobbleverseDay(long cobbleverseDay) {
+        this.cobbleverseDay = cobbleverseDay;
+    }
+
+    public int salesToday() {
+        return salesToday;
+    }
+
+    public void setSalesToday(int salesToday) {
+        this.salesToday = Math.max(0, salesToday);
+    }
+
+    /** Compras de hoy en la tienda Cobbleverse, por oferta. */
+    public java.util.Map<String, Integer> boughtToday() {
+        return boughtToday;
     }
 
     public long leaveRequestedAt() {

@@ -31,6 +31,7 @@ public record PhoneSnapshot(
         boolean tipsEnabled,
         ChallengeView challenge,
         MarketView market,
+        CobbleverseView cobbleverse,
         CampView camp,
         DuoTravelView tpduo,
         LensView lens,
@@ -154,6 +155,27 @@ public record PhoneSnapshot(
                                 long nightCarins, long killReward, long nightReward, boolean blockSleep,
                                 List<String> blockedMobs, int wave, int effectiveLevel, boolean waves,
                                 List<CacheView> caches) {
+    }
+
+    /**
+     * Parte Cobbleverse del Mercado ({@code null} si está desactivada o falta Cobblemon).
+     *
+     * @param cobbleDollars saldo del jugador, o -1 si CobbleDollars no está instalado
+     * @param nextDayAt     cuándo vuelve el regalo y cambian las ofertas
+     */
+    public record CobbleverseView(boolean cobbleDollarsInstalled, long cobbleDollars, boolean giftEnabled, boolean giftAvailable,
+                                  long nextDayAt, boolean shopEnabled, List<CvOfferView> offers, boolean sellEnabled,
+                                  List<SellView> party, int salesToday, int maxSales) {
+    }
+
+    /** Oferta de la tienda Cobbleverse: un objeto ({@code item}) o un Pokémon ({@code species} no vacía). */
+    public record CvOfferView(String id, String icon, String item, int count, List<String> species, int level, boolean shiny,
+                              int perfectIvs, List<String> moves, long price, int boughtToday, int dailyLimit) {
+    }
+
+    /** Pokémon del equipo que se puede vender. {@code blocked} es el motivo si no se puede, o {@code null}. */
+    public record SellView(String uuid, String species, String nickname, int level, boolean shiny, int ivTotal, long price,
+                           String blocked) {
     }
 
     /** Botín protegido por un escuadrón: dónde está, cuántos guardias quedan y si ya se puede abrir. */

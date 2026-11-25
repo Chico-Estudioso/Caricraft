@@ -25,6 +25,18 @@ ObservableSubscription<T> subscribe(Priority priority, java.util.function.Consum
 
 Datos de `Pokemon` usados: `getSpecies()` (`Species.getResourceIdentifier()`, `getName()`), `getShiny()`, `isLegendary()`, `getOwnerPlayer()`.
 
+## API usada por la pestaña Cobbleverse (`CobblemonBackend`)
+Verificada en el JAR de Cobblemon 1.8.4+1.21.1 y en un servidor COBBLEVERSE 1.8.0 real (`/caricraft cobbleverse prueba`).
+
+| Uso | API |
+|---|---|
+| Equipo del jugador | `Cobblemon.INSTANCE.getStorage().getParty(ServerPlayer)` → `PlayerPartyStore`: `size()`, `get(int)`, `add(Pokemon)` (si el equipo está lleno, va al PC con `getOverflowPC`; pone al jugador como entrenador original) y `remove(Pokemon)` |
+| Datos del Pokémon | `Pokemon.getUuid()`, `getSpecies()` (`getResourceIdentifier()`, `getCatchRate()`), `getLevel()`, `getShiny()`/`setShiny`, `getIvs().get/set(Stats, int)`, `getNickname()`, `isFainted()`, `isLegendary()`, `isMythical()`, `isUltraBeast()`, `getEntity()` |
+| Crear Pokémon | `PokemonProperties.Companion.parse("species=… level=… shiny=true").create(ServerPlayer)` |
+| Movimientos | `Moves.getByName(id)` → `MoveTemplate.create()`; `pokemon.getMoveSet().setMove(i, move)` |
+| Especies | `PokemonSpecies.getByName(id)` |
+| Combate | `BattleRegistry.getBattleByParticipatingPlayer(ServerPlayer)` |
+
 ## Eventos disponibles pero no usados todavía
 
 `HATCH_EGG_POST`, `TRADE_EVENT_POST`, `STARTER_CHOSEN`, `POKEMON_SCANNED`, `POKEDEX_DATA_CHANGED_POST`, `BATTLE_FAINTED`.

@@ -1300,8 +1300,24 @@ final class PhonePages {
         PhoneTheme t = ui.theme;
         int top = y;
         PhoneSnapshot.MarketView market = snap.market();
+        PhoneSnapshot.CobbleverseView cv = snap.cobbleverse();
+        if (cv != null) {
+            // Pestañas: Mercado de Carins y Cobbleverse (CobbleDollars)
+            int tabWidth = (w - GAP) / 2;
+            ui.button(x, y, tabWidth, BUTTON_H, Component.translatable("caricraft.phone.market.tab_vanilla"),
+                    s.marketTab == 0 ? Style.PRIMARY : Style.SECONDARY, () -> s.marketTab = 0);
+            ui.button(x + tabWidth + GAP, y, tabWidth, BUTTON_H, Component.translatable("caricraft.phone.market.tab_cobbleverse"),
+                    s.marketTab == 1 ? Style.PRIMARY : Style.SECONDARY, () -> s.marketTab = 1);
+            if (cv.giftAvailable()) {
+                ui.round(x + 2 * tabWidth + GAP - 5, y - 2, x + 2 * tabWidth + GAP + 1, y + 4, t.bad());
+            }
+            y += BUTTON_H + 6;
+            if (s.marketTab == 1) {
+                return y - top + cobbleverse(s, snap, cv, x, y, w);
+            }
+        }
         if (market == null || !market.enabled()) {
-            return ui.wrapped(Component.translatable("caricraft.phone.market.closed"), x, y, w, t.textDim());
+            return y - top + ui.wrapped(Component.translatable("caricraft.phone.market.closed"), x, y, w, t.textDim());
         }
         int purple = 0xFF6A4C93;
         ui.round(x, y, x + w, y + 30, purple);
@@ -1345,6 +1361,221 @@ final class PhonePages {
         y += 3;
         y += ui.wrapped(Component.translatable("caricraft.phone.market.note"), x, y, w, t.textDim());
         return y - top;
+    }
+
+    // ================================================================ cobbleverse
+
+    private static final int CV_TEAL = 0xFF1B998B;
+    private static final int CV_GOLD = 0xFFE0A100;
+
+    /** «₽12.300» */
+    private static String pokedollars(long amount) {
+        return "₽" + PhoneText.number(amount);
+    }
+
+    private static Component speciesName(String species) {
+        return PhoneText.idName(species.contains(":") ? species : "cobblemon:" + species);
+    }
+
+    private static Component moveName(String move) {
+        String key = "cobblemon.move." + move;
+        return net.minecraft.client.resources.language.I18n.exists(key) ? Component.translatable(key) : Component.literal(move);
+    }
+
+    private static int cobbleverse(PhoneScreen s, PhoneSnapshot snap, PhoneSnapshot.CobbleverseView cv, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        int top = y;
+        long left = cv.nextDayAt() - snap.serverTime();
+
+        // Saldo de CobbleDollars
+        if (cv.cobbleDollarsInstalled() && cv.cobbleDollars() >= 0) {
+            ui.round(x, y, x + w, y + 30, CV_TEAL);
+            ui.text(Component.translatable("caricraft.phone.cv.balance").copy().withStyle(ChatFormatting.BOLD), x + 6, y + 5, 0xFFFFFFFF);
+            ui.g.pose().pushPose();
+            ui.g.pose().translate(x + 6, y + 16, 0);
+            ui.g.pose().scale(1.25f, 1.25f, 1f);
+            ui.text(pokedollars(cv.cobbleDollars()), 0, 0, 0xFFFFE08A);
+            ui.g.pose().popPose();
+            y += 36;
+        } else {
+            y += ui.wrapped(Component.translatable("caricraft.phone.cv.no_cobbledollars"), x, y, w, t.warn()) + 6;
+        }
+
+        // Regalo misterioso
+        if (cv.giftEnabled()) {
+            Component text = cv.giftAvailable() ? Component.translatable("caricraft.phone.cv.gift_ready")
+                    : Component.translatable("caricraft.phone.cv.gift_wait", PhoneText.remaining(left));
+            int th = ui.wrappedHeight(text, w - 32);
+            int h = Math.max(th + 18, 34) + (cv.giftAvailable() ? BUTTON_H + 4 : 0);
+            ui.round(x, y, x + w, y + h, PhoneTheme.mix(CV_GOLD, t.card(), cv.giftAvailable() ? 0.65f : 0.88f));
+            ui.item("cobblemon:premier_ball", x + 5, y + 5);
+            ui.text(Component.translatable("caricraft.phone.cv.gift").copy().withStyle(ChatFormatting.BOLD), x + 26, y + 5, t.text());
+            ui.wrapped(text, x + 26, y + 16, w - 32, t.textDim());
+            if (cv.giftAvailable()) {
+                ui.button(x + 5, y + h - BUTTON_H - 5, w - 10, BUTTON_H, Component.translatable("caricraft.phone.cv.gift_open"),
+                        Style.GOOD, () -> s.send(PhoneAction.CV_GIFT, ""));
+            }
+            y += h + 8;
+        }
+
+        // Tienda en CobbleDollars
+        if (cv.shopEnabled() && !cv.offers().isEmpty()) {
+            ui.text(Component.translatable("caricraft.phone.cv.shop").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+            y += 11;
+            ui.text(Component.translatable("caricraft.phone.cv.changes_in", PhoneText.remaining(left)), x, y, t.textDim());
+            y += 12;
+            for (PhoneSnapshot.CvOfferView offer : cv.offers()) {
+                y += cvOffer(s, cv, offer, x, y, w) + GAP;
+            }
+            y += 6;
+        }
+
+        // Vender Pokémon
+        if (cv.sellEnabled()) {
+            ui.text(Component.translatable("caricraft.phone.cv.sell").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+            ui.textRight(Component.translatable("caricraft.phone.cv.sales_today", cv.salesToday(), cv.maxSales()), x + w, y, t.textDim());
+            y += 12;
+            boolean limit = cv.salesToday() >= cv.maxSales();
+            for (PhoneSnapshot.SellView mon : cv.party()) {
+                y += sellCard(s, cv, mon, limit, x, y, w) + GAP;
+            }
+            y += 2;
+            y += ui.wrapped(Component.translatable("caricraft.phone.cv.sell_help"), x, y, w, t.textDim());
+        }
+        return y - top;
+    }
+
+    private static int cvOffer(PhoneScreen s, PhoneSnapshot.CobbleverseView cv, PhoneSnapshot.CvOfferView offer, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        boolean pokemon = !offer.species().isEmpty();
+        Component name;
+        if (!pokemon) {
+            name = Component.translatable("caricraft.phone.market.offer", offer.count(), PhoneText.idName(offer.item()));
+        } else if (offer.species().size() == 1) {
+            name = speciesName(offer.species().getFirst());
+        } else {
+            name = Component.translatable("caricraft.phone.cv.mystery_pokemon");
+        }
+        List<Component> traits = new ArrayList<>();
+        if (pokemon) {
+            if (offer.shiny()) {
+                traits.add(Component.translatable("caricraft.phone.cv.shiny"));
+            }
+            traits.add(Component.translatable("caricraft.phone.cv.level", offer.level()));
+            if (offer.perfectIvs() > 0) {
+                traits.add(Component.translatable("caricraft.phone.cv.ivs", offer.perfectIvs()));
+            }
+        }
+        Component moves = null;
+        if (!offer.moves().isEmpty()) {
+            net.minecraft.network.chat.MutableComponent list = Component.empty();
+            for (int i = 0; i < offer.moves().size(); i++) {
+                if (i > 0) {
+                    list.append(", ");
+                }
+                list.append(moveName(offer.moves().get(i)));
+            }
+            moves = Component.translatable("caricraft.phone.cv.moves", list);
+        }
+        String price = pokedollars(offer.price());
+        int priceWidth = ui.font.width(price);
+        int textX = x + 28;
+        int textW = w - 28 - 5;
+        int movesH = moves == null ? 0 : ui.wrappedHeight(moves, textW) + 2;
+        int h = 5 + 10 + (traits.isEmpty() ? 0 : 12) + movesH + BUTTON_H + 8;
+        ui.round(x, y, x + w, y + h, t.card());
+        ui.round(x + 4, y + 4, x + 24, y + 24, PhoneTheme.mix(offer.shiny() ? CV_GOLD : CV_TEAL, t.card(), 0.6f));
+        ui.item(offer.icon(), x + 6, y + 6);
+        ui.textClipped(name.copy().withStyle(ChatFormatting.BOLD), textX, y + 5, textW - priceWidth - 6, t.text());
+        ui.text(price, x + w - 5 - priceWidth, y + 5, t.warn());
+        int cy = y + 16;
+        if (!traits.isEmpty()) {
+            int chipX = textX;
+            for (Component trait : traits) {
+                int cw = ui.font.width(trait) + 6;
+                if (chipX + cw > x + w - 5) {
+                    break;
+                }
+                ui.chip(trait, chipX, cy, offer.shiny() && trait == traits.getFirst() ? PhoneTheme.mix(CV_GOLD, t.card(), 0.4f) : t.track(), t.text());
+                chipX += cw + 3;
+            }
+            cy += 12;
+        }
+        if (moves != null) {
+            cy += ui.wrapped(moves, textX, cy, textW, t.textDim()) + 2;
+        }
+        Component label;
+        Style style;
+        if (offer.boughtToday() >= offer.dailyLimit()) {
+            label = Component.translatable("caricraft.phone.cv.sold_out");
+            style = Style.DISABLED;
+        } else if (cv.cobbleDollars() < offer.price()) {
+            label = Component.translatable("caricraft.phone.cv.missing", pokedollars(Math.max(0, offer.price() - cv.cobbleDollars())));
+            style = Style.DISABLED;
+        } else {
+            label = Component.translatable("caricraft.phone.shop.buy");
+            style = Style.PRIMARY;
+        }
+        int bw = ui.buttonWidth(label);
+        ui.button(x + w - 5 - bw, y + h - BUTTON_H - 4, bw, BUTTON_H, label, style, () -> s.send(PhoneAction.CV_BUY, offer.id()));
+        if (offer.dailyLimit() > 1) {
+            ui.text(Component.translatable("caricraft.phone.cv.left_today", offer.dailyLimit() - offer.boughtToday(), offer.dailyLimit()),
+                    textX, y + h - BUTTON_H - 1, t.textDim());
+        }
+        return h;
+    }
+
+    private static int sellCard(PhoneScreen s, PhoneSnapshot.CobbleverseView cv, PhoneSnapshot.SellView mon, boolean limit,
+                                int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        int h = 36;
+        ui.round(x, y, x + w, y + h, mon.shiny() ? PhoneTheme.mix(CV_GOLD, t.card(), 0.85f) : t.card());
+        String price = pokedollars(mon.price());
+        int priceWidth = ui.font.width(price);
+        Component name = mon.nickname() == null || mon.nickname().isEmpty() ? speciesName(mon.species())
+                : Component.literal(mon.nickname());
+        if (mon.shiny()) {
+            name = Component.literal("★ ").append(name);
+        }
+        Component detail = Component.translatable("caricraft.phone.cv.mon_detail", mon.level(), mon.ivTotal());
+        Component label;
+        Style style;
+        Runnable action;
+        boolean armed = mon.uuid().equals(s.sellArmed) && System.currentTimeMillis() - s.sellArmedAt < 3000;
+        if (mon.blocked() != null) {
+            label = Component.translatable("caricraft.phone.cv.blocked." + mon.blocked());
+            style = Style.DISABLED;
+            action = () -> { };
+        } else if (limit || !cv.cobbleDollarsInstalled()) {
+            label = Component.translatable("caricraft.phone.cv.sell_button");
+            style = Style.DISABLED;
+            action = () -> { };
+        } else if (armed) {
+            label = Component.translatable("caricraft.phone.cv.sell_confirm");
+            style = Style.DANGER;
+            action = () -> {
+                s.sellArmed = null;
+                s.send(PhoneAction.CV_SELL, mon.uuid());
+            };
+        } else {
+            label = Component.translatable("caricraft.phone.cv.sell_button");
+            style = Style.SECONDARY;
+            action = () -> {
+                s.sellArmed = mon.uuid();
+                s.sellArmedAt = System.currentTimeMillis();
+            };
+        }
+        int bw = ui.buttonWidth(label);
+        ui.textClipped(name.copy().withStyle(ChatFormatting.BOLD), x + 6, y + 5, w - priceWidth - 16, t.text());
+        if (mon.blocked() == null) {
+            ui.text(price, x + w - 5 - priceWidth, y + 5, t.warn());
+        }
+        ui.textClipped(detail, x + 6, y + 21, w - bw - 16, t.textDim());
+        ui.button(x + w - 5 - bw, y + h - BUTTON_H - 4, bw, BUTTON_H, label, style, action);
+        return h;
     }
 
     // ================================================================ desafío dúo

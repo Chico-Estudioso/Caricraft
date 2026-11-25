@@ -17,6 +17,8 @@ App de serie del CariPhone (cofre morado). Su función es dar uso continuo a los
 | Raro | Caparazones de shulker ×2, corazón del mar, fragmento de netherita, tótem, manzana de Notch | 300–600 |
 
 ## Objetos de Cobblemon (desactivados)
+Con `cobbleverse.enabled` el Mercado tiene una segunda pestaña, **Cobbleverse** (regalo misterioso, tienda y venta de Pokémon en CobbleDollars; ver `COBBLEVERSE.md`), y además incluye las ofertas de Cobblemon de aquí abajo.
+
 `market.includeCobblemonItems` (por defecto `false`) añade 13 ofertas de Cobblemon: Poké/Super/Ultra Balls, caramelos raros y de experiencia, pociones, revivir, piedras evolutivas y cápsula de habilidad. Están desactivadas para no competir con las tiendas de CobbleDollars hasta decidirlo. Solo se activan si Cobblemon está cargado.
 
 ## Personalizar

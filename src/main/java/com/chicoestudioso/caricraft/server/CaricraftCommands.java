@@ -75,6 +75,8 @@ public final class CaricraftCommands {
                         .then(Commands.literal("rechazar").executes(ctx -> travel(ctx, "rechazar")))
                         .then(Commands.literal("campamento").executes(ctx -> travel(ctx, "campamento"))))
                 .then(Commands.literal("consejo").executes(CaricraftCommands::tip))
+                .then(Commands.literal("cobbleverse").requires(src -> src.hasPermission(4))
+                        .then(Commands.literal("prueba").executes(CaricraftCommands::cobbleverseDiagnostics)))
                 .then(Commands.literal("reload").requires(src -> src.hasPermission(2))
                         .executes(CaricraftCommands::reload))
                 .then(Commands.literal("desafio")
@@ -157,6 +159,17 @@ public final class CaricraftCommands {
         }
         mod.markDirty();
         return done;
+    }
+
+    /** Comprueba la integración con Cobblemon y CobbleDollars con un jugador ficticio. */
+    private static int cobbleverseDiagnostics(CommandContext<CommandSourceStack> ctx) {
+        CaricraftServer mod = CaricraftServer.get();
+        if (mod == null) {
+            return 0;
+        }
+        java.util.List<String> lines = com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseDiagnostics.run(mod);
+        lines.forEach(line -> ctx.getSource().sendSuccess(() -> Component.literal("[Cobbleverse] " + line), false));
+        return lines.stream().anyMatch(line -> line.startsWith("FALLO")) ? 0 : 1;
     }
 
     /** Muestra un consejo del CariPhone ahora mismo (aunque estén desactivados). */
