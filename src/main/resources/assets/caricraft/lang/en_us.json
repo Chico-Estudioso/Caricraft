@@ -561,5 +561,17 @@
   "caricraft.phone.settings.on": "On",
   "caricraft.phone.settings.off": "Off",
   "caricraft.result.tips_on": "Tips turned on.",
-  "caricraft.result.tips_off": "Tips turned off."
+  "caricraft.result.tips_off": "Tips turned off.",
+  "caricraft.notify.squad_spawned": "A squad of %3$s is guarding loot %1$s m to the %2$s! Defeat it to open the chest.",
+  "caricraft.notify.squad_defeated": "Squad defeated! The loot chest can now be opened (+%s Carins).",
+  "caricraft.challenge.captain": "Captain: %s",
+  "caricraft.challenge.squad_locked": "Chest locked: %s squad guards left.",
+  "caricraft.chronicle.squad_defeated": "%s and their duo defeat a level %s squad and claim its loot.",
+  "caricraft.ledger.challenge_squad": "Squad defeated",
+  "caricraft.stat.challenge_squads": "Squads defeated",
+  "caricraft.phone.challenge.caches": "Tonight's loot",
+  "caricraft.phone.challenge.cache_locked": "Locked",
+  "caricraft.phone.challenge.cache_open": "Open!",
+  "caricraft.phone.challenge.cache_guards": "%s guards left",
+  "caricraft.phone.challenge.cache_open_hint": "The chest can be opened now"
 }

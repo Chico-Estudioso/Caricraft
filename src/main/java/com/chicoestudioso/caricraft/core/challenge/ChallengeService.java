@@ -7,6 +7,8 @@ import com.chicoestudioso.caricraft.core.chronicle.ChronicleService;
 import com.chicoestudioso.caricraft.core.economy.EconomyService;
 import com.chicoestudioso.caricraft.core.party.Party;
 
+import java.util.UUID;
+
 /**
  * Reglas del Desafío Dúo, sin Minecraft.
  *
@@ -176,6 +178,58 @@ public final class ChallengeService {
     /** Fuerza el final (administración). */
     public ChallengeEvent forceEnd(Party party) {
         return party.challenge().active ? end(party, false) : null;
+    }
+
+    // ------------------------------------------------------------------ escuadrones
+
+    /** Escuadrones por noche: 1, y uno más cada 8 niveles, hasta {@code maxSquadsPerNight}. */
+    public int squadsPerNight(int level) {
+        if (!config.challenge.squads) {
+            return 0;
+        }
+        return Math.min(config.challenge.maxSquadsPerNight, 1 + (Math.max(1, level) - 1) / 8);
+    }
+
+    /** Mobs por escuadrón, capitán incluido: 3, y uno más cada 5 niveles (máx. 7). */
+    public static int squadSize(int level) {
+        return Math.min(7, 3 + Math.max(1, level) / 5);
+    }
+
+    /** Tabla de botín: 1 (niveles 1–9), 2 (10–19) o 3 (20 o más). */
+    public static int lootTier(int level) {
+        return level >= 20 ? 3 : level >= 10 ? 2 : 1;
+    }
+
+    /** Hora (dentro del día) a la que aparece el escuadrón {@code index} de {@code count}, repartidos por la noche. */
+    public static long squadTime(int index, int count) {
+        long span = NIGHT_END - NIGHT_START - 2_000L;
+        return NIGHT_START + 600L + span * index / Math.max(1, count);
+    }
+
+    /** Carins por derrotar un escuadrón: {@code squadReward + 5 × nivel}. */
+    public long squadReward(int level) {
+        return config.challenge.squadReward == 0 ? 0 : config.challenge.squadReward + 5L * Math.max(1, level);
+    }
+
+    /**
+     * El dúo ha derrotado un escuadrón: recompensa, estadística y crónica.
+     *
+     * @return Carins ganados (0 si el desafío ya no está activo)
+     */
+    public long onSquadDefeated(Party party, int level, UUID player, String playerName) {
+        ChallengeState s = party.challenge();
+        if (!s.active) {
+            return 0;
+        }
+        party.incrementStat("challenge_squads", 1);
+        chronicle.add(party, ChronicleEntry.SQUAD_DEFEATED, player, playerName, String.valueOf(level));
+        long reward = squadReward(level);
+        if (reward > 0 && economy.credit(party.wallet(), reward, "challenge_squad", "", null) == EconomyService.Result.OK) {
+            s.nightCarins += reward;
+            s.totalCarins += reward;
+            return reward;
+        }
+        return 0;
     }
 
     /** Un miembro ha derrotado un mob del desafío (nivel 1, no élite). */

@@ -46,6 +46,8 @@ public final class QaAutomation implements ClientModInitializer {
             scriptPhone();
         } else if ("T".equals(role)) {
             scriptNotices();
+        } else if ("S".equals(role)) {
+            scriptSquads();
         } else {
             scriptB();
         }
@@ -581,6 +583,121 @@ public final class QaAutomation implements ClientModInitializer {
         shot("m03_caribox_companero");
         closePhone();
         then(1200, () -> Minecraft.getInstance().stop());
+    }
+
+    // ------------------------------------------------------------------ escuadrones con botín
+
+    private static net.minecraft.core.BlockPos cachePos(int index) {
+        var caches = snap().challenge().caches();
+        if (caches.size() <= index) {
+            return null;
+        }
+        var c = caches.get(index);
+        return net.minecraft.core.BlockPos.containing(c.x(), c.y(), c.z());
+    }
+
+    private static void useBlock(net.minecraft.core.BlockPos pos) {
+        var mc = Minecraft.getInstance();
+        mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos),
+                        net.minecraft.core.Direction.UP, pos, false));
+    }
+
+    /** Escuadrón con botín: aparece, el cofre está bloqueado, se abre al derrotarlo y desaparece al amanecer (rol S). */
+    private void scriptSquads() {
+        final net.minecraft.core.BlockPos[] chest = new net.minecraft.core.BlockPos[2];
+        final long[] balance = new long[1];
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("gamerule doDaylightCycle false");
+            cmd("gamerule doMobSpawning false");
+            cmd("time set 1000");
+            cmd("weather clear");
+            cmd("fill -45 119 -45 45 119 45 minecraft:stone");
+            cmd("tp @s 0 120 0 -90 15");
+            cmd("give @s minecraft:diamond_sword");
+        });
+        then(40, () -> act(PhoneAction.CHALLENGE_BRING_FORWARD, ""));
+        then(20, () -> cmd("time set 13000"));
+        then(40, () -> cmd("time set 13700"));
+        when(() -> snap() != null && snap().challenge() != null && !snap().challenge().caches().isEmpty(), () -> {
+            chest[0] = cachePos(0);
+            balance[0] = snap().balance();
+            log("SQUAD aparece en " + chest[0] + " · guardias=" + snap().challenge().caches().getFirst().guardsLeft()
+                    + " · bloque=" + Minecraft.getInstance().level.getBlockState(chest[0]).getBlock());
+        });
+        then(10, () -> {
+        });
+        shot("s01_escuadron_aviso");
+        page(PhonePage.CHALLENGE, 0);
+        then(20, () -> {
+        });
+        shot("s02_app_botin");
+        closePhone();
+        // Cerca del cofre, mirándolo.
+        then(10, () -> {
+            var p = chest[0];
+            cmd("tp @s " + (p.getX() + 7) + " " + (p.getY() + 1) + " " + (p.getZ() + 0.5) + " facing " + (p.getX() + 0.5) + " "
+                    + (p.getY() + 0.5) + " " + (p.getZ() + 0.5));
+        });
+        then(30, () -> {
+        });
+        shot("s03_escuadron_cerca");
+        // Bloqueado mientras quedan guardias (al lado del cofre, al alcance de la mano).
+        then(10, () -> {
+            var p = chest[0];
+            cmd("tp @s " + (p.getX() + 2.5) + " " + p.getY() + " " + (p.getZ() + 0.5) + " facing " + (p.getX() + 0.5) + " "
+                    + (p.getY() + 0.5) + " " + (p.getZ() + 0.5));
+        });
+        then(20, () -> useBlock(chest[0]));
+        then(20, () -> log("SQUAD abrir bloqueado (false): " + (Minecraft.getInstance().player.containerMenu
+                instanceof net.minecraft.world.inventory.ChestMenu)));
+        shot("s04_cofre_bloqueado");
+        // Se derrota al escuadrón.
+        then(10, () -> cmd("kill @e[tag=caricraft_squad]"));
+        when(() -> snap().challenge().caches().stream().allMatch(PhoneSnapshot.CacheView::open), () ->
+                log("SQUAD derrotado · Carins +" + (snap().balance() - balance[0])));
+        then(10, () -> {
+        });
+        shot("s05_escuadron_derrotado");
+        then(10, () -> useBlock(chest[0]));
+        when(() -> Minecraft.getInstance().player.containerMenu instanceof net.minecraft.world.inventory.ChestMenu, () -> {
+            var menu = Minecraft.getInstance().player.containerMenu;
+            java.util.List<String> loot = new java.util.ArrayList<>();
+            for (int i = 0; i < 27; i++) {
+                var stack = menu.slots.get(i).getItem();
+                if (!stack.isEmpty()) {
+                    loot.add(stack.getCount() + "x" + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).getPath());
+                }
+            }
+            log("SQUAD botín (" + loot.size() + "): " + loot);
+        });
+        then(10, () -> {
+        });
+        shot("s06_botin");
+        then(10, () -> Minecraft.getInstance().player.closeContainer());
+        // Amanece; otra noche, y esta vez no se derrota: el cofre desaparece al amanecer.
+        then(10, () -> cmd("time set 23100"));
+        then(60, () -> log("SQUAD cofre abierto tras amanecer sigue (chest): "
+                + Minecraft.getInstance().level.getBlockState(chest[0]).getBlock()));
+        then(10, () -> cmd("tp @s 0 120 0 -90 15"));
+        // «time set» es absoluto: la noche siguiente es 24000 + 13000.
+        then(20, () -> act(PhoneAction.CHALLENGE_BRING_FORWARD, ""));
+        then(20, () -> cmd("time set 37000"));
+        then(40, () -> cmd("time set 37700"));
+        when(() -> snap() != null && !snap().challenge().caches().isEmpty(), () -> {
+            chest[1] = cachePos(0);
+            log("SQUAD segunda noche en " + chest[1]);
+        });
+        then(20, () -> cmd("time set 47100"));
+        then(60, () -> {
+            var mc = Minecraft.getInstance();
+            int guards = mc.level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, mc.player.getBoundingBox().inflate(96),
+                    m -> m.getTags().contains("caricraft_squad")).size();
+            log("SQUAD al amanecer sin derrotar: bloque=" + mc.level.getBlockState(chest[1]).getBlock()
+                    + " (aire) · guardias=" + guards + " (0) · botines en el teléfono=" + snap().challenge().caches().size() + " (0)");
+        });
+        then(60, () -> Minecraft.getInstance().stop());
     }
 
     // ------------------------------------------------------------------ avisos, consejos y barra

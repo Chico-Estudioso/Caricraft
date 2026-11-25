@@ -1,6 +1,12 @@
 # Changelog
 
 ## Unreleased
+- **Escuadrones con botín en el Desafío Dúo:**
+  - De 1 a 3 escuadrones por noche según el nivel. Cada uno tiene de 3 a 7 mobs con un capitán y protege un cofre que no se abre ni se rompe hasta derrotarlos.
+  - Al derrotarlo: botín por niveles (tablas de botín propias, cambiables con datapack), 40 + 5 × nivel Carins y una crónica.
+  - Aviso con distancia y dirección, columna de llamas sobre el cofre y «Botines de esta noche» con brújula en la app Desafío.
+  - Al amanecer desaparecen los botines no ganados.
+  - Protocolo de red 5.
 - **Avisos, consejos y barra del desafío:**
   - Notificaciones propias con el teléfono cerrado: tarjeta con sonido arriba a la derecha, debajo de las barras de jefe. Sustituye a los avisos emergentes del juego.
   - Consejos del CariPhone por el chat cada 15 min: 22 consejos que no se repiten y solo los que vienen a cuento. Se desactivan en Ajustes; `/caricraft consejo` muestra uno.
