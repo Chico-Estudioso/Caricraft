@@ -25,6 +25,8 @@ public final class AppCatalog {
     public static final String CARICAMP = "caricamp";
     public static final String CHALLENGE = "challenge";
     public static final String CARILENS_ALBUM = "carilens_album";
+    public static final String CARIBOX = "caribox";
+    public static final String CARIBOX_ROWS = "caribox_rows";
     public static final String MARKET = "market";
 
     private final Map<String, ShopItem> items = new LinkedHashMap<>();
@@ -50,6 +52,9 @@ public final class AppCatalog {
         catalog.register(new ShopItem(CARILENS_ALBUM, Kind.UPGRADE, Ownership.PARTY, 200, false, false, List.of(CARILENS),
                 "minecraft:writable_book", 0xFF48CAE4, 4));
         catalog.register(app(CARICAMP, 500, "minecraft:campfire", 0xFFFB5607));
+        catalog.register(app(CARIBOX, 400, "minecraft:ender_chest", 0xFF3D5A80));
+        catalog.register(new ShopItem(CARIBOX_ROWS, Kind.UPGRADE, Ownership.PARTY, 250, false, false, List.of(CARIBOX),
+                "minecraft:chest", 0xFF5C7AA6, 3));
         catalog.register(theme("theme_sunset", "minecraft:orange_dye", 0xFFFF7B54));
         catalog.register(theme("theme_ocean", "minecraft:light_blue_dye", 0xFF0077B6));
         catalog.register(theme("theme_forest", "minecraft:lime_dye", 0xFF2D6A4F));

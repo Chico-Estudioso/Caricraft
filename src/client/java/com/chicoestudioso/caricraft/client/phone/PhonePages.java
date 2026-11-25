@@ -68,6 +68,7 @@ final class PhonePages {
             case MARKET -> market(s, snap, x, y, w);
             case CARICAMP -> hasApp(snap, "caricamp") ? caricamp(s, snap, x, y, w) : locked(s, snap, x, y, w, "caricamp");
             case CARILENS -> hasApp(snap, "carilens") ? carilens(s, snap, x, y, w) : locked(s, snap, x, y, w, "carilens");
+            case CARIBOX -> hasApp(snap, "caribox") ? caribox(s, snap, x, y, w) : locked(s, snap, x, y, w, "caribox");
             case LOCKED -> locked(s, snap, x, y, w, s.lockedAppId);
         };
     }
@@ -702,6 +703,39 @@ final class PhonePages {
         if (!any) {
             y += ui.wrapped(Component.translatable("caricraft.phone.stats.empty"), x, y, w, t.textDim());
         }
+        return y - top;
+    }
+
+    // ================================================================ caribox
+
+    private static int caribox(PhoneScreen s, PhoneSnapshot snap, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        int top = y;
+        PhoneSnapshot.BoxView box = snap.box();
+        if (box == null || !box.enabled()) {
+            return 0;
+        }
+        int navy = 0xFF3D5A80;
+        int slots = box.rows() * 9;
+        ui.round(x, y, x + w, y + 52, navy);
+        ui.round(x + 6, y + 8, x + 42, y + 44, PhoneTheme.mix(navy, 0xFFFFFFFF, 0.25f));
+        ui.g.pose().pushPose();
+        ui.g.pose().translate(x + 8, y + 10, 0);
+        ui.g.pose().scale(2f, 2f, 1f);
+        ui.item("minecraft:ender_chest", 0, 0);
+        ui.g.pose().popPose();
+        ui.text(Component.translatable("caricraft.phone.box.title").copy().withStyle(ChatFormatting.BOLD), x + 48, y + 9, 0xFFFFFFFF);
+        ui.textClipped(Component.translatable("caricraft.phone.box.slots", box.usedSlots(), slots), x + 48, y + 21, w - 54, 0xFFDDE6F2);
+        ui.progressBar(x + 48, y + 34, w - 54, box.usedSlots(), slots, 0xFF98C1D9);
+        y += 58;
+        ui.button(x, y, w, BUTTON_H + 4, Component.translatable("caricraft.phone.box.open"), Style.PRIMARY,
+                () -> s.send(PhoneAction.CARIBOX_OPEN, ""));
+        y += BUTTON_H + 4 + 6;
+        if (box.rows() < 6) {
+            y += ui.wrapped(Component.translatable("caricraft.phone.box.upgrade", 6 - box.rows()), x, y, w, t.textDim()) + 4;
+        }
+        y += ui.wrapped(Component.translatable("caricraft.phone.box.help"), x, y, w, t.textDim());
         return y - top;
     }
 

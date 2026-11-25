@@ -13,7 +13,7 @@ Objetivo: no duplicar lo que COBBLEVERSE 1.8.0 ya ofrece. Decisiones: **reutiliz
 | Incursiones | Cobblemon Raid Dens | **Aplazado.** Sin evento público auditado todavía. |
 | Campamento / descanso | Comforts (sacos de dormir, hamacas), Waystones | **Complementar:** CariCamp no da camas ni red de teletransporte. Da un campamento propio del dúo en una hoguera, brújula hacia el campamento y el compañero, y viajes pagados con Carins. |
 | Cría | Cobbreeding | **Aplazado** (posible objetivo futuro con `HATCH_EGG_POST`). |
-| Mochilas y almacenamiento | Sophisticated Backpacks/Storage, Tom's Storage | **No desarrollar.** |
+| Mochilas y almacenamiento | Sophisticated Backpacks/Storage, Tom's Storage | **Complementar:** solo **CariBox**, un cofre compartido por el dúo y accesible desde cualquier parte (lo demás es personal o fijo). |
 | Logros | Avances vanilla + Advancement Plaques | **Complementar:** las misiones son cooperativas, con recompensa y reclamables. |
 | Sistema de misiones | No hay (no hay FTB Quests ni similar) | **Desarrollar:** misiones individuales, cooperativas, diarias, semanales e hitos. |
 | Diario / crónicas | No hay | **Desarrollar:** Crónicas del dúo con notas de los jugadores. |

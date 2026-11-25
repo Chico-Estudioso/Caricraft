@@ -470,5 +470,16 @@
   "caricraft.result.travel_request_declined": "Travel request cancelled.",
   "caricraft.result.travel_in_progress": "A trip is already in progress.",
   "caricraft.result.travel_warmup": "Travelling in %s s… don't move.",
-  "caricraft.result.ok": "Done."
+  "caricraft.result.ok": "Done.",
+  "caricraft.app.caribox": "CariBox",
+  "caricraft.app.caribox.desc": "The duo's shared chest, opened from the phone wherever you are.",
+  "caricraft.app.caribox_rows": "CariBox expansion",
+  "caricraft.app.caribox_rows.desc": "One more row (9 slots) in the CariBox. Can be bought 3 times, up to 54 slots.",
+  "caricraft.caribox.title": "Duo CariBox (%s slots)",
+  "caricraft.phone.box.title": "Duo chest",
+  "caricraft.phone.box.slots": "%s/%s slots used",
+  "caricraft.phone.box.open": "Open CariBox",
+  "caricraft.phone.box.upgrade": "You can expand it by %s more rows in the Shop (Upgrades).",
+  "caricraft.phone.box.help": "You can both open it at the same time from anywhere, in any dimension. If you split up, the chest stays with whoever remains in the duo; when someone joins, their chest contents move to the duo's and anything that doesn't fit goes back to their inventory.",
+  "caricraft.notify.caribox_returned": "Not everything fit in the duo's CariBox: %s items went back to your inventory."
 }

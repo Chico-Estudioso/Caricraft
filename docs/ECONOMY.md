@@ -23,7 +23,9 @@ Apps del grupo, cosméticos personales y el **Mercado** (objetos por Carins con 
 | CariLens | App del grupo | 300 |
 | Ampliación de álbum (×4) | Mejora del grupo | 200 cada una |
 | CariCamp | App del grupo | 500 |
-| Viajes de CariCamp | Uso | 30 (campamento) / 50 (compañero) |
+| CariBox | App del grupo | 400 |
+| Ampliación de CariBox (×3) | Mejora del grupo | 250 cada una |
+| Viajes de CariCamp | Uso | 30 (campamento) / 50 (compañero, con aceptación estilo /tpa) |
 | Mercado | Objetos | 20–600 por oferta, stock diario |
 
 Todos los precios y recompensas se pueden cambiar en `config/caricraft.json`.

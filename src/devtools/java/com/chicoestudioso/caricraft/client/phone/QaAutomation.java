@@ -377,6 +377,7 @@ public final class QaAutomation implements ClientModInitializer {
         then(5, () -> act(PhoneAction.BUY_ITEM, "caricamp"));
         then(10, () -> act(PhoneAction.BUY_ITEM, "carilens"));
         then(10, () -> act(PhoneAction.BUY_ITEM, "carilens_album"));
+        then(10, () -> act(PhoneAction.BUY_ITEM, "caribox"));
         page(PhonePage.SHOP, 0);
         shot("n03_tienda_mejoras");
         // Campamento
@@ -450,6 +451,33 @@ public final class QaAutomation implements ClientModInitializer {
         shot("n08_carilens_foto");
         page(PhonePage.CHRONICLES, 0);
         shot("n09_cronicas_foto");
+        // CariBox: guardar diamantes desde cualquier sitio.
+        then(10, () -> cmd("give @s minecraft:diamond 16"));
+        page(PhonePage.CARIBOX, 0);
+        shot("n09b_caribox_app");
+        then(10, () -> act(PhoneAction.CARIBOX_OPEN, ""));
+        when(() -> Minecraft.getInstance().player.containerMenu instanceof net.minecraft.world.inventory.ChestMenu, () -> {
+            var mc = Minecraft.getInstance();
+            var menu = mc.player.containerMenu;
+            for (int i = 27; i < menu.slots.size(); i++) {
+                if (menu.slots.get(i).getItem().is(net.minecraft.world.item.Items.DIAMOND)) {
+                    mc.gameMode.handleInventoryMouseClick(menu.containerId, i, 0, net.minecraft.world.inventory.ClickType.QUICK_MOVE, mc.player);
+                    break;
+                }
+            }
+        });
+        then(20, () -> {
+            var menu = Minecraft.getInstance().player.containerMenu;
+            int diamonds = 0;
+            for (int i = 0; i < 27; i++) {
+                if (menu.slots.get(i).getItem().is(net.minecraft.world.item.Items.DIAMOND)) {
+                    diamonds += menu.slots.get(i).getItem().getCount();
+                }
+            }
+            log("CariBox de Dev1: " + diamonds + " diamantes guardados");
+        });
+        shot("n09c_caribox_abierto");
+        closePhone();
         // Desafío: los viajes quedan bloqueados
         then(10, () -> act(PhoneAction.CHALLENGE_BRING_FORWARD, ""));
         then(10, () -> cmd("time set 14000"));
@@ -492,6 +520,23 @@ public final class QaAutomation implements ClientModInitializer {
         shot("m01_carilens_companero");
         then(10, () -> phone().openPhoto(snap().lens().photos().getFirst().id()));
         shot("m02_foto_companero");
+        // El compañero ve en su CariBox lo que guardó Dev1.
+        when(() -> snap() != null && snap().box() != null && snap().box().usedSlots() > 0,
+                () -> act(PhoneAction.CARIBOX_OPEN, ""));
+        when(() -> Minecraft.getInstance().player.containerMenu instanceof net.minecraft.world.inventory.ChestMenu, () -> {
+        });
+        then(20, () -> {
+            var menu = Minecraft.getInstance().player.containerMenu;
+            int diamonds = 0;
+            for (int i = 0; i < 27; i++) {
+                if (menu.slots.get(i).getItem().is(net.minecraft.world.item.Items.DIAMOND)) {
+                    diamonds += menu.slots.get(i).getItem().getCount();
+                }
+            }
+            log("CariBox visto por Dev2: " + diamonds + " diamantes");
+        });
+        shot("m03_caribox_companero");
+        closePhone();
         then(1200, () -> Minecraft.getInstance().stop());
     }
 

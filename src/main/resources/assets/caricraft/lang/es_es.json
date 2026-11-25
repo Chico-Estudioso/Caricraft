@@ -470,5 +470,16 @@
   "caricraft.result.travel_request_declined": "Petición de viaje cancelada.",
   "caricraft.result.travel_in_progress": "Ya hay un viaje en marcha.",
   "caricraft.result.travel_warmup": "Viajando en %s s… no te muevas.",
-  "caricraft.result.ok": "Hecho."
+  "caricraft.result.ok": "Hecho.",
+  "caricraft.app.caribox": "CariBox",
+  "caricraft.app.caribox.desc": "Cofre compartido del dúo que se abre desde el teléfono, estéis donde estéis.",
+  "caricraft.app.caribox_rows": "Ampliación de CariBox",
+  "caricraft.app.caribox_rows.desc": "Una fila más (9 huecos) en el CariBox. Se puede comprar 3 veces, hasta 54 huecos.",
+  "caricraft.caribox.title": "CariBox del dúo (%s huecos)",
+  "caricraft.phone.box.title": "Cofre del dúo",
+  "caricraft.phone.box.slots": "%s/%s huecos ocupados",
+  "caricraft.phone.box.open": "Abrir CariBox",
+  "caricraft.phone.box.upgrade": "Puedes ampliarlo %s filas más en la Tienda (Mejoras).",
+  "caricraft.phone.box.help": "Los dos podéis abrirlo a la vez desde cualquier lugar o dimensión. Si os desvinculáis, el cofre se queda con quien sigue en el dúo; al unirse alguien, lo de su cofre pasa al del dúo y lo que no quepa vuelve a su inventario.",
+  "caricraft.notify.caribox_returned": "No cabía todo en el CariBox del dúo: %s objetos han vuelto a tu inventario."
 }
