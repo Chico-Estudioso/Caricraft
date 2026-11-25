@@ -2,6 +2,8 @@
 
 Noches de desafío con mobs vanilla equipados. Es una app de serie del CariPhone (calavera roja).
 
+![Desafío Dúo](img/desafio.png)
+
 ## Reglas
 - Cada `intervalNights` noches (por defecto **3**) hay un **desafío obligatorio**.
 - El dúo puede **adelantarlo** a la noche actual desde la app. Cuenta como el obligatorio y reinicia la cuenta.
