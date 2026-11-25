@@ -4,7 +4,7 @@
 | Entorno | Estado |
 |---|---|
 | Minecraft 1.21.1 + Fabric Loader 0.19.5 + Fabric API 0.116.18 (servidor dedicado + 2 clientes) | **Probado** |
-| COBBLEVERSE 1.8.0 servidor (251 mods, Java 21) | **Probado** (arranque, integración Cobblemon activa, comandos) |
+| COBBLEVERSE 1.8.0 servidor (251 mods, Java 21) | **Probado** (arranque, integración Cobblemon activa, comandos, Desafío Dúo con MobsBeGone) |
 | COBBLEVERSE 1.8.0 cliente completo | Sin probar |
 | Eventos de Cobblemon con jugador real (captura, evolución, combate) | Sin probar |
 | Sin Cobblemon | **Probado** (13 misiones; las de Cobblemon se ocultan) |

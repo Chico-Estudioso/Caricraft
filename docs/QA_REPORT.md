@@ -1,6 +1,6 @@
 # Informe de QA (M9)
 
-Fecha: 2026-11-24 · Versión: 0.1.0
+Fecha: 2026-11-24 (ampliado el 2026-11-25 con las apps nuevas) · Versión: 0.1.0 + Unreleased
 
 ## Resumen
 | Área | Resultado |
@@ -59,14 +59,51 @@ Capturas en `docs/img/cariphone.png`.
 ## 3. Servidor COBBLEVERSE 1.8.0 real
 Ver `docs/ENVIRONMENT_AUDIT.md`. Arranca con 251 mods, `Integración con Cobblemon 1.8.4+1.21.1 activa`, 26 misiones y `/caricraft reload` correcto. Hace falta **Java 21**.
 
+## 4. Apps nuevas (2026-11-25)
+Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbum, PNG, mejoras por niveles, red).
+
+**Desafío Dúo** (`runQaChallenge`, servidor dedicado):
+
+| Paso | Resultado |
+|---|---|
+| `/summon zombie` fuera del desafío | 0 zombis: el filtro bloquea |
+| Adelantar desafío → anochecer | Empieza; aparece el indicador en pantalla |
+| Invocar zombi, esqueleto, momia y araña | Aparecen equipados (nivel 1: cota de malla y espada de piedra) |
+| Derrotar 2 mobs | +2 Carins cada uno, contador actualizado |
+| Amanecer | +50 Carins; los mobs desaparecen (0); noche superada y próximo desafío en 3 noches |
+| `/summon skeleton` después | 0 esqueletos |
+
+**Mercado, CariCamp y CariLens** (`runQaNewApps` + `runQaNewAppsPartner`, 2 clientes):
+
+| Paso | Resultado |
+|---|---|
+| Comprar la primera oferta del Mercado | Montura entregada, Carins descontados |
+| Comprar CariCamp, CariLens y una ampliación de álbum | OK; el álbum pasa de 12 a 24 |
+| Fijar campamento junto a una hoguera encendida | OK |
+| Brújula desde 300 bloques | Distancia y dirección correctas hacia campamento y compañero |
+| Viajar al campamento | Llega a 1 bloque de la hoguera |
+| Viajar junto al compañero | Llega a su posición |
+| Foto con pie | PNG de 61 KB subido en 3 trozos; aparece en el álbum, en las Crónicas y **en el álbum del compañero** |
+| Viajar durante la noche de desafío | Rechazado con aviso |
+
+**Servidor COBBLEVERSE 1.8.0 real** (251 mods, Java 21):
+- Avisa al arrancar de que MobsBeGone bloquea los 10 mobs del desafío.
+- `/caricraft desafio preparar` (consola) los quita: la lista pasa de 84 a 74 entradas y se guarda copia `.caricraft.bak`. Tras reiniciar, sin aviso.
+- `/summon zombie` fuera del desafío no deja ningún zombi: el filtro convive con el de MobsBeGone.
+- 35 misiones y 33 ofertas de Mercado cargadas.
+
 ## Errores encontrados y corregidos durante la QA
 1. **Teléfono borroso (alto):** en 1.21 `Screen.render` vuelve a pintar el fondo desenfocado encima. Corregido en `PhoneScreen`.
 2. **Pestañas de misiones cortadas (bajo):** se quitaron los contadores y se añadió un punto rojo si hay misiones para reclamar.
 3. **Nombres de apps cortados (bajo):** las etiquetas se encogen para caber.
 4. **Servidor montado a mano sin `athena`/`fusion` (medio):** documentado; el script de prueba los incluye.
+5. **Tarjeta del Desafío (bajo):** el título se cortaba y los indicadores de nivel se montaban sobre el texto en negrita. Corregido.
+6. **Mercado (bajo):** el texto de stock quedaba tapado por el botón Comprar. Corregido.
 
 ## Pendiente (priorizado)
 1. **Medio:** probar captura, evolución y combate con un cliente COBBLEVERSE completo.
-2. **Bajo:** bloques colocados por el jugador cuentan al volver a picarlos (afecta a "Leñador" y "Mineros de élite"). Posible mejora: ignorar bloques colocados por jugadores.
-3. **Bajo:** fabricar y descomponer (lingotes ↔ bloque) cuenta para "Artesano" (40 Carins, una vez).
-4. **Bajo:** fabricar y picar no los cubre el guion automático (sí los tests del núcleo).
+2. **Medio:** comprobar en COBBLEVERSE si los mobs del desafío dañan a los Pokémon sacados, y que los sacos de dormir de Comforts también quedan bloqueados en la noche de desafío.
+3. **Bajo:** el bloqueo de dormir con una cama real no lo cubre el guion automático (lógica cubierta por tests).
+4. **Bajo:** bloques colocados por el jugador cuentan al volver a picarlos (afecta a "Leñador" y "Mineros de élite"). Posible mejora: ignorar bloques colocados por jugadores.
+5. **Bajo:** fabricar y descomponer (lingotes ↔ bloque) cuenta para "Artesano" (40 Carins, una vez).
+6. **Bajo:** fabricar y picar no los cubre el guion automático (sí los tests del núcleo).
