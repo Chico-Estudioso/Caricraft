@@ -4,6 +4,7 @@ import com.chicoestudioso.caricraft.CaricraftMod;
 import com.chicoestudioso.caricraft.config.CaricraftConfig;
 import com.chicoestudioso.caricraft.core.CaricraftCore;
 import com.chicoestudioso.caricraft.core.Clock;
+import com.chicoestudioso.caricraft.core.market.MarketCatalog;
 import com.chicoestudioso.caricraft.core.mission.MissionCatalog;
 import com.chicoestudioso.caricraft.core.mission.MissionDefinition;
 import com.chicoestudioso.caricraft.core.party.Party;
@@ -32,6 +33,7 @@ import java.util.UUID;
  */
 public final class CaricraftServer {
     public static final String MISSIONS_FILE = "caricraft_missions.json";
+    public static final String MARKET_FILE = "caricraft_market.json";
     private static CaricraftServer instance;
 
     private final MinecraftServer server;
@@ -47,9 +49,9 @@ public final class CaricraftServer {
 
     public static void start(MinecraftServer server) {
         instance = new CaricraftServer(server);
-        CaricraftMod.LOGGER.info("Caricraft Mod listo: {} grupos, {} perfiles, {} misiones.",
+        CaricraftMod.LOGGER.info("Caricraft Mod listo: {} grupos, {} perfiles, {} misiones, {} ofertas de mercado.",
                 instance.core.state().parties().size(), instance.core.state().profiles().size(),
-                instance.core.missions().catalog().size());
+                instance.core.missions().catalog().size(), instance.core.market().catalog().pool().size());
     }
 
     public static void stop() {
@@ -66,7 +68,8 @@ public final class CaricraftServer {
         Path configDir = FabricLoader.getInstance().getConfigDir();
         CaricraftConfig config = CaricraftConfig.loadOrCreate(configDir);
         MissionCatalog catalog = loadMissions(configDir, config);
-        this.core = new CaricraftCore(savedData.state(), config, catalog, Clock.SYSTEM);
+        MarketCatalog market = loadMarket(configDir, config);
+        this.core = new CaricraftCore(savedData.state(), config, catalog, market, Clock.SYSTEM);
         this.rateLimiter = new ActionRateLimiter(config.actionsPerSecond, System::currentTimeMillis);
     }
 
@@ -89,6 +92,30 @@ public final class CaricraftServer {
             return MissionCatalog.fromJson(reader, FabricLoader.getInstance()::isModLoaded, features);
         } catch (IOException e) {
             throw new IllegalStateException("No se pudieron leer las misiones por defecto", e);
+        }
+    }
+
+    private static MarketCatalog loadMarket(Path configDir, CaricraftConfig config) {
+        java.util.function.Predicate<String> sources = source -> "vanilla".equals(source)
+                || ("cobblemon".equals(source) && config.market.includeCobblemonItems
+                && FabricLoader.getInstance().isModLoaded("cobblemon"));
+        java.util.function.Predicate<String> exists = item -> {
+            net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.tryParse(item);
+            return id != null && net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(id);
+        };
+        Path custom = configDir.resolve(MARKET_FILE);
+        if (Files.exists(custom)) {
+            try (Reader reader = Files.newBufferedReader(custom, StandardCharsets.UTF_8)) {
+                return MarketCatalog.fromJson(reader, sources, exists);
+            } catch (IOException | IllegalArgumentException e) {
+                CaricraftMod.LOGGER.error("{} no es válido; se usa el mercado por defecto.", custom, e);
+            }
+        }
+        try (InputStream in = Objects.requireNonNull(CaricraftServer.class.getResourceAsStream("/caricraft/default_market.json"));
+             Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+            return MarketCatalog.fromJson(reader, sources, exists);
+        } catch (IOException e) {
+            throw new IllegalStateException("No se pudo leer el mercado por defecto", e);
         }
     }
 

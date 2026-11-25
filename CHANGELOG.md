@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+- **Mercado:**
+  - 8 ofertas diarias de 33 objetos vanilla con stock diario por dúo.
+  - Opción `market.includeCobblemonItems` (desactivada) para 13 objetos de Cobblemon.
+  - Lista personalizable en `config/caricraft_market.json`.
 - **Desafío Dúo:**
   - Una noche de desafío obligatoria cada 3, que se puede adelantar desde la app; no se puede dormir.
   - Mobs vanilla equipados y reforzados por niveles (1–5), indicador en pantalla, Carins por mob y por sobrevivir, y 9 misiones de caza.

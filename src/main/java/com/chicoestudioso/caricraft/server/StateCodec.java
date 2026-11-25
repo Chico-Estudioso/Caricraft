@@ -156,6 +156,10 @@ public final class StateCodec {
         challenge.putInt("nightKills", ch.nightKills());
         challenge.putLong("nightCarins", ch.nightCarins());
         tag.put("challenge", challenge);
+
+        CompoundTag market = new CompoundTag();
+        party.marketPurchases().forEach(market::putInt);
+        tag.put("market", market);
         return tag;
     }
 
@@ -214,6 +218,10 @@ public final class StateCodec {
             party.challenge().restore(c.getLong("last"), c.getLong("scheduled"), c.getBoolean("forced"),
                     c.getBoolean("active"), c.getInt("nights"), c.getLong("kills"), c.getLong("carins"),
                     c.getInt("nightKills"), c.getLong("nightCarins"));
+        }
+        CompoundTag market = tag.getCompound("market");
+        for (String key : market.getAllKeys()) {
+            party.marketPurchases().put(key, market.getInt(key));
         }
         return party;
     }

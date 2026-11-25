@@ -101,7 +101,20 @@ public final class SnapshotBuilder {
                 party.wallet().balance(), profile.theme(), List.copyOf(profile.ownedCosmetics()), partyView, apps,
                 missions, ledger, chronicle, exploration, stats, incoming, outgoing,
                 core.parties().leavePending(state, viewer), FabricLoader.getInstance().isModLoaded("cobblemon"),
-                challengeView(mod, party));
+                challengeView(mod, party), marketView(core, party));
+    }
+
+    private static PhoneSnapshot.MarketView marketView(CaricraftCore core, Party party) {
+        var market = core.market();
+        if (!market.enabled()) {
+            return new PhoneSnapshot.MarketView(false, 0, List.of());
+        }
+        long day = market.day();
+        List<PhoneSnapshot.OfferView> offers = market.offers(day).stream()
+                .map(o -> new PhoneSnapshot.OfferView(o.id(), o.item(), o.count(), o.price(), market.stockLeft(party, day, o),
+                        o.dailyStock(), o.source()))
+                .toList();
+        return new PhoneSnapshot.MarketView(true, market.nextRefresh(), offers);
     }
 
     private static ChallengeView challengeView(CaricraftServer mod, Party party) {

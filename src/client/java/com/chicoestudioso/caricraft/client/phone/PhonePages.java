@@ -62,6 +62,7 @@ final class PhonePages {
             case EXPLORER -> hasApp(snap, "explorer") ? explorer(s, snap, x, y, w) : locked(s, snap, x, y, w, "explorer");
             case STATS -> hasApp(snap, "stats") ? stats(s, snap, x, y, w) : locked(s, snap, x, y, w, "stats");
             case CHALLENGE -> challenge(s, snap, x, y, w);
+            case MARKET -> market(s, snap, x, y, w);
             case LOCKED -> locked(s, snap, x, y, w, s.lockedAppId);
         };
     }
@@ -688,6 +689,60 @@ final class PhonePages {
         if (!any) {
             y += ui.wrapped(Component.translatable("caricraft.phone.stats.empty"), x, y, w, t.textDim());
         }
+        return y - top;
+    }
+
+    // ================================================================ mercado
+
+    private static int market(PhoneScreen s, PhoneSnapshot snap, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        int top = y;
+        PhoneSnapshot.MarketView market = snap.market();
+        if (market == null || !market.enabled()) {
+            return ui.wrapped(Component.translatable("caricraft.phone.market.closed"), x, y, w, t.textDim());
+        }
+        int purple = 0xFF6A4C93;
+        ui.round(x, y, x + w, y + 30, purple);
+        ui.text(Component.translatable("caricraft.phone.market.title").copy().withStyle(ChatFormatting.BOLD), x + 6, y + 5, 0xFFFFFFFF);
+        ui.text(Component.translatable("caricraft.phone.market.refresh", PhoneText.remaining(market.refreshAt() - snap.serverTime())),
+                x + 6, y + 17, 0xFFE8DDF5);
+        y += 36;
+        for (PhoneSnapshot.OfferView offer : market.offers()) {
+            int h = 38;
+            ui.round(x, y, x + w, y + h, t.card());
+            net.minecraft.world.item.ItemStack stack = PhoneUi.stack(offer.item());
+            stack.setCount(Math.min(offer.count(), stack.getMaxStackSize()));
+            ui.round(x + 4, y + 4, x + 24, y + 24, PhoneTheme.mix(purple, t.card(), 0.75f));
+            ui.g.renderItem(stack, x + 6, y + 6);
+            ui.g.renderItemDecorations(ui.font, stack, x + 6, y + 6);
+            String price = PhoneText.number(offer.price());
+            int priceWidth = ui.font.width(price) + 9;
+            Component name = Component.translatable("caricraft.phone.market.offer", offer.count(), PhoneText.idName(offer.item()));
+            ui.textClipped(name, x + 28, y + 5, w - 28 - priceWidth - 8, t.text());
+            s.drawCoin(x + w - 5 - priceWidth, y + 5);
+            ui.text(price, x + w - 5 - priceWidth + 9, y + 5, t.warn());
+            Component stock = Component.translatable("caricraft.phone.market.stock", offer.stockLeft(), offer.dailyStock());
+            ui.text(stock, x + 28, y + 16, offer.stockLeft() > 0 ? t.textDim() : t.bad());
+            Component label;
+            Style style;
+            if (offer.stockLeft() <= 0) {
+                label = Component.translatable("caricraft.phone.market.sold_out");
+                style = Style.DISABLED;
+            } else if (snap.balance() < offer.price()) {
+                label = Component.translatable("caricraft.phone.shop.missing", PhoneText.number(offer.price() - snap.balance()));
+                style = Style.DISABLED;
+            } else {
+                label = Component.translatable("caricraft.phone.shop.buy");
+                style = Style.PRIMARY;
+            }
+            int bw = ui.buttonWidth(label);
+            ui.button(x + w - 5 - bw, y + h - BUTTON_H - 4, bw, BUTTON_H, label, style,
+                    () -> s.send(PhoneAction.MARKET_BUY, offer.id()));
+            y += h + 3;
+        }
+        y += 3;
+        y += ui.wrapped(Component.translatable("caricraft.phone.market.note"), x, y, w, t.textDim());
         return y - top;
     }
 
