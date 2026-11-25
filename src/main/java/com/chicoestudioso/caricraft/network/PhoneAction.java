@@ -53,7 +53,9 @@ public enum PhoneAction {
     /** Rechaza la petición recibida o cancela la enviada. */
     TRAVEL_DECLINE,
     /** Abre el CariBox (cofre compartido). */
-    CARIBOX_OPEN;
+    CARIBOX_OPEN,
+    /** Activa o desactiva los consejos del CariPhone en el chat (personal). */
+    TOGGLE_TIPS;
 
     private static final PhoneAction[] VALUES = values();
 

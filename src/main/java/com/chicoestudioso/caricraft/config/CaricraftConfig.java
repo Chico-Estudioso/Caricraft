@@ -35,6 +35,8 @@ public final class CaricraftConfig {
     public boolean giveStarterPhone = true;
     /** CariPhone personal: uno por jugador (ver docs/PHONE_AND_APPS.md). */
     public PhoneConfig phone = new PhoneConfig();
+    /** Consejos del CariPhone en el chat. */
+    public TipsConfig tips = new TipsConfig();
     /** Saldo inicial de un grupo nuevo. */
     public long startingBalance = 0;
     /** Tamaño máximo de grupo. El MVP está pensado para dúos (2). */
@@ -84,6 +86,20 @@ public final class CaricraftConfig {
 
         void validate() {
             replaceAfterSeconds = clamp(replaceAfterSeconds, 1, 300);
+        }
+    }
+
+    /** Consejos periódicos en el chat (cada jugador puede desactivarlos en Ajustes del CariPhone). */
+    public static final class TipsConfig {
+        public boolean enabled = true;
+        /** Minutos entre consejos. */
+        public int intervalMinutes = 15;
+        /** Minutos desde que entra el jugador hasta el primer consejo. */
+        public int firstDelayMinutes = 4;
+
+        void validate() {
+            intervalMinutes = clamp(intervalMinutes, 1, 24 * 60);
+            firstDelayMinutes = clamp(firstDelayMinutes, 0, 24 * 60);
         }
     }
 
@@ -172,6 +188,8 @@ public final class CaricraftConfig {
         public boolean waves = true;
         /** Mobs élite (con nombre, brillan, +3 niveles de equipo y triple recompensa). */
         public boolean elites = true;
+        /** Barra de jefe con lo que queda de noche (y aviso poco antes de que empiece). */
+        public boolean bossBar = true;
         /** Hordas: a más nivel, más probable que un mob aparezca acompañado. */
         public boolean hordes = true;
         /** Impide dormir durante la noche de desafío. */
@@ -271,6 +289,10 @@ public final class CaricraftConfig {
             phone = new PhoneConfig();
         }
         phone.validate();
+        if (tips == null) {
+            tips = new TipsConfig();
+        }
+        tips.validate();
         if (lens == null) {
             lens = new LensConfig();
         }

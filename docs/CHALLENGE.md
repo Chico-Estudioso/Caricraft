@@ -17,6 +17,14 @@ Noches de desafío con mobs vanilla equipados. Es una app de serie del CariPhone
   - Los mobs del desafío desaparecen.
 - Fuera del desafío **no aparecen** esos mobs: el mundo queda como siempre en COBBLEVERSE.
 
+## Barra de la noche
+Barra de jefe del dúo (`challenge.bossBar`, activada). La ven los miembros conectados en el mundo normal.
+- **Amarilla, en los 75 s antes de anochecer** si esa noche toca desafío: «El Desafío Dúo empieza en 1:00: ¡prepárate!».
+- **Roja durante la noche:** «Desafío Dúo · Nivel 2 · Oleada 2/3 · 5 bajas · Amanece en 4:10».
+  - Se vacía a medida que se acerca el amanecer.
+  - El nivel incluye el extra de la oleada.
+  - Sustituye al indicador que antes había arriba en pantalla.
+
 ## Niveles: cada vez más fuertes
 
 ![Nivel 1 frente a nivel 20](img/desafio_niveles.png)

@@ -1,6 +1,11 @@
 # Changelog
 
 ## Unreleased
+- **Avisos, consejos y barra del desafío:**
+  - Notificaciones propias con el teléfono cerrado: tarjeta con sonido arriba a la derecha, debajo de las barras de jefe. Sustituye a los avisos emergentes del juego.
+  - Consejos del CariPhone por el chat cada 15 min: 22 consejos que no se repiten y solo los que vienen a cuento. Se desactivan en Ajustes; `/caricraft consejo` muestra uno.
+  - Barra de jefe del Desafío Dúo: aviso amarillo antes de anochecer y barra roja con nivel, oleada, bajas y tiempo hasta el amanecer. Sustituye al indicador anterior.
+  - Protocolo de red 4.
 - **CariPhone personal, único e indestructible** (`phone.personal`, activado por defecto):
   - Cada jugador tiene su CariPhone, ligado a él con número de serie. La descripción muestra el dueño.
   - No se puede tirar ni guardar en contenedores, marcos, soportes, allays ni vasijas.

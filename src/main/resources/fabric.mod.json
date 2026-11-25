@@ -16,7 +16,11 @@
     "client": ["com.chicoestudioso.caricraft.client.CaricraftClient"]
   },
   "mixins": [
-    "caricraft.mixins.json"
+    "caricraft.mixins.json",
+    {
+      "config": "caricraft.client.mixins.json",
+      "environment": "client"
+    }
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",
