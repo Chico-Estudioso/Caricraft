@@ -18,14 +18,15 @@
 | `DISCOVER_BIOME` | Muestreo de bioma | biomas nuevos para el grupo (o uno concreto) |
 | `MINE_BLOCK` | `PlayerBlockBreakEvents.AFTER` | `minecraft:iron_ore` o `#minecraft:logs` |
 | `CRAFT_ITEM` | Mixin `ItemStack.onCraftedBy` | `minecraft:bread` |
-| `KILL_ENTITY` | `ServerLivingEntityEvents.AFTER_DEATH` | id de entidad o `#tag` (sin misiones por defecto, ver nota) |
+| `KILL_ENTITY` | `ServerLivingEntityEvents.AFTER_DEATH` | id de entidad, `#tag` o `challenge` (mobs del Desafío Dúo) |
 | `DELIVER_ITEM` | Acción "Entregar" del teléfono | quita ítems del inventario |
 | `CATCH_POKEMON` | Cobblemon `POKEMON_CAPTURED` | cualquiera, especie, `shiny`, `legendary`, `type:fire` |
 | `EVOLVE_POKEMON` | Cobblemon `EVOLUTION_COMPLETE` | cualquiera o especie |
 | `WIN_BATTLE` | Cobblemon `BATTLE_VICTORY` | `wild`, `npc` o cualquiera (no PvP) |
+| `CHALLENGE_NIGHT` | Amanecer de una noche del Desafío Dúo | noches superadas |
 
 ## Definición
-Las misiones por defecto están en `caricraft/default_missions.json` dentro del JAR (26 misiones, 13 de ellas usan Cobblemon). Un servidor puede sustituirlas con `config/caricraft_missions.json` (mismo formato). Las misiones que requieren Cobblemon (`requiresMod`) se ocultan si no está cargado, y también las que dependen de ellas.
+Las misiones por defecto están en `caricraft/default_missions.json` dentro del JAR (35 misiones: 13 usan Cobblemon y 9 el Desafío Dúo). Un servidor puede sustituirlas con `config/caricraft_missions.json` (mismo formato). Las misiones que requieren Cobblemon (`requiresMod`) se ocultan si no está cargado, y también las que dependen de ellas. Las que tienen `"requiresFeature": "challenge"` se ocultan si el Desafío Dúo está desactivado.
 
 Formato de cada misión:
 
@@ -39,7 +40,7 @@ Formato de cada misión:
 `target` vacío significa "cualquiera"; `#namespace:tag` es una tag de ítems o bloques.
 
 ## Notas de diseño para COBBLEVERSE
-COBBLEVERSE 1.8.0 elimina 84 mobs vanilla (MobsBeGone: zombis, vacas, ovejas, esqueletos…) y desactiva el hambre con un datapack. Por eso las misiones por defecto no piden matar mobs ni entregar comida. El objetivo `KILL_ENTITY` sigue disponible para misiones personalizadas.
+COBBLEVERSE 1.8.0 elimina 84 mobs vanilla (MobsBeGone: zombis, vacas, ovejas, esqueletos…) y desactiva el hambre con un datapack. Por eso las misiones normales no piden matar mobs ni entregar comida. Las de caza solo existen con el Desafío Dúo, que trae de vuelta a los hostiles durante sus noches.
 
 ## Reclamación
 Idempotente: una misión `RECLAMADA` no paga dos veces y el crédito usa la clave `mission:<grupo>:<misión>:<ciclo>`.

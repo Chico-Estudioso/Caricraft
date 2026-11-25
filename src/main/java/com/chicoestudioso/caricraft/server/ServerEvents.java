@@ -7,7 +7,13 @@ import com.chicoestudioso.caricraft.core.mission.ObjectiveType;
 import com.chicoestudioso.caricraft.core.mission.ProgressEvent;
 import com.chicoestudioso.caricraft.core.party.PlayerProfile;
 import com.chicoestudioso.caricraft.item.ModItems;
+import com.chicoestudioso.caricraft.server.challenge.ChallengeManager;
+import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
@@ -15,6 +21,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -27,7 +34,10 @@ public final class ServerEvents {
     }
 
     public static void register() {
-        ServerLifecycleEvents.SERVER_STARTED.register(CaricraftServer::start);
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            CaricraftServer.start(server);
+            ChallengeManager.onServerStarted(CaricraftServer.get());
+        });
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> CaricraftServer.stop());
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> onJoin(handler.getPlayer()));
@@ -44,7 +54,21 @@ public final class ServerEvents {
             CaricraftServer mod = CaricraftServer.get();
             if (mod != null) {
                 TRACKER.tick(server, mod);
+                ChallengeManager.tick(server, mod);
             }
+        });
+
+        ServerEntityEvents.ENTITY_LOAD.register(ChallengeManager::onEntityLoad);
+
+        EntitySleepEvents.ALLOW_SLEEPING.register((player, sleepingPos) -> {
+            CaricraftServer mod = CaricraftServer.get();
+            if (mod != null && mod.core().config().challenge.blockSleep && player instanceof ServerPlayer serverPlayer
+                    && ChallengeManager.challengeTonight(serverPlayer)) {
+                serverPlayer.displayClientMessage(Component.translatable("caricraft.challenge.no_sleep")
+                        .withStyle(ChatFormatting.RED), true);
+                return Player.BedSleepingProblem.OTHER_PROBLEM;
+            }
+            return null;
         });
 
         PlayerBlockBreakEvents.AFTER.register((level, player, pos, state, blockEntity) -> {
@@ -55,7 +79,12 @@ public final class ServerEvents {
 
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
             if (source.getEntity() instanceof ServerPlayer killer && !(entity instanceof ServerPlayer)) {
-                progress(killer, ObjectiveType.KILL_ENTITY, ProgressKeys.of(entity.getType().builtInRegistryHolder()), 1);
+                Set<String> keys = new HashSet<>(ProgressKeys.of(entity.getType().builtInRegistryHolder()));
+                if (entity.getTags().contains(ChallengeManager.TAG)) {
+                    keys.add("challenge");
+                    ChallengeManager.onKill(killer);
+                }
+                progress(killer, ObjectiveType.KILL_ENTITY, keys, 1);
             }
         });
     }

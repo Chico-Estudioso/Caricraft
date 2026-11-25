@@ -1,5 +1,6 @@
 package com.chicoestudioso.caricraft.core.party;
 
+import com.chicoestudioso.caricraft.core.challenge.ChallengeState;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
 import com.chicoestudioso.caricraft.core.economy.Wallet;
 import com.chicoestudioso.caricraft.core.mission.MissionState;
@@ -30,6 +31,7 @@ public final class Party {
     private final Deque<ChronicleEntry> chronicle = new ArrayDeque<>();
     private final Set<String> discoveredBiomes = new LinkedHashSet<>();
     private final Map<String, Long> stats = new LinkedHashMap<>();
+    private final ChallengeState challenge = new ChallengeState();
 
     public Party(UUID id, long createdAt) {
         this.id = id;
@@ -78,6 +80,10 @@ public final class Party {
 
     public Map<String, Long> stats() {
         return stats;
+    }
+
+    public ChallengeState challenge() {
+        return challenge;
     }
 
     public void incrementStat(String key, long amount) {

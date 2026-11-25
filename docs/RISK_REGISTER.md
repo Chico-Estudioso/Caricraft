@@ -11,3 +11,5 @@
 | R7 | Duplicar funciones del modpack | Media | Medio | `MODPACK_FEATURE_AUDIT.md`; CariLens y CariCamp aplazados. |
 | R8 | Abuso de vincular/desvincular para mover Carins | Baja | Bajo | Reparto 50 %, enfriamiento tras desvincular, confirmación explícita. |
 | R9 | Licencias (Cobblemon MPL-2.0, assets de terceros) | Baja | Alto | No redistribuir JAR ni assets; iconos con ítems vanilla dibujados por el juego. |
+| R10 | Mobs del desafío que dañan a Pokémon sacados o rompen construcciones | Media | Medio | Creepers fuera por defecto; lista configurable; desaparecen al amanecer. Pendiente probar el daño a Pokémon en COBBLEVERSE. |
+| R11 | Otro mod también modifica `addFreshEntity` | Baja | Medio | El filtro solo actúa sobre los tipos de la lista; si falla, deja pasar la entidad y lo registra. |

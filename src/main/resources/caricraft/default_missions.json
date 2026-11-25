@@ -80,6 +80,37 @@
       "objectives": [ { "type": "CATCH_POKEMON", "amount": 100 } ] },
     { "id": "milestone_shiny", "scope": "PARTY", "category": "MILESTONE", "reward": 300, "icon": "minecraft:nether_star",
       "requiresMod": "cobblemon",
-      "objectives": [ { "type": "CATCH_POKEMON", "target": "shiny", "amount": 1 } ] }
+      "objectives": [ { "type": "CATCH_POKEMON", "target": "shiny", "amount": 1 } ] },
+    { "id": "first_challenge", "scope": "PARTY", "category": "STORY", "reward": 80, "icon": "minecraft:skeleton_skull",
+      "requiresFeature": "challenge",
+      "objectives": [ { "type": "CHALLENGE_NIGHT", "amount": 1 } ] },
+    { "id": "night_hunter", "scope": "INDIVIDUAL", "category": "STORY", "reward": 100, "icon": "minecraft:iron_sword",
+      "requiresFeature": "challenge",
+      "objectives": [ { "type": "KILL_ENTITY", "target": "challenge", "amount": 20 } ] },
+    { "id": "duo_survivors", "scope": "COOP", "category": "STORY", "reward": 300, "icon": "minecraft:shield",
+      "requiresFeature": "challenge", "requireAllMembers": true, "requires": [ "first_challenge" ],
+      "objectives": [ { "type": "CHALLENGE_NIGHT", "amount": 3 } ] },
+    { "id": "duo_trophies", "scope": "COOP", "category": "STORY", "reward": 150, "icon": "minecraft:bone",
+      "requiresFeature": "challenge", "requires": [ "night_hunter" ],
+      "objectives": [
+        { "type": "DELIVER_ITEM", "target": "minecraft:bone", "amount": 32 },
+        { "type": "DELIVER_ITEM", "target": "minecraft:string", "amount": 16 },
+        { "type": "DELIVER_ITEM", "target": "minecraft:rotten_flesh", "amount": 32 }
+      ] },
+    { "id": "elite_hunters", "scope": "COOP", "category": "STORY", "reward": 400, "icon": "minecraft:diamond_sword",
+      "requiresFeature": "challenge", "requireAllMembers": true, "requires": [ "duo_survivors" ],
+      "objectives": [ { "type": "KILL_ENTITY", "target": "challenge", "amount": 100 } ] },
+    { "id": "daily_hunt", "scope": "INDIVIDUAL", "category": "DAILY", "reward": 40, "icon": "minecraft:bow",
+      "requiresFeature": "challenge",
+      "objectives": [ { "type": "KILL_ENTITY", "target": "challenge", "amount": 10 } ] },
+    { "id": "weekly_hunt", "scope": "COOP", "category": "WEEKLY", "reward": 250, "icon": "minecraft:crossbow",
+      "requiresFeature": "challenge",
+      "objectives": [ { "type": "KILL_ENTITY", "target": "challenge", "amount": 40 } ] },
+    { "id": "milestone_hunter", "scope": "PARTY", "category": "MILESTONE", "reward": 500, "icon": "minecraft:wither_skeleton_skull",
+      "requiresFeature": "challenge",
+      "objectives": [ { "type": "KILL_ENTITY", "target": "challenge", "amount": 250 } ] },
+    { "id": "milestone_nights", "scope": "PARTY", "category": "MILESTONE", "reward": 500, "icon": "minecraft:clock",
+      "requiresFeature": "challenge",
+      "objectives": [ { "type": "CHALLENGE_NIGHT", "amount": 10 } ] }
   ]
 }

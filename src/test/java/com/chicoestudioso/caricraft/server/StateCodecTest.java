@@ -37,6 +37,10 @@ class StateCodecTest {
         f.core.progress(f.bob, ProgressEvent.of(ObjectiveType.TRAVEL, 600));
         f.core.missions().claim(f.state, f.bob, "first_steps");
 
+        f.core.challenge().bringForward(duo, 7, true);
+        f.core.challenge().update(duo, 7, true);
+        f.core.challenge().onKill(duo);
+
         CompoundTag written = StateCodec.write(f.state);
         // Pasar por bytes como haría el disco.
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -60,6 +64,10 @@ class StateCodecTest {
         assertEquals(600L, loadedDuo.missions().get("duo_expedition").contributions().get(f.bob));
         assertEquals(MissionStatus.ACCEPTED, loadedDuo.missions().get("duo_expedition").status());
         assertEquals(1234L, loadedDuo.missions().get("duo_expedition").contributions().get(f.alice));
+        assertTrue(loadedDuo.challenge().active());
+        assertEquals(7, loadedDuo.challenge().scheduledDay());
+        assertEquals(1, loadedDuo.challenge().nightKills());
+        assertEquals(duo.challenge().totalCarins(), loadedDuo.challenge().totalCarins());
         assertEquals("theme_sunset", loaded.profiles().get(f.bob).theme());
         assertTrue(loaded.profiles().get(f.bob).ownedCosmetics().contains("theme_sunset"));
         assertEquals(f.state.profiles().keySet(), loaded.profiles().keySet());

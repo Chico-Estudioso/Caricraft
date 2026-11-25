@@ -5,6 +5,7 @@ import com.chicoestudioso.caricraft.core.CaricraftCore;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
 import com.chicoestudioso.caricraft.core.economy.EconomyService;
 import com.chicoestudioso.caricraft.core.party.Party;
+import com.chicoestudioso.caricraft.server.challenge.ChallengeManager;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
  *   <li>{@code /carins give|take|set <jugadores> <cantidad>}: administración (nivel 2).</li>
  *   <li>{@code /caricraft duo invite|accept|decline <jugador>}, {@code /caricraft duo leave}.</li>
  *   <li>{@code /caricraft info <jugador>} y {@code /caricraft reload} (nivel 2).</li>
+ *   <li>{@code /caricraft desafio [estado]}; {@code preparar} (nivel 3), {@code iniciar|terminar} (nivel 2).</li>
  * </ul>
  */
 public final class CaricraftCommands {
@@ -57,6 +59,15 @@ public final class CaricraftCommands {
         dispatcher.register(Commands.literal("caricraft")
                 .then(Commands.literal("reload").requires(src -> src.hasPermission(2))
                         .executes(CaricraftCommands::reload))
+                .then(Commands.literal("desafio")
+                        .executes(CaricraftCommands::challengeStatus)
+                        .then(Commands.literal("estado").executes(CaricraftCommands::challengeStatus))
+                        .then(Commands.literal("preparar").requires(src -> src.hasPermission(3))
+                                .executes(CaricraftCommands::challengePrepare))
+                        .then(Commands.literal("iniciar").requires(src -> src.hasPermission(2))
+                                .executes(CaricraftCommands::challengeStart))
+                        .then(Commands.literal("terminar").requires(src -> src.hasPermission(2))
+                                .executes(CaricraftCommands::challengeStop)))
                 .then(Commands.literal("info").requires(src -> src.hasPermission(2))
                         .then(Commands.argument("player", EntityArgument.player()).executes(CaricraftCommands::info)))
                 .then(Commands.literal("duo")
@@ -133,9 +144,103 @@ public final class CaricraftCommands {
             return 0;
         }
         mod.reload();
+        ChallengeManager.onServerStarted(mod);
         int missions = mod.core().missions().catalog().size();
         ctx.getSource().sendSuccess(() -> Component.translatable("caricraft.command.reloaded", missions), true);
         mod.server().getPlayerList().getPlayers().forEach(mod::sendSnapshot);
+        return 1;
+    }
+
+    private static int challengeStatus(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        CaricraftServer mod = mod(ctx);
+        if (mod == null) {
+            return 0;
+        }
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        CaricraftCore core = mod.core();
+        core.onPlayerJoin(player.getUUID(), player.getGameProfile().getName());
+        Party party = core.partyOf(player.getUUID());
+        long day = ChallengeManager.day(mod.server());
+        var state = party.challenge();
+        Component status;
+        if (!core.config().challenge.enabled) {
+            status = Component.translatable("caricraft.command.challenge.disabled");
+        } else if (state.active()) {
+            status = Component.translatable("caricraft.command.challenge.active", state.nightKills());
+        } else {
+            status = Component.translatable("caricraft.command.challenge.next", core.challenge().nightsUntilForced(party, day));
+        }
+        ctx.getSource().sendSuccess(() -> status.copy().withStyle(ChatFormatting.DARK_RED), false);
+        ctx.getSource().sendSuccess(() -> Component.translatable("caricraft.command.challenge.level",
+                core.challenge().level(party), state.nightsCompleted(), state.totalKills()), false);
+        if (!ChallengeManager.blockedByModpack().isEmpty()) {
+            ctx.getSource().sendFailure(Component.translatable("caricraft.command.challenge.blocked",
+                    String.join(", ", ChallengeManager.blockedByModpack())));
+        }
+        return 1;
+    }
+
+    private static int challengePrepare(CommandContext<CommandSourceStack> ctx) {
+        CaricraftServer mod = mod(ctx);
+        if (mod == null) {
+            return 0;
+        }
+        try {
+            int removed = ChallengeManager.prepareMobsBeGone(mod.core().config().challenge);
+            if (removed < 0) {
+                ctx.getSource().sendSuccess(() -> Component.translatable("caricraft.command.challenge.no_mobsbegone"), false);
+            } else {
+                ctx.getSource().sendSuccess(() -> Component.translatable("caricraft.command.challenge.prepared", removed)
+                        .withStyle(ChatFormatting.GREEN), true);
+            }
+            return Math.max(0, removed);
+        } catch (java.io.IOException | RuntimeException e) {
+            ctx.getSource().sendFailure(Component.translatable("caricraft.command.challenge.prepare_failed", e.getMessage()));
+            return 0;
+        }
+    }
+
+    private static int challengeStart(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        CaricraftServer mod = mod(ctx);
+        if (mod == null) {
+            return 0;
+        }
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        CaricraftCore core = mod.core();
+        core.onPlayerJoin(player.getUUID(), player.getGameProfile().getName());
+        ActionResult result = core.challenge().bringForward(core.partyOf(player.getUUID()),
+                ChallengeManager.day(mod.server()), ChallengeManager.night(mod.server()));
+        Component message = Component.translatable(result.key(), result.args().toArray());
+        if (result.success()) {
+            ctx.getSource().sendSuccess(() -> message, true);
+        } else {
+            ctx.getSource().sendFailure(message);
+        }
+        mod.markDirty();
+        mod.sendPartySnapshots(player.getUUID());
+        return result.success() ? 1 : 0;
+    }
+
+    private static int challengeStop(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        CaricraftServer mod = mod(ctx);
+        if (mod == null) {
+            return 0;
+        }
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        Party party = mod.core().partyOf(player.getUUID());
+        if (party == null || mod.core().challenge().forceEnd(party) == null) {
+            ctx.getSource().sendFailure(Component.translatable("caricraft.command.challenge.not_active"));
+            return 0;
+        }
+        for (java.util.UUID member : party.members()) {
+            ServerPlayer online = mod.server().getPlayerList().getPlayer(member);
+            if (online != null) {
+                ChallengeManager.despawnAround(online, mod.core().config().challenge.radius);
+            }
+        }
+        ctx.getSource().sendSuccess(() -> Component.translatable("caricraft.command.challenge.stopped"), true);
+        mod.markDirty();
+        mod.sendPartySnapshots(player.getUUID());
         return 1;
     }
 

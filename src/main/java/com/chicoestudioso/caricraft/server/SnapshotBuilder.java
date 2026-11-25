@@ -1,6 +1,10 @@
 package com.chicoestudioso.caricraft.server;
 
 import com.chicoestudioso.caricraft.CaricraftConstants;
+import com.chicoestudioso.caricraft.config.CaricraftConfig;
+import com.chicoestudioso.caricraft.core.challenge.ChallengeService;
+import com.chicoestudioso.caricraft.core.challenge.ChallengeState;
+import com.chicoestudioso.caricraft.server.challenge.ChallengeManager;
 import com.chicoestudioso.caricraft.core.CaricraftCore;
 import com.chicoestudioso.caricraft.core.CaricraftState;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
@@ -17,6 +21,7 @@ import com.chicoestudioso.caricraft.core.shop.AppCatalog;
 import com.chicoestudioso.caricraft.core.shop.ShopItem;
 import com.chicoestudioso.caricraft.network.PhoneSnapshot;
 import com.chicoestudioso.caricraft.network.PhoneSnapshot.AppView;
+import com.chicoestudioso.caricraft.network.PhoneSnapshot.ChallengeView;
 import com.chicoestudioso.caricraft.network.PhoneSnapshot.ChronicleView;
 import com.chicoestudioso.caricraft.network.PhoneSnapshot.ExplorationView;
 import com.chicoestudioso.caricraft.network.PhoneSnapshot.InviteView;
@@ -95,7 +100,22 @@ public final class SnapshotBuilder {
         return new PhoneSnapshot(CaricraftConstants.PROTOCOL_VERSION, now, viewer.toString(),
                 party.wallet().balance(), profile.theme(), List.copyOf(profile.ownedCosmetics()), partyView, apps,
                 missions, ledger, chronicle, exploration, stats, incoming, outgoing,
-                core.parties().leavePending(state, viewer), FabricLoader.getInstance().isModLoaded("cobblemon"));
+                core.parties().leavePending(state, viewer), FabricLoader.getInstance().isModLoaded("cobblemon"),
+                challengeView(mod, party));
+    }
+
+    private static ChallengeView challengeView(CaricraftServer mod, Party party) {
+        CaricraftCore core = mod.core();
+        ChallengeService service = core.challenge();
+        ChallengeState state = party.challenge();
+        CaricraftConfig.ChallengeConfig config = core.config().challenge;
+        long day = ChallengeManager.day(mod.server());
+        boolean night = ChallengeManager.night(mod.server());
+        return new ChallengeView(config.enabled, state.active(), !state.active() && state.scheduledDay() == day,
+                state.forced(), night, service.nightsUntilForced(party, day), config.intervalNights, service.level(party),
+                config.maxLevel, state.nightsCompleted(), state.totalKills(), state.totalCarins(), state.nightKills(),
+                state.nightCarins(), config.killReward, config.nightReward, config.blockSleep,
+                ChallengeManager.blockedByModpack());
     }
 
     private static String appState(CaricraftCore core, Party party, PlayerProfile profile, ShopItem item) {

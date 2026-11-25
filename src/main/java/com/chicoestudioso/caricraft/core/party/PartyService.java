@@ -232,6 +232,7 @@ public final class PartyService {
         solo.discoveredBiomes().addAll(party.discoveredBiomes());
         party.stats().forEach(solo::incrementStat);
         solo.claimedEver().addAll(party.claimedEver());
+        solo.challenge().copyFrom(party.challenge());
         chronicle.mergeInto(solo, party.chronicle());
 
         String suffix = "@" + player;

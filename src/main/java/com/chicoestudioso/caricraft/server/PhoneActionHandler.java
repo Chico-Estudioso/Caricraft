@@ -5,6 +5,7 @@ import com.chicoestudioso.caricraft.core.ActionResult;
 import com.chicoestudioso.caricraft.core.CaricraftCore;
 import com.chicoestudioso.caricraft.core.CaricraftState;
 import com.chicoestudioso.caricraft.network.PhoneAction;
+import com.chicoestudioso.caricraft.server.challenge.ChallengeManager;
 import com.chicoestudioso.caricraft.network.PhoneActionPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.level.ServerPlayer;
@@ -77,6 +78,8 @@ public final class PhoneActionHandler {
                 }
                 case SELECT_THEME -> validId(payload.arg1()) ? core.shop().selectTheme(state, uuid, payload.arg1()) : invalid();
                 case ADD_NOTE -> core.addNote(uuid, payload.arg1());
+                case CHALLENGE_BRING_FORWARD -> core.challenge().bringForward(core.partyOf(uuid),
+                        ChallengeManager.day(mod.server()), ChallengeManager.night(mod.server()));
             };
         } catch (RuntimeException e) {
             CaricraftMod.LOGGER.error("Error procesando {} de {}", payload.action(), player.getGameProfile().getName(), e);
@@ -91,6 +94,9 @@ public final class PhoneActionHandler {
             }
             if (result.success() && payload.action() == PhoneAction.BUY_ITEM) {
                 notifyPartner(mod, player, "caricraft.notify.partner_bought", List.of(player.getGameProfile().getName(), payload.arg1()));
+            }
+            if (result.success() && payload.action() == PhoneAction.CHALLENGE_BRING_FORWARD) {
+                notifyPartner(mod, player, "caricraft.notify.partner_challenge", List.of(player.getGameProfile().getName()));
             }
             if (result.success() && payload.action() == PhoneAction.ACCEPT_INVITE) {
                 ServerPlayer inviter = onlinePlayer(mod, payload.arg1());

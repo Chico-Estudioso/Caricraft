@@ -33,7 +33,9 @@ public enum PhoneAction {
     /** arg1 = id del tema. */
     SELECT_THEME,
     /** arg1 = texto de la nota. */
-    ADD_NOTE;
+    ADD_NOTE,
+    /** Adelanta el Desafío Dúo a la noche actual. */
+    CHALLENGE_BRING_FORWARD;
 
     private static final PhoneAction[] VALUES = values();
 

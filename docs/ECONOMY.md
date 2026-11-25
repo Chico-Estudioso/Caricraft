@@ -8,6 +8,7 @@ Saldo compartido por grupo (dúo o jugador sin vincular). Ledger con los último
 ## Fuentes
 - Recompensas de misiones (al reclamarlas).
 - Descubrir un bioma nuevo con la app Exploración comprada (por defecto 5 Carins).
+- Desafío Dúo: 2–6 Carins por mob derrotado durante la noche de desafío y 50 al sobrevivirla (`docs/CHALLENGE.md`).
 - Comandos de administración (`/carins give|take|set`).
 
 ## Sumideros

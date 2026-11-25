@@ -23,7 +23,7 @@ Objetivo: no duplicar lo que COBBLEVERSE 1.8.0 ya ofrece. Decisiones: **reutiliz
 | Fotografía | No hay | **Aplazado:** capturas multiplataforma y almacenamiento fuera de alcance del MVP. |
 
 ## Cambios de jugabilidad del modpack que afectan a las misiones
-- **MobsBeGone** elimina 84 mobs vanilla (lista en `config/mobsbegone-blacklist.json` del modpack): casi todos los hostiles y los animales de granja.
+- **MobsBeGone** elimina 78 de las 82 criaturas vanilla de 1.21.1 (lista en `config/mobsbegone-blacklist.json`, 84 entradas). Solo quedan aldeanos, comerciantes ambulantes y el dragón, que se quita con otro datapack. Lo hace con un mixin en `ServerLevel.addFreshEntity` que descarta cualquier entidad de la lista al entrar (natural, spawner, huevo o `/summon`), y otra vez al cargar chunks. El **Desafío Dúo** (`docs/CHALLENGE.md`) reactiva una selección de hostiles solo durante sus noches.
 - El datapack **COBBLEVERSE - No Hunger** desactiva el hambre.
 - **Terralith** está incluido como datapack: hay muchos más biomas que descubrir.
 

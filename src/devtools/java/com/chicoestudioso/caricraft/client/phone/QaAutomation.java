@@ -34,6 +34,8 @@ public final class QaAutomation implements ClientModInitializer {
         }
         if ("A".equals(role)) {
             scriptA();
+        } else if ("C".equals(role)) {
+            scriptChallenge();
         } else {
             scriptB();
         }
@@ -235,6 +237,71 @@ public final class QaAutomation implements ClientModInitializer {
         closePhone();
         shot("19_juego");
         then(100, () -> Minecraft.getInstance().stop());
+    }
+
+    private static int count(String entityId) {
+        Minecraft mc = Minecraft.getInstance();
+        int n = 0;
+        for (net.minecraft.world.entity.Entity e : mc.level.entitiesForRendering()) {
+            if (net.minecraft.world.entity.EntityType.getKey(e.getType()).toString().equals(entityId)) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    private static void log(String message) {
+        System.out.println("[QA] " + message);
+    }
+
+    /** Guion del Desafío Dúo: programar, empezar, mobs equipados, recompensa, amanecer y filtro. */
+    private void scriptChallenge() {
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("time set 1000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("weather clear");
+            cmd("effect give @s minecraft:night_vision 99999 0 true");
+            cmd("tp @s ~ 120 ~ 0 10");
+        });
+        then(40, () -> cmd("summon minecraft:zombie ~ ~ ~4"));
+        then(20, () -> log("zombis fuera del desafío (deben ser 0): " + count("minecraft:zombie")));
+        page(PhonePage.CHALLENGE, 0);
+        shot("c01_desafio_pendiente");
+        then(10, () -> act(PhoneAction.CHALLENGE_BRING_FORWARD, ""));
+        page(PhonePage.CHALLENGE, 0);
+        shot("c02_desafio_esta_noche");
+        closePhone();
+        then(10, () -> cmd("time set 14000"));
+        then(40, () -> {
+            // Plataforma despejada para ver bien a los mobs (quietos con NoAI).
+            cmd("tp @s ~ 200 ~ 0 15");
+        });
+        then(20, () -> {
+            cmd("fill ~-6 ~-1 ~-3 ~6 ~-1 ~12 minecraft:grass_block");
+            cmd("summon minecraft:zombie ~-1 ~ ~4 {NoAI:1b,Rotation:[180f,0f]}");
+            cmd("summon minecraft:skeleton ~1.5 ~ ~5 {NoAI:1b,Rotation:[180f,0f]}");
+            cmd("summon minecraft:husk ~-3 ~ ~5 {NoAI:1b,Rotation:[180f,0f]}");
+            cmd("summon minecraft:spider ~3.5 ~ ~7 {NoAI:1b,Rotation:[180f,0f]}");
+        });
+        then(40, () -> log("mobs en desafío: zombie=" + count("minecraft:zombie") + " skeleton=" + count("minecraft:skeleton")
+                + " husk=" + count("minecraft:husk") + " spider=" + count("minecraft:spider")));
+        shot("c03_mobs_equipados");
+        then(10, () -> cmd("damage @e[type=minecraft:zombie,limit=1,sort=nearest] 200 minecraft:player_attack by @s"));
+        then(30, () -> cmd("damage @e[type=minecraft:husk,limit=1,sort=nearest] 200 minecraft:player_attack by @s"));
+        page(PhonePage.CHALLENGE, 0);
+        shot("c04_desafio_activo");
+        closePhone();
+        then(20, () -> cmd("time set 23500"));
+        then(60, () -> log("mobs tras el amanecer (deben ser 0): skeleton=" + count("minecraft:skeleton") + " spider=" + count("minecraft:spider")));
+        page(PhonePage.CHALLENGE, 0);
+        shot("c05_desafio_superado");
+        page(PhonePage.WALLET, 0);
+        shot("c06_cartera_desafio");
+        closePhone();
+        then(10, () -> cmd("summon minecraft:skeleton ~ ~ ~4"));
+        then(20, () -> log("esqueletos tras el desafío (deben ser 0): " + count("minecraft:skeleton")));
+        then(40, () -> Minecraft.getInstance().stop());
     }
 
     private void scriptB() {
