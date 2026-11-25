@@ -56,10 +56,34 @@ public final class CaricraftConfig {
     public Map<String, Long> prices = new LinkedHashMap<>();
     /** Artículos de la tienda desactivados por id. */
     public List<String> disabledItems = new ArrayList<>();
+    /** CariCamp: campamento y viajes (ver docs/CARICAMP.md). */
+    public CampConfig camp = new CampConfig();
     /** Mercado: objetos por Carins (ver docs/MARKET.md). */
     public MarketConfig market = new MarketConfig();
     /** Desafío Dúo: noches con mobs vanilla equipados (ver docs/CHALLENGE.md). */
     public ChallengeConfig challenge = new ChallengeConfig();
+
+    /** Ajustes de CariCamp. */
+    public static final class CampConfig {
+        /** Carins por viajar al campamento. */
+        public long campTravelCost = 30;
+        /** Carins por viajar junto al compañero. */
+        public long partnerTravelCost = 50;
+        /** Espera entre viajes de un mismo jugador. */
+        public int cooldownSeconds = 300;
+        /** Bloquea los viajes durante la noche de desafío. */
+        public boolean blockDuringChallenge = true;
+        /** Distancia máxima a la hoguera para fijar el campamento. */
+        public int campfireRadius = 3;
+
+        CampConfig validate() {
+            campTravelCost = Math.max(0, Math.min(100_000, campTravelCost));
+            partnerTravelCost = Math.max(0, Math.min(100_000, partnerTravelCost));
+            cooldownSeconds = clamp(cooldownSeconds, 0, 86_400);
+            campfireRadius = clamp(campfireRadius, 1, 8);
+            return this;
+        }
+    }
 
     /** Ajustes del Mercado. */
     public static final class MarketConfig {
@@ -164,6 +188,10 @@ public final class CaricraftConfig {
         if (disabledItems == null) {
             disabledItems = new ArrayList<>();
         }
+        if (camp == null) {
+            camp = new CampConfig();
+        }
+        camp.validate();
         if (market == null) {
             market = new MarketConfig();
         }

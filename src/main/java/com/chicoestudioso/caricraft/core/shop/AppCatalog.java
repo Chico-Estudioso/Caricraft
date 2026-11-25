@@ -46,7 +46,7 @@ public final class AppCatalog {
         catalog.register(app(EXPLORER, 400, "minecraft:compass", 0xFF3A86FF));
         catalog.register(app(STATS, 200, "minecraft:clock", 0xFF8338EC));
         catalog.register(comingSoon(CARILENS, 300, "minecraft:spyglass", 0xFF00B4D8));
-        catalog.register(comingSoon(CARICAMP, 500, "minecraft:campfire", 0xFFFB5607));
+        catalog.register(app(CARICAMP, 500, "minecraft:campfire", 0xFFFB5607));
         catalog.register(theme("theme_sunset", "minecraft:orange_dye", 0xFFFF7B54));
         catalog.register(theme("theme_ocean", "minecraft:light_blue_dye", 0xFF0077B6));
         catalog.register(theme("theme_forest", "minecraft:lime_dye", 0xFF2D6A4F));

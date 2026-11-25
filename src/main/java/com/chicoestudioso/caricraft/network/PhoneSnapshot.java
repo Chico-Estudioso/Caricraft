@@ -29,7 +29,8 @@ public record PhoneSnapshot(
         boolean leavePending,
         boolean cobblemonLoaded,
         ChallengeView challenge,
-        MarketView market) {
+        MarketView market,
+        CampView camp) {
 
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
@@ -84,6 +85,19 @@ public record PhoneSnapshot(
     }
 
     public record InviteView(String uuid, String name, long expiresAt) {
+    }
+
+    /**
+     * CariCamp. Las posiciones solo se envían a miembros del grupo.
+     *
+     * @param camp   campamento o {@code null}
+     * @param others posición de los demás miembros conectados
+     */
+    public record CampView(PositionView camp, List<PositionView> others, long cooldownEndsAt, long campCost,
+                           long partnerCost, boolean challengeBlocked) {
+    }
+
+    public record PositionView(String name, String dimension, double x, double y, double z) {
     }
 
     /** Mercado del día. */

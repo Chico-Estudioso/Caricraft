@@ -37,7 +37,11 @@ public enum PhoneAction {
     /** Adelanta el Desafío Dúo a la noche actual. */
     CHALLENGE_BRING_FORWARD,
     /** arg1 = id de la oferta del Mercado. */
-    MARKET_BUY;
+    MARKET_BUY,
+    /** Fija el campamento en la hoguera encendida más cercana. */
+    CAMP_SET,
+    /** arg1 = {@code camp} o {@code partner}. */
+    CAMP_TRAVEL;
 
     private static final PhoneAction[] VALUES = values();
 

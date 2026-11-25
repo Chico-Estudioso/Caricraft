@@ -1,6 +1,7 @@
 package com.chicoestudioso.caricraft.server;
 
 import com.chicoestudioso.caricraft.core.CaricraftState;
+import com.chicoestudioso.caricraft.core.camp.CampSite;
 import com.chicoestudioso.caricraft.core.challenge.ChallengeState;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
 import com.chicoestudioso.caricraft.core.economy.LedgerEntry;
@@ -160,6 +161,19 @@ public final class StateCodec {
         CompoundTag market = new CompoundTag();
         party.marketPurchases().forEach(market::putInt);
         tag.put("market", market);
+
+        if (party.camp() != null) {
+            CompoundTag camp = new CompoundTag();
+            camp.putString("dim", party.camp().dimension());
+            camp.putInt("x", party.camp().x());
+            camp.putInt("y", party.camp().y());
+            camp.putInt("z", party.camp().z());
+            camp.putLong("t", party.camp().createdAt());
+            tag.put("camp", camp);
+        }
+        CompoundTag cooldowns = new CompoundTag();
+        party.travelCooldowns().forEach((uuid, until) -> cooldowns.putLong(uuid.toString(), until));
+        tag.put("travel", cooldowns);
         return tag;
     }
 
@@ -222,6 +236,14 @@ public final class StateCodec {
         CompoundTag market = tag.getCompound("market");
         for (String key : market.getAllKeys()) {
             party.marketPurchases().put(key, market.getInt(key));
+        }
+        if (tag.contains("camp", Tag.TAG_COMPOUND)) {
+            CompoundTag camp = tag.getCompound("camp");
+            party.setCamp(new CampSite(camp.getString("dim"), camp.getInt("x"), camp.getInt("y"), camp.getInt("z"), camp.getLong("t")));
+        }
+        CompoundTag cooldowns = tag.getCompound("travel");
+        for (String key : cooldowns.getAllKeys()) {
+            party.travelCooldowns().put(UUID.fromString(key), cooldowns.getLong(key));
         }
         return party;
     }

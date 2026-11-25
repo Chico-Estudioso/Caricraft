@@ -11,7 +11,7 @@ Objetivo: no duplicar lo que COBBLEVERSE 1.8.0 ya ofrece. Decisiones: **reutiliz
 | Teletransporte | Waystones | **No desarrollar.** |
 | Entrenadores, gimnasios y medallas | Radical Cobblemon Trainers + CobbleverseBadges | **Integrar** de forma indirecta: las victorias contra NPC cuentan para misiones vía `BATTLE_VICTORY` de Cobblemon. |
 | Incursiones | Cobblemon Raid Dens | **Aplazado.** Sin evento público auditado todavía. |
-| Campamento / descanso | Comforts (sacos de dormir, hamacas) | **No desarrollar** CariCamp en el MVP: duplicaría Comforts. Queda como "próximamente" en el catálogo. |
+| Campamento / descanso | Comforts (sacos de dormir, hamacas), Waystones | **Complementar:** CariCamp no da camas ni red de teletransporte. Da un campamento propio del dúo en una hoguera, brújula hacia el campamento y el compañero, y viajes pagados con Carins. |
 | Cría | Cobbreeding | **Aplazado** (posible objetivo futuro con `HATCH_EGG_POST`). |
 | Mochilas y almacenamiento | Sophisticated Backpacks/Storage, Tom's Storage | **No desarrollar.** |
 | Logros | Avances vanilla + Advancement Plaques | **Complementar:** las misiones son cooperativas, con recompensa y reclamables. |

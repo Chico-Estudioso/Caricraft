@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- **CariCamp:**
+  - Campamento del dúo en una hoguera encendida y brújula hacia el campamento y el compañero.
+  - Viajes de pago (30/50 Carins) con espera de 5 min, bloqueados en noche de desafío.
 - **Mercado:**
   - 8 ofertas diarias de 33 objetos vanilla con stock diario por dúo.
   - Opción `market.includeCobblemonItems` (desactivada) para 13 objetos de Cobblemon.

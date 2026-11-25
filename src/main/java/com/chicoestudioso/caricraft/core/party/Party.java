@@ -1,5 +1,6 @@
 package com.chicoestudioso.caricraft.core.party;
 
+import com.chicoestudioso.caricraft.core.camp.CampSite;
 import com.chicoestudioso.caricraft.core.challenge.ChallengeState;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
 import com.chicoestudioso.caricraft.core.economy.Wallet;
@@ -32,6 +33,10 @@ public final class Party {
     private final Set<String> discoveredBiomes = new LinkedHashSet<>();
     private final Map<String, Long> stats = new LinkedHashMap<>();
     private final ChallengeState challenge = new ChallengeState();
+    /** Campamento de CariCamp, o {@code null}. */
+    private CampSite camp;
+    /** Fin de la espera entre viajes de cada miembro. */
+    private final Map<UUID, Long> travelCooldowns = new LinkedHashMap<>();
     /** Compras del Mercado: clave {@code dia:oferta} → unidades compradas. */
     private final Map<String, Integer> marketPurchases = new LinkedHashMap<>();
 
@@ -82,6 +87,18 @@ public final class Party {
 
     public Map<String, Long> stats() {
         return stats;
+    }
+
+    public CampSite camp() {
+        return camp;
+    }
+
+    public void setCamp(CampSite camp) {
+        this.camp = camp;
+    }
+
+    public Map<UUID, Long> travelCooldowns() {
+        return travelCooldowns;
     }
 
     public Map<String, Integer> marketPurchases() {

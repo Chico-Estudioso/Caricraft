@@ -63,6 +63,7 @@ final class PhonePages {
             case STATS -> hasApp(snap, "stats") ? stats(s, snap, x, y, w) : locked(s, snap, x, y, w, "stats");
             case CHALLENGE -> challenge(s, snap, x, y, w);
             case MARKET -> market(s, snap, x, y, w);
+            case CARICAMP -> hasApp(snap, "caricamp") ? caricamp(s, snap, x, y, w) : locked(s, snap, x, y, w, "caricamp");
             case LOCKED -> locked(s, snap, x, y, w, s.lockedAppId);
         };
     }
@@ -690,6 +691,123 @@ final class PhonePages {
             y += ui.wrapped(Component.translatable("caricraft.phone.stats.empty"), x, y, w, t.textDim());
         }
         return y - top;
+    }
+
+    // ================================================================ caricamp
+
+    private static final int CAMP_ORANGE = 0xFFFB5607;
+
+    private static int caricamp(PhoneScreen s, PhoneSnapshot snap, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        int top = y;
+        PhoneSnapshot.CampView camp = snap.camp();
+        net.minecraft.client.player.LocalPlayer me = net.minecraft.client.Minecraft.getInstance().player;
+        if (camp == null || me == null) {
+            return 0;
+        }
+        String myDimension = me.level().dimension().location().toString();
+        long cooldown = Math.max(0, camp.cooldownEndsAt() - snap.serverTime());
+        boolean canTravel = cooldown == 0 && !camp.challengeBlocked();
+
+        // Campamento
+        ui.text(Component.translatable("caricraft.phone.camp.camp").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+        y += 12;
+        int cardHeight = camp.camp() == null ? 0 : 50;
+        if (camp.camp() != null) {
+            PhoneSnapshot.PositionView c = camp.camp();
+            ui.round(x, y, x + w, y + cardHeight, PhoneTheme.mix(CAMP_ORANGE, t.card(), 0.85f));
+            compass(s, me, myDimension, c, x + 22, y + 22, CAMP_ORANGE);
+            locationText(s, me, myDimension, c, x + 44, y + 6, w - 48);
+            ui.text(Component.literal((int) Math.floor(c.x()) + ", " + (int) c.y() + ", " + (int) Math.floor(c.z())), x + 44, y + 17, t.textDim());
+            Component travel = Component.translatable("caricraft.phone.camp.travel", camp.campCost());
+            int bw = ui.buttonWidth(travel);
+            ui.button(x + w - 5 - bw, y + cardHeight - BUTTON_H - 5, bw, BUTTON_H, travel,
+                    canTravel && snap.balance() >= camp.campCost() ? Style.PRIMARY : Style.DISABLED,
+                    () -> s.send(PhoneAction.CAMP_TRAVEL, "camp"));
+            y += cardHeight + 4;
+        } else {
+            y += ui.wrapped(Component.translatable("caricraft.phone.camp.none"), x, y, w, t.textDim()) + 4;
+        }
+        ui.button(x, y, w, BUTTON_H + 2, Component.translatable("caricraft.phone.camp.set"), Style.SECONDARY,
+                () -> s.send(PhoneAction.CAMP_SET, ""));
+        y += BUTTON_H + 2 + 8;
+
+        // Compañero
+        ui.text(Component.translatable("caricraft.phone.camp.partner").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+        y += 12;
+        if (!snap.party().duo()) {
+            y += ui.wrapped(Component.translatable("caricraft.phone.camp.no_duo"), x, y, w, t.textDim()) + 4;
+        } else if (camp.others().isEmpty()) {
+            y += ui.wrapped(Component.translatable("caricraft.phone.camp.partner_offline"), x, y, w, t.textDim()) + 4;
+        }
+        for (PhoneSnapshot.PositionView other : camp.others()) {
+            ui.round(x, y, x + w, y + 50, t.card());
+            compass(s, me, myDimension, other, x + 22, y + 22, t.header());
+            ui.textClipped(Component.literal(other.name()).withStyle(ChatFormatting.BOLD), x + 44, y + 6, w - 48, t.text());
+            locationText(s, me, myDimension, other, x + 44, y + 17, w - 48);
+            Component travel = Component.translatable("caricraft.phone.camp.travel", camp.partnerCost());
+            int bw = ui.buttonWidth(travel);
+            ui.button(x + w - 5 - bw, y + 50 - BUTTON_H - 5, bw, BUTTON_H, travel,
+                    canTravel && snap.balance() >= camp.partnerCost() ? Style.PRIMARY : Style.DISABLED,
+                    () -> s.send(PhoneAction.CAMP_TRAVEL, "partner"));
+            y += 50 + 4;
+        }
+
+        y += 4;
+        if (camp.challengeBlocked()) {
+            y += ui.wrapped(Component.translatable("caricraft.phone.camp.challenge"), x, y, w, t.bad()) + 3;
+        } else if (cooldown > 0) {
+            y += ui.wrapped(Component.translatable("caricraft.phone.camp.cooldown", PhoneText.remaining(cooldown)), x, y, w, t.warn()) + 3;
+        }
+        y += ui.wrapped(Component.translatable("caricraft.phone.camp.help"), x, y, w, t.textDim());
+        return y - top;
+    }
+
+    /** Brújula: flecha que apunta al objetivo relativo a hacia dónde mira el jugador. */
+    private static void compass(PhoneScreen s, net.minecraft.client.player.LocalPlayer me, String myDimension,
+                                PhoneSnapshot.PositionView target, int cx, int cy, int color) {
+        PhoneUi ui = s.ui;
+        ui.round(cx - 17, cy - 17, cx + 17, cy + 17, PhoneTheme.mix(color, 0xFFFFFFFF, 0.8f));
+        ui.round(cx - 15, cy - 15, cx + 15, cy + 15, 0xFFFFFFFF);
+        if (!myDimension.equals(target.dimension())) {
+            ui.textCentered(Component.literal("?"), cx, cy - 4, color);
+            return;
+        }
+        double dx = target.x() - me.getX();
+        double dz = target.z() - me.getZ();
+        if (dx * dx + dz * dz < 4) {
+            ui.round(cx - 3, cy - 3, cx + 3, cy + 3, color);
+            return;
+        }
+        float targetYaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+        float relative = net.minecraft.util.Mth.wrapDegrees(targetYaw - me.getYRot());
+        var pose = ui.g.pose();
+        pose.pushPose();
+        pose.translate(cx, cy, 0);
+        pose.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(relative));
+        ui.g.fill(-1, -4, 2, 11, color);
+        for (int i = 0; i < 6; i++) {
+            ui.g.fill(-i, -11 + i, i + 1, -10 + i, color);
+        }
+        pose.popPose();
+    }
+
+    private static void locationText(PhoneScreen s, net.minecraft.client.player.LocalPlayer me, String myDimension,
+                                     PhoneSnapshot.PositionView target, int x, int y, int maxWidth) {
+        PhoneUi ui = s.ui;
+        Component text;
+        if (!myDimension.equals(target.dimension())) {
+            text = Component.translatable("caricraft.phone.camp.other_dimension");
+        } else {
+            double dx = target.x() - me.getX();
+            double dz = target.z() - me.getZ();
+            long distance = Math.round(Math.sqrt(dx * dx + dz * dz));
+            int octant = Math.floorMod((int) Math.round(Math.toDegrees(Math.atan2(dx, -dz)) / 45.0), 8);
+            text = Component.translatable("caricraft.phone.camp.distance", PhoneText.number(distance),
+                    Component.translatable("caricraft.dir." + octant));
+        }
+        ui.textClipped(text, x, y, maxWidth, ui.theme.text());
     }
 
     // ================================================================ mercado

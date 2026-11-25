@@ -101,7 +101,31 @@ public final class SnapshotBuilder {
                 party.wallet().balance(), profile.theme(), List.copyOf(profile.ownedCosmetics()), partyView, apps,
                 missions, ledger, chronicle, exploration, stats, incoming, outgoing,
                 core.parties().leavePending(state, viewer), FabricLoader.getInstance().isModLoaded("cobblemon"),
-                challengeView(mod, party), marketView(core, party));
+                challengeView(mod, party), marketView(core, party), campView(mod, party, player));
+    }
+
+    private static PhoneSnapshot.CampView campView(CaricraftServer mod, Party party, ServerPlayer viewer) {
+        CaricraftCore core = mod.core();
+        PhoneSnapshot.PositionView camp = null;
+        if (party.camp() != null) {
+            var c = party.camp();
+            camp = new PhoneSnapshot.PositionView("", c.dimension(), c.x() + 0.5, c.y(), c.z() + 0.5);
+        }
+        List<PhoneSnapshot.PositionView> others = new ArrayList<>();
+        for (UUID member : party.members()) {
+            if (member.equals(viewer.getUUID())) {
+                continue;
+            }
+            ServerPlayer online = mod.server().getPlayerList().getPlayer(member);
+            if (online != null) {
+                others.add(new PhoneSnapshot.PositionView(online.getGameProfile().getName(),
+                        online.level().dimension().location().toString(), online.getX(), online.getY(), online.getZ()));
+            }
+        }
+        var config = core.config().camp;
+        return new PhoneSnapshot.CampView(camp, others, core.camp().cooldownEndsAt(party, viewer.getUUID()),
+                config.campTravelCost, config.partnerTravelCost,
+                config.blockDuringChallenge && ChallengeManager.challengeTonight(viewer));
     }
 
     private static PhoneSnapshot.MarketView marketView(CaricraftCore core, Party party) {
