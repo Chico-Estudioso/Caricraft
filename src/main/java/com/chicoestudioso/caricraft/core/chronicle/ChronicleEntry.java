@@ -21,6 +21,7 @@ public record ChronicleEntry(long time, String type, UUID actor, String actorNam
     public static final String WELCOME = "welcome";
     public static final String CHALLENGE_SURVIVED = "challenge_survived";
     public static final String CAMP_SET = "camp_set";
+    public static final String PHOTO = "photo";
 
     public ChronicleEntry {
         args = List.copyOf(args);

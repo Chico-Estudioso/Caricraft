@@ -49,17 +49,29 @@ class PayloadCodecTest {
     }
 
     @Test
+    void photoUploadChunksRespectTheLimit() {
+        ByteBuf buf = Unpooled.buffer();
+        byte[] chunk = new byte[PhotoUploadPayload.MAX_CHUNK];
+        PhotoUploadPayload.CODEC.encode(buf, new PhotoUploadPayload(7, 0, 2, "Hola", chunk));
+        assertEquals(true, buf.readableBytes() < 32_767, "debe caber en un paquete del cliente");
+        PhotoUploadPayload decoded = PhotoUploadPayload.CODEC.decode(buf);
+        assertEquals(7, decoded.uploadId());
+        assertEquals(PhotoUploadPayload.MAX_CHUNK, decoded.chunk().length);
+    }
+
+    @Test
     void snapshotJsonRoundTrip() {
         PhoneSnapshot snapshot = new PhoneSnapshot(1, 123L, "uuid", 500, "classic", List.of("theme_ocean"),
                 new PhoneSnapshot.PartyView("p", true, 2, List.of(new PhoneSnapshot.MemberView("u", "Alice", true, true)), 0),
-                List.of(new PhoneSnapshot.AppView("explorer", "APP", "PARTY", 400, "AVAILABLE", List.of(), "minecraft:compass", 0xFF3A86FF)),
+                List.of(new PhoneSnapshot.AppView("explorer", "APP", "PARTY", 400, "AVAILABLE", List.of(), "minecraft:compass", 0xFF3A86FF, 0, 1)),
                 List.of(new PhoneSnapshot.MissionView("walk", "INDIVIDUAL", "DAILY", "ACCEPTED", 25, false,
                         List.of(new PhoneSnapshot.ObjectiveView("TRAVEL", "", 1000, 250)), Map.of(), 999L, null, null)),
                 List.of(), List.of(), new PhoneSnapshot.ExplorationView(3, 64, List.of("minecraft:plains")), Map.of("distance_m", 250L),
                 List.of(), List.of(), false, true,
                 new PhoneSnapshot.ChallengeView(true, false, true, false, false, 0, 3, 1, 5, 0, 0, 0, 0, 0, 2, 50, true, List.of()),
                 new PhoneSnapshot.MarketView(true, 1000L, List.of(new PhoneSnapshot.OfferView("iron", "minecraft:iron_ingot", 8, 30, 3, 3, "vanilla"))),
-                new PhoneSnapshot.CampView(new PhoneSnapshot.PositionView("", "minecraft:overworld", 1.5, 64, 2.5), List.of(), 0, 30, 50, false));
+                new PhoneSnapshot.CampView(new PhoneSnapshot.PositionView("", "minecraft:overworld", 1.5, 64, 2.5), List.of(), 0, 30, 50, false),
+                new PhoneSnapshot.LensView(true, 12, List.of(new PhoneSnapshot.PhotoView("0123456789abcdef", "Alice", 5L, "Hola", 256, 144))));
         PhoneSnapshot decoded = PhoneSnapshot.fromJson(snapshot.toJson());
         assertEquals(snapshot, decoded);
     }

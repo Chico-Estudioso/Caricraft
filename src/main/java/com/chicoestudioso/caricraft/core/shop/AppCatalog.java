@@ -24,6 +24,7 @@ public final class AppCatalog {
     public static final String CARILENS = "carilens";
     public static final String CARICAMP = "caricamp";
     public static final String CHALLENGE = "challenge";
+    public static final String CARILENS_ALBUM = "carilens_album";
     public static final String MARKET = "market";
 
     private final Map<String, ShopItem> items = new LinkedHashMap<>();
@@ -45,7 +46,9 @@ public final class AppCatalog {
         catalog.register(app(CHRONICLES, 250, "minecraft:book", 0xFF8E5A3C));
         catalog.register(app(EXPLORER, 400, "minecraft:compass", 0xFF3A86FF));
         catalog.register(app(STATS, 200, "minecraft:clock", 0xFF8338EC));
-        catalog.register(comingSoon(CARILENS, 300, "minecraft:spyglass", 0xFF00B4D8));
+        catalog.register(app(CARILENS, 300, "minecraft:spyglass", 0xFF00B4D8));
+        catalog.register(new ShopItem(CARILENS_ALBUM, Kind.UPGRADE, Ownership.PARTY, 200, false, false, List.of(CARILENS),
+                "minecraft:writable_book", 0xFF48CAE4, 4));
         catalog.register(app(CARICAMP, 500, "minecraft:campfire", 0xFFFB5607));
         catalog.register(theme("theme_sunset", "minecraft:orange_dye", 0xFFFF7B54));
         catalog.register(theme("theme_ocean", "minecraft:light_blue_dye", 0xFF0077B6));

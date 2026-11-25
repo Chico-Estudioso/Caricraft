@@ -44,6 +44,7 @@ public final class ServerEvents {
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             UUID uuid = handler.getPlayer().getUUID();
             TRACKER.forget(uuid);
+            com.chicoestudioso.caricraft.server.lens.PhotoUploads.forget(uuid);
             CaricraftServer mod = CaricraftServer.get();
             if (mod != null) {
                 mod.rateLimiter().forget(uuid);

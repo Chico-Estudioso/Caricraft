@@ -188,6 +188,9 @@ public final class PartyService {
         if (target.camp() == null) {
             target.setCamp(source.camp());
         }
+        source.upgradeLevels().forEach((id, level) -> target.upgradeLevels().merge(id, level, Math::max));
+        target.photos().addAll(source.photos());
+        target.photos().sort(java.util.Comparator.comparingLong(com.chicoestudioso.caricraft.core.lens.Photo::time).reversed());
         chronicle.mergeInto(target, source.chronicle());
     }
 
@@ -237,6 +240,8 @@ public final class PartyService {
         solo.claimedEver().addAll(party.claimedEver());
         solo.challenge().copyFrom(party.challenge());
         solo.setCamp(party.camp());
+        solo.upgradeLevels().putAll(party.upgradeLevels());
+        solo.photos().addAll(party.photos());
         chronicle.mergeInto(solo, party.chronicle());
 
         String suffix = "@" + player;

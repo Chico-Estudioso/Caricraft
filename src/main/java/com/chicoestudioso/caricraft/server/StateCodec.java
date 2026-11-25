@@ -5,6 +5,7 @@ import com.chicoestudioso.caricraft.core.camp.CampSite;
 import com.chicoestudioso.caricraft.core.challenge.ChallengeState;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
 import com.chicoestudioso.caricraft.core.economy.LedgerEntry;
+import com.chicoestudioso.caricraft.core.lens.Photo;
 import com.chicoestudioso.caricraft.core.mission.MissionState;
 import com.chicoestudioso.caricraft.core.mission.MissionStatus;
 import com.chicoestudioso.caricraft.core.party.Party;
@@ -174,6 +175,24 @@ public final class StateCodec {
         CompoundTag cooldowns = new CompoundTag();
         party.travelCooldowns().forEach((uuid, until) -> cooldowns.putLong(uuid.toString(), until));
         tag.put("travel", cooldowns);
+
+        CompoundTag upgrades = new CompoundTag();
+        party.upgradeLevels().forEach(upgrades::putInt);
+        tag.put("upgrades", upgrades);
+        ListTag photos = new ListTag();
+        for (Photo photo : party.photos()) {
+            CompoundTag p = new CompoundTag();
+            p.putString("id", photo.id());
+            p.putUUID("author", photo.author());
+            p.putString("name", photo.authorName());
+            p.putLong("t", photo.time());
+            p.putString("caption", photo.caption());
+            p.putInt("w", photo.width());
+            p.putInt("h", photo.height());
+            p.putInt("bytes", photo.bytes());
+            photos.add(p);
+        }
+        tag.put("photos", photos);
         return tag;
     }
 
@@ -244,6 +263,18 @@ public final class StateCodec {
         CompoundTag cooldowns = tag.getCompound("travel");
         for (String key : cooldowns.getAllKeys()) {
             party.travelCooldowns().put(UUID.fromString(key), cooldowns.getLong(key));
+        }
+        CompoundTag upgrades = tag.getCompound("upgrades");
+        for (String key : upgrades.getAllKeys()) {
+            party.upgradeLevels().put(key, upgrades.getInt(key));
+        }
+        ListTag photos = tag.getList("photos", Tag.TAG_COMPOUND);
+        for (int i = 0; i < photos.size(); i++) {
+            CompoundTag p = photos.getCompound(i);
+            if (p.hasUUID("author")) {
+                party.photos().add(new Photo(p.getString("id"), p.getUUID("author"), p.getString("name"), p.getLong("t"),
+                        p.getString("caption"), p.getInt("w"), p.getInt("h"), p.getInt("bytes")));
+            }
         }
         return party;
     }

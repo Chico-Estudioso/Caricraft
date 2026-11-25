@@ -39,6 +39,9 @@ public final class ShopService {
         if (item.builtin()) {
             return true;
         }
+        if (item.isUpgrade()) {
+            return party.upgradeLevel(item.id()) >= item.maxLevel();
+        }
         return item.ownership() == ShopItem.Ownership.PARTY
                 ? party.ownedApps().contains(item.id())
                 : profile.ownedCosmetics().contains(item.id());
@@ -79,7 +82,9 @@ public final class ShopService {
                 return ActionResult.fail("invalid_amount");
             }
         }
-        if (item.ownership() == ShopItem.Ownership.PARTY) {
+        if (item.isUpgrade()) {
+            party.upgradeLevels().merge(item.id(), 1, Integer::sum);
+        } else if (item.ownership() == ShopItem.Ownership.PARTY) {
             party.ownedApps().add(item.id());
             if (item.kind() == ShopItem.Kind.APP) {
                 chronicle.add(party, ChronicleEntry.APP_PURCHASED, player, profile.name(), item.id());

@@ -41,7 +41,11 @@ public enum PhoneAction {
     /** Fija el campamento en la hoguera encendida más cercana. */
     CAMP_SET,
     /** arg1 = {@code camp} o {@code partner}. */
-    CAMP_TRAVEL;
+    CAMP_TRAVEL,
+    /** arg1 = id de la foto que el cliente quiere ver. */
+    PHOTO_REQUEST,
+    /** arg1 = id de la foto que se borra del álbum. */
+    PHOTO_DELETE;
 
     private static final PhoneAction[] VALUES = values();
 

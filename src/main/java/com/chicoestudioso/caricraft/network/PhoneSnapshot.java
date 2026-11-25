@@ -30,7 +30,8 @@ public record PhoneSnapshot(
         boolean cobblemonLoaded,
         ChallengeView challenge,
         MarketView market,
-        CampView camp) {
+        CampView camp,
+        LensView lens) {
 
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
@@ -58,7 +59,14 @@ public record PhoneSnapshot(
      * @param icon      id de ítem que el cliente dibuja como icono
      */
     public record AppView(String id, String kind, String ownership, long price, String state, List<String> requires,
-                          String icon, int color) {
+                          String icon, int color, int level, int maxLevel) {
+    }
+
+    /** Álbum de CariLens (vacío si el grupo no tiene la app). */
+    public record LensView(boolean enabled, int capacity, List<PhotoView> photos) {
+    }
+
+    public record PhotoView(String id, String author, long time, String caption, int width, int height) {
     }
 
     /**

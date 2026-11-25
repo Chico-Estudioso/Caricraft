@@ -2,6 +2,7 @@ package com.chicoestudioso.caricraft.core.party;
 
 import com.chicoestudioso.caricraft.core.camp.CampSite;
 import com.chicoestudioso.caricraft.core.challenge.ChallengeState;
+import com.chicoestudioso.caricraft.core.lens.Photo;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
 import com.chicoestudioso.caricraft.core.economy.Wallet;
 import com.chicoestudioso.caricraft.core.mission.MissionState;
@@ -33,6 +34,10 @@ public final class Party {
     private final Set<String> discoveredBiomes = new LinkedHashSet<>();
     private final Map<String, Long> stats = new LinkedHashMap<>();
     private final ChallengeState challenge = new ChallengeState();
+    /** Niveles comprados de mejoras (p. ej. ampliaciones de álbum). */
+    private final Map<String, Integer> upgradeLevels = new LinkedHashMap<>();
+    /** Fotos de CariLens, de la más reciente a la más antigua. */
+    private final java.util.List<Photo> photos = new java.util.ArrayList<>();
     /** Campamento de CariCamp, o {@code null}. */
     private CampSite camp;
     /** Fin de la espera entre viajes de cada miembro. */
@@ -87,6 +92,18 @@ public final class Party {
 
     public Map<String, Long> stats() {
         return stats;
+    }
+
+    public Map<String, Integer> upgradeLevels() {
+        return upgradeLevels;
+    }
+
+    public int upgradeLevel(String id) {
+        return upgradeLevels.getOrDefault(id, 0);
+    }
+
+    public java.util.List<Photo> photos() {
+        return photos;
     }
 
     public CampSite camp() {

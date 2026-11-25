@@ -11,5 +11,7 @@ public final class CaricraftNetworking {
         PayloadTypeRegistry.playC2S().register(PhoneActionPayload.TYPE, PhoneActionPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(PhoneSnapshotPayload.TYPE, PhoneSnapshotPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(PhoneNotifyPayload.TYPE, PhoneNotifyPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(PhotoUploadPayload.TYPE, PhotoUploadPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(PhotoDataPayload.TYPE, PhotoDataPayload.CODEC);
     }
 }

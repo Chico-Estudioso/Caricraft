@@ -27,6 +27,10 @@ public class PhoneScreen extends Screen {
     PhonePage page;
     String lockedAppId;
     int missionTab;
+    /** Foto abierta en CariLens, o {@code null} para ver la cuadrícula. */
+    String openPhotoId;
+    /** Momento de la primera pulsación de "Borrar" (confirmación). */
+    long deleteArmedAt;
     private int scroll;
     private int maxScroll;
     private int ticks;
@@ -71,8 +75,21 @@ public class PhoneScreen extends Screen {
             page = target;
             lastPage = target == PhonePage.LOCKED ? PhonePage.HOME : target;
             scroll = 0;
+            openPhotoId = null;
             rebuildInput();
         }
+    }
+
+    /** Abre directamente una página (p. ej. al volver de hacer una foto). */
+    public void openPage(PhonePage target) {
+        this.page = target;
+        lastPage = target;
+    }
+
+    void openPhoto(String photoId) {
+        openPhotoId = photoId;
+        deleteArmedAt = 0;
+        scroll = 0;
     }
 
     void openApp(String appId, String state) {
@@ -113,11 +130,13 @@ public class PhoneScreen extends Screen {
             input = null;
         }
         inputPage = null;
-        if (page == PhonePage.DUO || page == PhonePage.CHRONICLES) {
-            int maxLength = page == PhonePage.DUO ? 16 : 120;
+        boolean lensCaption = page == PhonePage.CARILENS && com.chicoestudioso.caricraft.client.ClientPhotos.hasPending();
+        if (page == PhonePage.DUO || page == PhonePage.CHRONICLES || lensCaption) {
+            int maxLength = page == PhonePage.DUO ? 16 : lensCaption ? 80 : 120;
             input = new EditBox(font, 0, 0, 100, 14, Component.empty());
             input.setMaxLength(maxLength);
-            input.setHint(Component.translatable(page == PhonePage.DUO ? "caricraft.phone.duo.hint" : "caricraft.phone.chronicles.hint"));
+            input.setHint(Component.translatable(page == PhonePage.DUO ? "caricraft.phone.duo.hint"
+                    : lensCaption ? "caricraft.phone.lens.caption_hint" : "caricraft.phone.chronicles.hint"));
             input.visible = false;
             addRenderableWidget(input);
             inputPage = page;
@@ -207,7 +226,27 @@ public class PhoneScreen extends Screen {
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
+    /** Guarda la foto pendiente con el pie escrito (puede ir vacío). */
+    void savePhoto() {
+        String caption = takeInput();
+        com.chicoestudioso.caricraft.client.ClientPhotos.uploadPending(caption);
+        rebuildInput();
+    }
+
+    void discardPhoto() {
+        com.chicoestudioso.caricraft.client.ClientPhotos.clearPending();
+        rebuildInput();
+    }
+
+    void takePhoto() {
+        com.chicoestudioso.caricraft.client.ClientPhotos.beginCapture();
+    }
+
     void submitInput() {
+        if (page == PhonePage.CARILENS) {
+            savePhoto();
+            return;
+        }
         String value = takeInput();
         if (value.isEmpty()) {
             return;

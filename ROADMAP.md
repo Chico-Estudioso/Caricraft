@@ -29,7 +29,7 @@ Individuales, cooperativas, objetivos, progreso, reclamación idempotente y reco
 Invitación/aceptación, grupo (dúo), privacidad, desvinculación y diario compartido.
 
 ## M7 Aplicaciones de contenido
-**Estado:** 🟡 Parcial: Exploración y Estadísticas hechas; CariLens y CariCamp aplazadas (duplicarían Pokédex y Comforts, ver auditoría).
+**Estado:** ✅ Hecho: Exploración, Estadísticas, CariLens (álbum de fotos), CariCamp (campamento y viajes), Mercado y Desafío Dúo.
 Exploración, álbum (CariLens), CariCamp y colecciones, solo si no duplican el modpack.
 
 ## M8 Cobblemon

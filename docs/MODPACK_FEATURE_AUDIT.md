@@ -5,7 +5,7 @@ Objetivo: no duplicar lo que COBBLEVERSE 1.8.0 ya ofrece. Decisiones: **reutiliz
 | Sistema | Ya existe en el modpack | Decisión para Caricraft Mod |
 |---|---|---|
 | Economía de tienda | CobbleDollars (moneda, tiendas, NPCs) | **Complementar.** Los Carins son una moneda propia del dúo, solo para progresión del CariPhone. No se intercambian con CobbleDollars ni se pueden comerciar entre jugadores fuera del dúo. |
-| Pokédex | Pokédex integrada de Cobblemon 1.8.4 | **No desarrollar** un álbum de especies. CariLens queda aplazado hasta definir una función que no sea una Pokédex. |
+| Pokédex | Pokédex integrada de Cobblemon 1.8.4 | **No desarrollar** un álbum de especies. CariLens es un álbum de **fotos reales** del dúo, no de especies. |
 | Radar / PokéNav | cobblenav 2.4.2 | **No desarrollar.** |
 | Mapa y minimapa | Xaero's Minimap y World Map | **No desarrollar** mapas. La app Exploración muestra solo el registro de biomas descubiertos por el dúo. |
 | Teletransporte | Waystones | **No desarrollar.** |
@@ -20,7 +20,7 @@ Objetivo: no duplicar lo que COBBLEVERSE 1.8.0 ya ofrece. Decisiones: **reutiliz
 | Grupos / equipos | No hay | **Desarrollar:** vínculo de dúo propio. |
 | Teléfono / interfaz central | No hay (cobblenav es solo radar) | **Desarrollar:** CariPhone. |
 | Estadísticas del dúo | Estadísticas vanilla individuales | **Complementar:** app Estadísticas con datos compartidos del dúo. |
-| Fotografía | No hay | **Aplazado:** capturas multiplataforma y almacenamiento fuera de alcance del MVP. |
+| Fotografía | No hay | **Desarrollado:** CariLens. Miniaturas de 256×144 guardadas en el mundo del servidor; nada sale a internet. |
 
 ## Cambios de jugabilidad del modpack que afectan a las misiones
 - **MobsBeGone** elimina 78 de las 82 criaturas vanilla de 1.21.1 (lista en `config/mobsbegone-blacklist.json`, 84 entradas). Solo quedan aldeanos, comerciantes ambulantes y el dragón, que se quita con otro datapack. Lo hace con un mixin en `ServerLevel.addFreshEntity` que descarta cualquier entidad de la lista al entrar (natural, spawner, huevo o `/summon`), y otra vez al cargar chunks. El **Desafío Dúo** (`docs/CHALLENGE.md`) reactiva una selección de hostiles solo durante sus noches.
@@ -29,6 +29,9 @@ Objetivo: no duplicar lo que COBBLEVERSE 1.8.0 ya ofrece. Decisiones: **reutiliz
 
 ## Consecuencias
 
-- El catálogo inicial es: Misiones, Cartera, Dúo, Tienda y Ajustes (gratis); Crónicas, Exploración y Estadísticas (de pago); temas del teléfono (cosméticos personales). CariLens y CariCamp aparecen como "próximamente" y no se pueden comprar.
+- El catálogo es:
+  - Gratis: Misiones, Cartera, Dúo, Tienda, Ajustes, Mercado y Desafío Dúo.
+  - De pago: Crónicas, Exploración, Estadísticas, CariLens (con ampliaciones de álbum) y CariCamp.
+  - Temas del teléfono, como cosméticos personales.
 - Las misiones pueden pedir ítems del modpack (p. ej. Poké Balls, bayas, bonguris) solo cuando Cobblemon está cargado; si no, se ocultan.
 - Las misiones por defecto no piden matar mobs vanilla ni entregar comida.

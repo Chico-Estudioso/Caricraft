@@ -45,10 +45,27 @@ class ShopServiceTest {
     void comingSoonBuiltinAndUnknownAreNotPurchasable() {
         TestFixture f = TestFixture.withDefaultMissions();
         f.give(f.alice, 5000);
-        assertEquals("caricraft.result.coming_soon", f.core.shop().buy(f.state, f.alice, AppCatalog.CARILENS).key());
+        f.core.shop().catalog().register(new com.chicoestudioso.caricraft.core.shop.ShopItem("future_app",
+                com.chicoestudioso.caricraft.core.shop.ShopItem.Kind.APP, com.chicoestudioso.caricraft.core.shop.ShopItem.Ownership.PARTY,
+                100, false, true, java.util.List.of(), "minecraft:paper", 0));
+        assertEquals("caricraft.result.coming_soon", f.core.shop().buy(f.state, f.alice, "future_app").key());
         assertEquals("caricraft.result.already_owned", f.core.shop().buy(f.state, f.alice, AppCatalog.MISSIONS).key());
         assertEquals("caricraft.result.unknown_item", f.core.shop().buy(f.state, f.alice, "hack").key());
         assertEquals(5000, f.balance(f.alice));
+    }
+
+    @Test
+    void upgradesCanBeBoughtUpToTheirMaxLevel() {
+        TestFixture f = TestFixture.withDefaultMissions();
+        f.give(f.alice, 5000);
+        assertEquals("caricraft.result.requirements_missing", f.core.shop().buy(f.state, f.alice, AppCatalog.CARILENS_ALBUM).key());
+        assertTrue(f.core.shop().buy(f.state, f.alice, AppCatalog.CARILENS).success());
+        for (int i = 0; i < 4; i++) {
+            assertTrue(f.core.shop().buy(f.state, f.alice, AppCatalog.CARILENS_ALBUM).success());
+        }
+        assertEquals("caricraft.result.already_owned", f.core.shop().buy(f.state, f.alice, AppCatalog.CARILENS_ALBUM).key());
+        assertEquals(4, f.state.partyOf(f.alice).upgradeLevel(AppCatalog.CARILENS_ALBUM));
+        assertEquals(5000 - 300 - 4 * 200, f.balance(f.alice));
     }
 
     @Test

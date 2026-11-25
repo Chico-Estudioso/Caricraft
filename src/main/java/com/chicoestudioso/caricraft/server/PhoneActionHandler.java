@@ -5,7 +5,9 @@ import com.chicoestudioso.caricraft.core.ActionResult;
 import com.chicoestudioso.caricraft.core.CaricraftCore;
 import com.chicoestudioso.caricraft.core.CaricraftState;
 import com.chicoestudioso.caricraft.network.PhoneAction;
+import com.chicoestudioso.caricraft.core.lens.LensService;
 import com.chicoestudioso.caricraft.server.camp.CampTravel;
+import com.chicoestudioso.caricraft.server.lens.PhotoUploads;
 import com.chicoestudioso.caricraft.server.challenge.ChallengeManager;
 import com.chicoestudioso.caricraft.network.PhoneActionPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -81,6 +83,18 @@ public final class PhoneActionHandler {
                 case ADD_NOTE -> core.addNote(uuid, payload.arg1());
                 case MARKET_BUY -> validId(payload.arg1())
                         ? core.market().buy(state, uuid, payload.arg1(), (item, count) -> giveItem(player, item, count)) : invalid();
+                case PHOTO_REQUEST -> LensService.PHOTO_ID.matcher(payload.arg1()).matches()
+                        ? PhotoUploads.send(mod, player, payload.arg1()) : invalid();
+                case PHOTO_DELETE -> {
+                    if (!LensService.PHOTO_ID.matcher(payload.arg1()).matches()) {
+                        yield invalid();
+                    }
+                    ActionResult deleted = core.lens().deletePhoto(core.partyOf(uuid), payload.arg1());
+                    if (deleted.success()) {
+                        mod.photos().deleteIfUnused(payload.arg1(), state);
+                    }
+                    yield deleted;
+                }
                 case CAMP_SET -> CampTravel.setCamp(mod, player);
                 case CAMP_TRAVEL -> CampTravel.travel(mod, player, payload.arg1());
                 case CHALLENGE_BRING_FORWARD -> core.challenge().bringForward(core.partyOf(uuid),
@@ -91,6 +105,9 @@ public final class PhoneActionHandler {
             result = ActionResult.fail("internal_error");
         }
 
+        if (payload.action() == PhoneAction.PHOTO_REQUEST && result == null) {
+            return; // solo se envía la foto
+        }
         if (result != null) {
             mod.markDirty();
             mod.notify(player, result.success(), result.key(), result.args());

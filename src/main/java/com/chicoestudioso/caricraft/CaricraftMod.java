@@ -19,6 +19,7 @@ public final class CaricraftMod implements ModInitializer {
         ModItems.register();
         CaricraftNetworking.registerPayloadTypes();
         PhoneActionHandler.register();
+        com.chicoestudioso.caricraft.server.lens.PhotoUploads.register();
         ServerEvents.register();
         CaricraftCommands.register();
         CobblemonCompat.init();
