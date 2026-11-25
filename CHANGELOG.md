@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- **CariLens:**
+  - Álbum de fotos compartido del dúo: captura sin interfaz, vista previa con pie de foto, subida troceada y validada, y archivos en el mundo del servidor.
+  - Ampliaciones de álbum (mejoras compradas por niveles en la Tienda).
 - **CariCamp:**
   - Campamento del dúo en una hoguera encendida y brújula hacia el campamento y el compañero.
   - Viajes de pago (30/50 Carins) con espera de 5 min, bloqueados en noche de desafío.

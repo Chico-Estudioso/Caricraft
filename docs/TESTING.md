@@ -25,3 +25,9 @@ En una máquina sin pantalla se ejecutan con `xvfb-run` y `LIBGL_ALWAYS_SOFTWARE
 
 Guion A: inicio en solitario, app bloqueada, aceptar misiones, viajar con `/tp` en saltos de 55 bloques (cuenta distancia y biomas), comprar apps, escribir una nota, invitar a Dev2, misiones de dúo, entregar ítems, reclamar, recorrer todas las apps, comprar y aplicar temas, y pedir la desvinculación.
 Guion B: recibir y aceptar la invitación y viajar.
+
+### Guiones adicionales
+- `./gradlew runQaChallenge`: Desafío Dúo. Comprueba que los mobs no aparecen fuera del desafío, que salen equipados durante él, las recompensas y que desaparecen al amanecer.
+- `./gradlew runQaNewApps` + `./gradlew runQaNewAppsPartner`: Mercado, CariCamp y CariLens con dos jugadores. Cubre compra y entrega, fijar campamento, brújula, viaje al campamento y al compañero, foto, álbum del compañero y viajes bloqueados en noche de desafío.
+
+Para que el guion de apps sea rápido, en `run/config/caricraft.json` conviene poner `camp.cooldownSeconds = 5` y `lens.uploadCooldownSeconds = 0`.

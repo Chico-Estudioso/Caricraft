@@ -36,6 +36,12 @@ public final class QaAutomation implements ClientModInitializer {
             scriptA();
         } else if ("C".equals(role)) {
             scriptChallenge();
+        } else if ("N".equals(role)) {
+            scriptNewApps();
+        } else if ("K".equals(role)) {
+            scriptCampOnly();
+        } else if ("M".equals(role)) {
+            scriptNewAppsPartner();
         } else {
             scriptB();
         }
@@ -302,6 +308,177 @@ public final class QaAutomation implements ClientModInitializer {
         then(10, () -> cmd("summon minecraft:skeleton ~ ~ ~4"));
         then(20, () -> log("esqueletos tras el desafío (deben ser 0): " + count("minecraft:skeleton")));
         then(40, () -> Minecraft.getInstance().stop());
+    }
+
+    private static double distanceTo(String playerName) {
+        Minecraft mc = Minecraft.getInstance();
+        for (net.minecraft.world.entity.player.Player p : mc.level.players()) {
+            if (p.getGameProfile().getName().equals(playerName)) {
+                return Math.sqrt(p.distanceToSqr(mc.player));
+            }
+        }
+        return -1;
+    }
+
+    private static int inventoryCount(String itemId) {
+        Minecraft mc = Minecraft.getInstance();
+        int n = 0;
+        for (int i = 0; i < mc.player.getInventory().getContainerSize(); i++) {
+            var stack = mc.player.getInventory().getItem(i);
+            if (net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()).toString().equals(itemId)) {
+                n += stack.getCount();
+            }
+        }
+        return n;
+    }
+
+    /** Guion de Mercado, CariCamp y CariLens (jugador A). */
+    private void scriptNewApps() {
+        final String[] boughtItem = new String[1];
+        final double[] camp = new double[3];
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("time set 1000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("weather clear");
+            cmd("tp @s 0 120 0 -90 15");
+            cmd("fill -4 119 -4 4 119 4 minecraft:grass_block");
+            cmd("setblock 2 120 0 minecraft:campfire[lit=true]");
+            cmd("tp @s 0 120 0 -90 15");
+            cmd("carins give @s 5000");
+        });
+        page(PhonePage.MARKET, 0);
+        shot("n01_mercado");
+        then(10, () -> {
+            var offer = snap().market().offers().getFirst();
+            boughtItem[0] = offer.item();
+            log("compro en el mercado " + offer.count() + " x " + offer.item() + " (antes: " + inventoryCount(offer.item()) + ")");
+            act(PhoneAction.MARKET_BUY, offer.id());
+        });
+        then(20, () -> log("tras comprar: " + inventoryCount(boughtItem[0]) + " x " + boughtItem[0]));
+        page(PhonePage.MARKET, 0);
+        shot("n02_mercado_comprado");
+        then(5, () -> act(PhoneAction.BUY_ITEM, "caricamp"));
+        then(10, () -> act(PhoneAction.BUY_ITEM, "carilens"));
+        then(10, () -> act(PhoneAction.BUY_ITEM, "carilens_album"));
+        page(PhonePage.SHOP, 0);
+        shot("n03_tienda_mejoras");
+        // Campamento
+        then(10, () -> {
+            var mc = Minecraft.getInstance();
+            log("bloque en 2,120,0: " + mc.level.getBlockState(new net.minecraft.core.BlockPos(2, 120, 0))
+                    + " · jugador en " + mc.player.blockPosition());
+            act(PhoneAction.CAMP_SET, "");
+        });
+        then(20, () -> {
+            var n = com.chicoestudioso.caricraft.client.ClientPhoneState.notifications().peekFirst();
+            log("último aviso: " + (n == null ? "-" : n.key() + " " + n.args()));
+        });
+        then(5, () -> {
+            var c = snap().camp().camp();
+            log("campamento: " + (c == null ? "ninguno" : c.x() + "," + c.y() + "," + c.z()));
+            if (c != null) {
+                camp[0] = c.x();
+                camp[1] = c.y();
+                camp[2] = c.z();
+            }
+        });
+        // Dúo con Dev2
+        when(() -> Minecraft.getInstance().getConnection().getOnlinePlayers().size() >= 2, () -> act(PhoneAction.INVITE_PLAYER, "Dev2"));
+        when(() -> snap() != null && snap().party().duo(), () -> cmd("tp @s 300 120 40 -90 15"));
+        then(60, () -> {
+        });
+        page(PhonePage.CARICAMP, 0);
+        shot("n04_caricamp_lejos");
+        then(10, () -> act(PhoneAction.CAMP_TRAVEL, "camp"));
+        then(40, () -> {
+            var me = Minecraft.getInstance().player;
+            double d = Math.sqrt(me.distanceToSqr(camp[0], camp[1], camp[2]));
+            log("distancia al campamento tras viajar (debe ser < 4): " + String.format("%.1f", d));
+        });
+        page(PhonePage.CARICAMP, 0);
+        shot("n05_caricamp_en_campamento");
+        then(140, () -> act(PhoneAction.CAMP_TRAVEL, "partner"));
+        then(40, () -> log("distancia a Dev2 tras viajar (debe ser < 2): " + String.format("%.1f", distanceTo("Dev2"))));
+        // Foto
+        then(20, () -> {
+            cmd("tp @s 0 121 -6 0 10");
+        });
+        then(40, () -> phone().takePhoto());
+        when(com.chicoestudioso.caricraft.client.ClientPhotos::hasPending, () -> {
+        });
+        page(PhonePage.CARILENS, 0);
+        shot("n06_carilens_vista_previa");
+        then(10, () -> {
+            log("foto pendiente: " + com.chicoestudioso.caricraft.client.ClientPhotos.pendingSize() + " bytes");
+            com.chicoestudioso.caricraft.client.ClientPhotos.uploadPending("Primera foto del dúo");
+        });
+        when(() -> snap() != null && snap().lens() != null && !snap().lens().photos().isEmpty(), () -> {
+        });
+        page(PhonePage.CARILENS, 0);
+        then(40, () -> {
+        });
+        shot("n07_carilens_album");
+        then(10, () -> phone().openPhoto(snap().lens().photos().getFirst().id()));
+        shot("n08_carilens_foto");
+        page(PhonePage.CHRONICLES, 0);
+        shot("n09_cronicas_foto");
+        // Desafío: los viajes quedan bloqueados
+        then(10, () -> act(PhoneAction.CHALLENGE_BRING_FORWARD, ""));
+        then(10, () -> cmd("time set 14000"));
+        then(60, () -> act(PhoneAction.CAMP_TRAVEL, "camp"));
+        page(PhonePage.CARICAMP, 0);
+        shot("n10_caricamp_desafio");
+        then(10, () -> cmd("time set 23500"));
+        page(PhonePage.WALLET, 0);
+        shot("n11_cartera");
+        then(100, () -> Minecraft.getInstance().stop());
+    }
+
+    /** Compañero del guion de apps nuevas (jugador B). */
+    private void scriptNewAppsPartner() {
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("tp @s -40 120 25 90 15");
+        });
+        then(10, () -> cmd("fill -43 119 22 -37 119 28 minecraft:stone"));
+        when(() -> snap() != null && !snap().incomingInvites().isEmpty(),
+                () -> act(PhoneAction.ACCEPT_INVITE, snap().incomingInvites().getFirst().uuid()));
+        when(() -> snap() != null && snap().lens() != null && !snap().lens().photos().isEmpty(), () -> {
+        });
+        page(PhonePage.CARILENS, 0);
+        then(60, () -> {
+        });
+        shot("m01_carilens_companero");
+        then(10, () -> phone().openPhoto(snap().lens().photos().getFirst().id()));
+        shot("m02_foto_companero");
+        then(1200, () -> Minecraft.getInstance().stop());
+    }
+
+    /** Guion corto solo para el campamento. */
+    private void scriptCampOnly() {
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("tp @s 0 120 0 -90 15");
+        });
+        then(20, () -> {
+            cmd("fill -4 119 -4 4 119 4 minecraft:grass_block");
+            cmd("setblock 2 120 0 minecraft:campfire[lit=true]");
+            cmd("carins give @s 1000");
+        });
+        then(10, () -> act(PhoneAction.BUY_ITEM, "caricamp"));
+        then(20, () -> {
+            var mc = Minecraft.getInstance();
+            log("bloque en 2,120,0: " + mc.level.getBlockState(new net.minecraft.core.BlockPos(2, 120, 0))
+                    + " · jugador en " + mc.player.blockPosition());
+            act(PhoneAction.CAMP_SET, "");
+        });
+        then(20, () -> {
+            var n = com.chicoestudioso.caricraft.client.ClientPhoneState.notifications().peekFirst();
+            log("último aviso: " + (n == null ? "-" : n.key() + " " + n.args()));
+            log("campamento: " + snap().camp().camp());
+        });
+        then(20, () -> Minecraft.getInstance().stop());
     }
 
     private void scriptB() {

@@ -5,6 +5,7 @@ import com.chicoestudioso.caricraft.item.CariPhoneItem;
 import com.chicoestudioso.caricraft.item.ModItems;
 import com.chicoestudioso.caricraft.network.PhoneNotifyPayload;
 import com.chicoestudioso.caricraft.network.PhoneSnapshotPayload;
+import com.chicoestudioso.caricraft.network.PhotoDataPayload;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -28,6 +29,7 @@ public final class CaricraftClient implements ClientModInitializer {
         openPhoneKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.caricraft.open_phone", InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_O, KEY_CATEGORY));
 
+        ClientTickEvents.END_CLIENT_TICK.register(ClientPhotos::tick);
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (openPhoneKey.consumeClick()) {
                 if (client.player != null && client.screen == null
@@ -41,7 +43,12 @@ public final class CaricraftClient implements ClientModInitializer {
                 (payload, context) -> ClientPhoneState.acceptSnapshot(payload.json()));
         ClientPlayNetworking.registerGlobalReceiver(PhoneNotifyPayload.TYPE,
                 (payload, context) -> ClientPhoneState.acceptNotification(payload));
-        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> ClientPhoneState.clear());
+        ClientPlayNetworking.registerGlobalReceiver(PhotoDataPayload.TYPE,
+                (payload, context) -> ClientPhotos.accept(payload.photoId(), payload.png()));
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            ClientPhoneState.clear();
+            ClientPhotos.clear();
+        });
         HudRenderCallback.EVENT.register(ChallengeHud::render);
     }
 

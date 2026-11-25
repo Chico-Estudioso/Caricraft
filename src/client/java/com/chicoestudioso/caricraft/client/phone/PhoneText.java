@@ -142,10 +142,14 @@ public final class PhoneText {
     }
 
     public static Component chronicle(PhoneSnapshot snapshot, PhoneSnapshot.ChronicleView entry) {
+        if ("photo".equals(entry.type()) && (entry.args().isEmpty() || entry.args().getFirst().isBlank())) {
+            return Component.translatable("caricraft.chronicle.photo_plain", entry.actor());
+        }
         Object[] args = new Object[entry.args().size() + 1];
         args[0] = entry.actor();
         for (int i = 0; i < entry.args().size(); i++) {
-            args[i + 1] = entry.type().equals("note") ? entry.args().get(i) : arg(snapshot, entry.args().get(i));
+            args[i + 1] = entry.type().equals("note") || entry.type().equals("photo")
+                    ? entry.args().get(i) : arg(snapshot, entry.args().get(i));
         }
         return Component.translatable("caricraft.chronicle." + entry.type(), args);
     }

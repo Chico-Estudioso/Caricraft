@@ -38,12 +38,14 @@ public final class CaricraftServer {
 
     private final MinecraftServer server;
     private final CaricraftSavedData savedData;
+    private final com.chicoestudioso.caricraft.server.lens.PhotoStore photos;
     private CaricraftCore core;
     private ActionRateLimiter rateLimiter;
 
     private CaricraftServer(MinecraftServer server) {
         this.server = server;
         this.savedData = CaricraftSavedData.get(server);
+        this.photos = new com.chicoestudioso.caricraft.server.lens.PhotoStore(server);
         reload();
     }
 
@@ -117,6 +119,10 @@ public final class CaricraftServer {
         } catch (IOException e) {
             throw new IllegalStateException("No se pudo leer el mercado por defecto", e);
         }
+    }
+
+    public com.chicoestudioso.caricraft.server.lens.PhotoStore photos() {
+        return photos;
     }
 
     public MinecraftServer server() {

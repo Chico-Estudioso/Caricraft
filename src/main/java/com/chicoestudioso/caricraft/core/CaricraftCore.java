@@ -6,6 +6,7 @@ import com.chicoestudioso.caricraft.core.challenge.ChallengeService;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleService;
 import com.chicoestudioso.caricraft.core.economy.EconomyService;
+import com.chicoestudioso.caricraft.core.lens.LensService;
 import com.chicoestudioso.caricraft.core.market.MarketCatalog;
 import com.chicoestudioso.caricraft.core.market.MarketService;
 import com.chicoestudioso.caricraft.core.mission.MissionCatalog;
@@ -41,6 +42,7 @@ public final class CaricraftCore {
     private final ChallengeService challenge;
     private final MarketService market;
     private final CampService camp;
+    private final LensService lens;
 
     public CaricraftCore(CaricraftState state, CaricraftConfig config, MissionCatalog missionCatalog, Clock clock) {
         this(state, config, missionCatalog, MarketCatalog.of(java.util.List.of(), source -> true, item -> true), clock);
@@ -59,6 +61,11 @@ public final class CaricraftCore {
         this.challenge = new ChallengeService(config, economy, chronicle);
         this.market = new MarketService(config, economy, clock, marketCatalog);
         this.camp = new CampService(config, economy, chronicle, shop, clock);
+        this.lens = new LensService(config, chronicle, shop, clock);
+    }
+
+    public LensService lens() {
+        return lens;
     }
 
     public CampService camp() {

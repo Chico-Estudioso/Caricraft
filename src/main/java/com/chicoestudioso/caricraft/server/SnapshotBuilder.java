@@ -68,7 +68,8 @@ public final class SnapshotBuilder {
         List<AppView> apps = new ArrayList<>();
         for (ShopItem item : core.shop().catalog().all()) {
             apps.add(new AppView(item.id(), item.kind().name(), item.ownership().name(), item.price(),
-                    appState(core, party, profile, item), item.requires(), item.icon(), item.color()));
+                    appState(core, party, profile, item), item.requires(), item.icon(), item.color(),
+                    item.isUpgrade() ? party.upgradeLevel(item.id()) : 0, item.maxLevel()));
         }
 
         List<MissionView> missions = new ArrayList<>();
@@ -101,7 +102,17 @@ public final class SnapshotBuilder {
                 party.wallet().balance(), profile.theme(), List.copyOf(profile.ownedCosmetics()), partyView, apps,
                 missions, ledger, chronicle, exploration, stats, incoming, outgoing,
                 core.parties().leavePending(state, viewer), FabricLoader.getInstance().isModLoaded("cobblemon"),
-                challengeView(mod, party), marketView(core, party), campView(mod, party, player));
+                challengeView(mod, party), marketView(core, party), campView(mod, party, player), lensView(core, party));
+    }
+
+    private static PhoneSnapshot.LensView lensView(CaricraftCore core, Party party) {
+        if (!core.lens().hasApp(party)) {
+            return new PhoneSnapshot.LensView(false, 0, List.of());
+        }
+        List<PhoneSnapshot.PhotoView> photos = party.photos().stream()
+                .map(p -> new PhoneSnapshot.PhotoView(p.id(), p.authorName(), p.time(), p.caption(), p.width(), p.height()))
+                .toList();
+        return new PhoneSnapshot.LensView(true, core.lens().capacity(party), photos);
     }
 
     private static PhoneSnapshot.CampView campView(CaricraftServer mod, Party party, ServerPlayer viewer) {

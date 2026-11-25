@@ -63,8 +63,26 @@ loom {
             source sourceSets.devtools
             runDir 'run-qa-a'
             ideConfigGenerated false
-            vmArg '-Dcaricraft.qa.role=C'
+            vmArg '-Dcaricraft.qa.role=' + (System.getProperty('qaRole') ?: 'C')
             programArgs '--username', 'Dev1', '--quickPlayMultiplayer', 'localhost:25565', '--width', '1280', '--height', '720'
+        }
+        qaNewApps {
+            client()
+            name = 'QA Apps A'
+            source sourceSets.devtools
+            runDir 'run-qa-a'
+            ideConfigGenerated false
+            vmArg '-Dcaricraft.qa.role=N'
+            programArgs '--username', 'Dev1', '--quickPlayMultiplayer', 'localhost:25565', '--width', '1280', '--height', '720'
+        }
+        qaNewAppsPartner {
+            client()
+            name = 'QA Apps B'
+            source sourceSets.devtools
+            runDir 'run-qa-b'
+            ideConfigGenerated false
+            vmArg '-Dcaricraft.qa.role=M'
+            programArgs '--username', 'Dev2', '--quickPlayMultiplayer', 'localhost:25565', '--width', '1280', '--height', '720'
         }
         qaClientB {
             client()

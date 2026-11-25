@@ -56,12 +56,34 @@ public final class CaricraftConfig {
     public Map<String, Long> prices = new LinkedHashMap<>();
     /** Artículos de la tienda desactivados por id. */
     public List<String> disabledItems = new ArrayList<>();
+    /** CariLens: álbum de fotos (ver docs/CARILENS.md). */
+    public LensConfig lens = new LensConfig();
     /** CariCamp: campamento y viajes (ver docs/CARICAMP.md). */
     public CampConfig camp = new CampConfig();
     /** Mercado: objetos por Carins (ver docs/MARKET.md). */
     public MarketConfig market = new MarketConfig();
     /** Desafío Dúo: noches con mobs vanilla equipados (ver docs/CHALLENGE.md). */
     public ChallengeConfig challenge = new ChallengeConfig();
+
+    /** Ajustes de CariLens. */
+    public static final class LensConfig {
+        /** Fotos que caben en el álbum sin ampliaciones. */
+        public int basePhotos = 12;
+        /** Fotos extra por cada ampliación de álbum. */
+        public int photosPerExpansion = 12;
+        /** Tamaño máximo de una foto (bytes). */
+        public int maxPhotoBytes = 160 * 1024;
+        /** Segundos mínimos entre fotos de un jugador. */
+        public int uploadCooldownSeconds = 10;
+
+        LensConfig validate() {
+            basePhotos = clamp(basePhotos, 1, 200);
+            photosPerExpansion = clamp(photosPerExpansion, 0, 200);
+            maxPhotoBytes = clamp(maxPhotoBytes, 16 * 1024, 512 * 1024);
+            uploadCooldownSeconds = clamp(uploadCooldownSeconds, 0, 3600);
+            return this;
+        }
+    }
 
     /** Ajustes de CariCamp. */
     public static final class CampConfig {
@@ -188,6 +210,10 @@ public final class CaricraftConfig {
         if (disabledItems == null) {
             disabledItems = new ArrayList<>();
         }
+        if (lens == null) {
+            lens = new LensConfig();
+        }
+        lens.validate();
         if (camp == null) {
             camp = new CampConfig();
         }

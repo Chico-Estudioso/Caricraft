@@ -37,6 +37,9 @@ final class PhonePages {
         if (s.page == PhonePage.CHRONICLES && hasApp(snap, "chronicles")) {
             return inputRow(s, x, y, w, Component.translatable("caricraft.phone.chronicles.add"));
         }
+        if (s.page == PhonePage.CARILENS && com.chicoestudioso.caricraft.client.ClientPhotos.hasPending()) {
+            return inputRow(s, x, y, w, Component.translatable("caricraft.phone.lens.save"));
+        }
         return 0;
     }
 
@@ -64,6 +67,7 @@ final class PhonePages {
             case CHALLENGE -> challenge(s, snap, x, y, w);
             case MARKET -> market(s, snap, x, y, w);
             case CARICAMP -> hasApp(snap, "caricamp") ? caricamp(s, snap, x, y, w) : locked(s, snap, x, y, w, "caricamp");
+            case CARILENS -> hasApp(snap, "carilens") ? carilens(s, snap, x, y, w) : locked(s, snap, x, y, w, "carilens");
             case LOCKED -> locked(s, snap, x, y, w, s.lockedAppId);
         };
     }
@@ -494,7 +498,7 @@ final class PhonePages {
         PhoneTheme t = ui.theme;
         int top = y;
         y += ui.wrapped(Component.translatable("caricraft.phone.shop.intro"), x, y, w, t.textDim()) + 6;
-        for (String kind : List.of("APP", "COSMETIC")) {
+        for (String kind : List.of("APP", "UPGRADE", "COSMETIC")) {
             ui.text(Component.translatable("caricraft.phone.shop.section." + kind.toLowerCase()).copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
             y += 12;
             for (AppView item : snap.apps()) {
@@ -531,13 +535,21 @@ final class PhonePages {
             }
         }
         cy += 20;
+        if (item.maxLevel() > 1) {
+            Component level = Component.translatable("caricraft.phone.shop.level", item.level(), item.maxLevel());
+            if (draw) {
+                ui.chip(level, innerX, cy - 1, PhoneTheme.mix(item.color(), t.card(), 0.7f), t.text());
+            }
+            cy += ui.font.lineHeight + 5;
+        }
         Component description = PhoneText.appDescription(item.id());
         cy += draw ? ui.wrapped(description, innerX, cy, innerW, t.textDim()) : ui.wrappedHeight(description, innerW);
         cy += 3;
         switch (item.state()) {
             case "OWNED" -> {
                 if (draw) {
-                    ui.chip(Component.translatable("COSMETIC".equals(item.kind()) ? "caricraft.phone.shop.owned_personal" : "caricraft.phone.shop.owned"),
+                    ui.chip(Component.translatable("COSMETIC".equals(item.kind()) ? "caricraft.phone.shop.owned_personal"
+                                    : "UPGRADE".equals(item.kind()) ? "caricraft.phone.shop.maxed" : "caricraft.phone.shop.owned"),
                             innerX, cy, t.good(), 0xFFFFFFFF);
                 }
                 cy += ui.font.lineHeight + 3;
@@ -556,7 +568,7 @@ final class PhonePages {
             }
             default -> {
                 boolean affordable = snap.balance() >= item.price();
-                Component label = affordable ? Component.translatable("caricraft.phone.shop.buy")
+                Component label = affordable ? Component.translatable(item.maxLevel() > 1 ? "caricraft.phone.shop.upgrade" : "caricraft.phone.shop.buy")
                         : Component.translatable("caricraft.phone.shop.missing", PhoneText.number(item.price() - snap.balance()));
                 if (draw) {
                     int bw = ui.buttonWidth(label);
@@ -690,6 +702,105 @@ final class PhonePages {
         if (!any) {
             y += ui.wrapped(Component.translatable("caricraft.phone.stats.empty"), x, y, w, t.textDim());
         }
+        return y - top;
+    }
+
+    // ================================================================ carilens
+
+    private static final int LENS_BLUE = 0xFF00B4D8;
+
+    private static void photo(PhoneUi ui, net.minecraft.resources.ResourceLocation texture, int x, int y, int w, int h,
+                              int texW, int texH) {
+        ui.g.fill(x - 1, y - 1, x + w + 1, y + h + 1, 0xFF101018);
+        if (texture == null) {
+            ui.g.fill(x, y, x + w, y + h, 0xFF2A2A36);
+            ui.textCentered(Component.literal("…"), x + w / 2, y + h / 2 - 4, 0xFFAAAAAA);
+            return;
+        }
+        ui.g.blit(texture, x, y, w, h, 0, 0, texW, texH, texW, texH);
+    }
+
+    private static int carilens(PhoneScreen s, PhoneSnapshot snap, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        int top = y;
+        PhoneSnapshot.LensView lens = snap.lens();
+        if (lens == null || !lens.enabled()) {
+            return 0;
+        }
+
+        // Foto recién hecha, pendiente de guardar
+        if (com.chicoestudioso.caricraft.client.ClientPhotos.hasPending()) {
+            int h = w * 9 / 16;
+            photo(ui, com.chicoestudioso.caricraft.client.ClientPhotos.pendingTexture(), x, y, w, h, 256, 144);
+            y += h + 6;
+            y += ui.wrapped(Component.translatable("caricraft.phone.lens.pending",
+                    PhoneText.number(com.chicoestudioso.caricraft.client.ClientPhotos.pendingSize() / 1024)), x, y, w, t.textDim()) + 4;
+            ui.button(x, y, w, BUTTON_H + 2, Component.translatable("caricraft.phone.lens.discard"), Style.SECONDARY, s::discardPhoto);
+            return y + BUTTON_H + 2 - top;
+        }
+
+        // Foto abierta
+        if (s.openPhotoId != null) {
+            PhoneSnapshot.PhotoView open = lens.photos().stream().filter(p -> p.id().equals(s.openPhotoId)).findFirst().orElse(null);
+            if (open == null) {
+                s.openPhotoId = null;
+            } else {
+                int h = w * open.height() / Math.max(1, open.width());
+                photo(ui, com.chicoestudioso.caricraft.client.ClientPhotos.texture(open.id()), x, y, w, h, open.width(), open.height());
+                y += h + 5;
+                if (!open.caption().isEmpty()) {
+                    y += ui.wrapped(Component.literal(open.caption()).withStyle(ChatFormatting.ITALIC), x, y, w, t.text()) + 2;
+                }
+                ui.text(Component.translatable("caricraft.phone.lens.by", open.author(), PhoneText.dateTime(open.time())), x, y, t.textDim());
+                y += 14;
+                Component back = Component.translatable("caricraft.phone.lens.back");
+                boolean armed = System.currentTimeMillis() - s.deleteArmedAt < 3000;
+                Component delete = Component.translatable(armed ? "caricraft.phone.lens.delete_confirm" : "caricraft.phone.lens.delete");
+                int bw = ui.buttonWidth(back);
+                ui.button(x, y, bw, BUTTON_H, back, Style.SECONDARY, () -> s.openPhotoId = null);
+                int dw = ui.buttonWidth(delete);
+                ui.button(x + w - dw, y, dw, BUTTON_H, delete, armed ? Style.DANGER : Style.SECONDARY, () -> {
+                    if (System.currentTimeMillis() - s.deleteArmedAt < 3000) {
+                        s.send(PhoneAction.PHOTO_DELETE, open.id());
+                        com.chicoestudioso.caricraft.client.ClientPhotos.forget(open.id());
+                        s.openPhotoId = null;
+                    } else {
+                        s.deleteArmedAt = System.currentTimeMillis();
+                    }
+                });
+                return y + BUTTON_H - top;
+            }
+        }
+
+        // Cuadrícula
+        boolean full = lens.photos().size() >= lens.capacity();
+        ui.round(x, y, x + w, y + 30, LENS_BLUE);
+        ui.text(Component.translatable("caricraft.phone.lens.album").copy().withStyle(ChatFormatting.BOLD), x + 6, y + 5, 0xFFFFFFFF);
+        ui.text(Component.translatable("caricraft.phone.lens.count", lens.photos().size(), lens.capacity()), x + 6, y + 17, 0xFFE0F7FB);
+        y += 36;
+        ui.button(x, y, w, BUTTON_H + 3, Component.translatable(full ? "caricraft.phone.lens.full" : "caricraft.phone.lens.take"),
+                full ? Style.DISABLED : Style.PRIMARY, s::takePhoto);
+        y += BUTTON_H + 3 + 6;
+        if (lens.photos().isEmpty()) {
+            return y - top + ui.wrapped(Component.translatable("caricraft.phone.lens.empty"), x, y, w, t.textDim());
+        }
+        int cellW = (w - GAP) / 2;
+        int cellH = cellW * 9 / 16;
+        for (int i = 0; i < lens.photos().size(); i++) {
+            PhoneSnapshot.PhotoView p = lens.photos().get(i);
+            int cx = x + (i % 2) * (cellW + GAP);
+            int cy = y + (i / 2) * (cellH + 16);
+            boolean hover = ui.hovered(cx, cy, cx + cellW, cy + cellH + 12);
+            photo(ui, com.chicoestudioso.caricraft.client.ClientPhotos.texture(p.id()), cx, cy, cellW, cellH, p.width(), p.height());
+            if (hover) {
+                ui.g.fill(cx, cy, cx + cellW, cy + cellH, 0x30FFFFFF);
+            }
+            Component label = p.caption().isEmpty() ? Component.literal(p.author()) : Component.literal(p.caption());
+            ui.textClipped(label, cx, cy + cellH + 3, cellW, t.textDim());
+            ui.hit(cx, cy, cx + cellW, cy + cellH + 12, () -> s.openPhoto(p.id()));
+        }
+        y += ((lens.photos().size() + 1) / 2) * (cellH + 16);
         return y - top;
     }
 
@@ -841,7 +952,6 @@ final class PhonePages {
             s.drawCoin(x + w - 5 - priceWidth, y + 5);
             ui.text(price, x + w - 5 - priceWidth + 9, y + 5, t.warn());
             Component stock = Component.translatable("caricraft.phone.market.stock", offer.stockLeft(), offer.dailyStock());
-            ui.text(stock, x + 28, y + 16, offer.stockLeft() > 0 ? t.textDim() : t.bad());
             Component label;
             Style style;
             if (offer.stockLeft() <= 0) {
@@ -855,6 +965,7 @@ final class PhonePages {
                 style = Style.PRIMARY;
             }
             int bw = ui.buttonWidth(label);
+            ui.textClipped(stock, x + 28, y + 16, w - 28 - bw - 12, offer.stockLeft() > 0 ? t.textDim() : t.bad());
             ui.button(x + w - 5 - bw, y + h - BUTTON_H - 4, bw, BUTTON_H, label, style,
                     () -> s.send(PhoneAction.MARKET_BUY, offer.id()));
             y += h + 3;

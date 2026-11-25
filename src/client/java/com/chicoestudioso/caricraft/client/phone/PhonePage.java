@@ -16,6 +16,7 @@ public enum PhonePage {
     CHALLENGE("challenge"),
     MARKET("market"),
     CARICAMP("caricamp"),
+    CARILENS("carilens"),
     /** App que aún no se tiene o que llegará más adelante. */
     LOCKED(null);
 
