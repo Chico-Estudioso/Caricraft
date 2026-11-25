@@ -1,7 +1,7 @@
 # Cobbleverse: CobbleCentro y pestaña del Mercado
 
 La parte Cobbleverse aparece con `cobbleverse.enabled` (desactivado por defecto) y Cobblemon instalado. La tienda y la venta de Pokémon usan **CobbleDollars**, la moneda del modpack, no Carins. Se puede usar de dos formas:
-- **CobbleCentro:** app del CariPhone que abre una pantalla grande con los **modelos 3D de los Pokémon**, como en el PC de Cobblemon. Tiene pestañas Inicio, Tienda, Prodigioso y Vender.
+- **CobbleCentro:** app del CariPhone que abre una pantalla grande con los **modelos 3D de los Pokémon**, como en el PC de Cobblemon. Tiene pestañas Inicio, Tienda, Cajas, Suerte, Prodigioso, Mejoras y Vender.
 - **Pestaña Cobbleverse del Mercado:** lo mismo en formato teléfono, con un botón para abrir el CobbleCentro.
 
 ## CobbleCentro
@@ -32,6 +32,59 @@ La parte Cobbleverse aparece con `cobbleverse.enabled` (desactivado por defecto)
 ![Pestaña Cobbleverse](img/cobbleverse.png)
 
 *Captura con datos de ejemplo en el entorno de desarrollo (sin Cobblemon, por eso los iconos y los nombres de movimientos salen genéricos; en el juego salen las Poké Balls y los nombres traducidos).*
+
+## Cajas, tragaperras, mejoras y fusiones
+Pestañas **Cajas**, **Suerte** y **Mejoras** del CobbleCentro. Todo se paga en CobbleDollars; el servidor cobra antes, decide el resultado y, si la entrega falla, devuelve el dinero. El cliente solo anima lo que le llega.
+
+### Cajas
+![Cajas](img/cobblecentro_cajas.png)
+
+| Caja | Precio | Al día | Qué puede salir |
+|---|---|---|---|
+| Caja Poké | ₽8.000 | 10 | Poké/Super/Ultra Balls, ₽3.000–7.000, caramelos de exp. L, un Pokémon popular (3 % variocolor), caramelos raros y, con un 1 %, un Pokémon **variocolor** |
+| Caja Ultra | ₽30.000 | 5 | Ultra Balls, ₽12.000–26.000, caramelos XL, un **pseudolegendario** bebé (Dratini, Larvitar, Gible, Beldum…), Cápsula habilidad, caramelos raros y, con un 2,5 % cada uno, un pseudolegendario variocolor o una **Master Ball** |
+| Caja Maestra | ₽90.000 | 2 | ₽40.000–90.000, pseudolegendario con 4 IV perfectos, Parche habilidad, Pokémon variocolor, Master Ball y, con un 4 %, un **pseudolegendario variocolor con 6 IV perfectos** |
+
+- En cada caja se ve el contenido con la **probabilidad** de cada premio y su **rareza** por colores (común, raro, épico, legendario). Al pasar el ratón sale qué es.
+- Al abrirla, una **ruleta** horizontal frena hasta dejar el premio bajo la marca; después sale en grande (el Pokémon con su modelo 3D y estrellas si es variocolor).
+
+  ![Premio de una caja](img/cobblecentro_caja_premio.png)
+
+### Tragaperras
+![Tragaperras](img/cobblecentro_tragaperras.png)
+
+- Apuestas de ₽1.000, ₽5.000 o ₽20.000; **30 tiradas por jugador y día**.
+- Tres rodillos con Poké Ball, Super Ball, Ultra Ball, Baya Aranja, Caramelo raro y Master Ball. Tres iguales pagan de ×4 (Poké Ball) a **×200 (Master Ball)**; dos iguales, de ×0,5 a ×5.
+- **A la larga devuelve el 91,5 % de lo apostado** (calculado exactamente en el servidor y mostrado en la pantalla): la banca gana un poco, como debe ser. No es una forma de hacer dinero.
+- Un premio gordo (×100 o más) avisa también al compañero del dúo.
+
+### Mejoras de Pokémon
+![Mejoras](img/cobblecentro_mejoras.png)
+
+| Mejora | Precio | Efecto |
+|---|---|---|
+| Entrenamiento de IV | ₽15.000 | Sube a 31 el IV más bajo |
+| Subida de nivel | ₽8.000 | +5 niveles (hasta el 100) |
+| Amuleto variocolor | ₽25.000 | **8 %** de hacerlo variocolor; si falla, se pierde el dinero |
+
+- Se elige el Pokémon del equipo (con su modelo) y la mejora. No se puede si ya está al máximo o en mitad de un combate.
+- El amuleto tiene suspense: el Pokémon gira mientras se decide y aparece con sus colores nuevos.
+- Ninguna mejora sale rentable para vender después (ver precios de venta).
+
+### Fusiones de objetos
+| Ingredientes | Precio | Resultado |
+|---|---|---|
+| 4 Poké Balls | ₽200 | 2 Super Balls |
+| 4 Super Balls | ₽600 | 2 Ultra Balls |
+| 8 Ultra Balls | ₽20.000 | 1 Master Ball (**10 %**) |
+| 3 caramelos de exp. L | ₽1.000 | 1 Caramelo raro |
+| 3 Cápsulas habilidad | ₽15.000 | 1 Parche habilidad (**35 %**) |
+
+- Los ingredientes salen del **inventario principal** (no de mochilas ni cofres). Si la fusión tiene probabilidad y falla, se pierden los ingredientes y el dinero.
+
+### Configurarlo
+- `crates`, `slots`, `upgrades` y `fusions` en el bloque `cobbleverse` de `config/caricraft.json` activan o quitan cada parte (todas activadas por defecto si `cobbleverse.enabled` lo está).
+- Contenido, precios, probabilidades, apuestas, pagos y límites en `config/caricraft_cobbleverse.json` (secciones `crates`, `slots`, `upgrades` y `fusions`). Un archivo anterior que no las tenga recibe las del mod; una lista vacía a propósito se respeta.
 
 ## Regalo misterioso
 - **Uno al día por jugador.** El día cambia a las 00:00 UTC, igual que el Mercado. Se abre con «Abrir el regalo».
@@ -102,6 +155,7 @@ Cada día salen **6 ofertas** de un catálogo de 24. Son las mismas para todos y
 | `wonderTradesPerDay` | 1 | Intercambios prodigiosos por jugador y día |
 | `wonderShinyChance` | 0.02 | Probabilidad de variocolor de los Pokémon de «un entrenador lejano» |
 | `wonderPoolSize` | 100 | Pokémon que caben en la bolsa de intercambios |
+| `crates` / `slots` / `upgrades` / `fusions` | `true` | Cajas, tragaperras, mejoras de Pokémon y fusiones de objetos |
 
 - Quien ya tenía `market.includeCobblemonItems: true` pasa a tener `cobbleverse.enabled: true` (migración a la versión 3 de la configuración).
 - El catálogo (ofertas, precios, premios y pesos) se puede cambiar en `config/caricraft_cobbleverse.json`. Si no existe, se usa el del mod.

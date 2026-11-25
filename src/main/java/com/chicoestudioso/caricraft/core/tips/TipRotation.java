@@ -57,6 +57,7 @@ public final class TipRotation {
             new Tip("cobblemon", TipContext::cobblemon),
             new Tip("cobbleverse", TipContext::cobbleverse),
             new Tip("wonder_trade", TipContext::cobbleverse),
+            new Tip("cobble_luck", TipContext::cobbleverse),
             Tip.always("tips_off"));
 
     private final List<Tip> tips;

@@ -43,6 +43,7 @@ public final class CaricraftCore {
     private final ChallengeService challenge;
     private final MarketService market;
     private final com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseService cobbleverse;
+    private final com.chicoestudioso.caricraft.core.cobbleverse.LuckService luck;
     private final CampService camp;
     private final LensService lens;
     private final BoxService box;
@@ -61,6 +62,7 @@ public final class CaricraftCore {
                          MarketCatalog marketCatalog, com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog cobbleverseCatalog,
                          Clock clock) {
         this.cobbleverse = new com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseService(config, cobbleverseCatalog, clock);
+        this.luck = new com.chicoestudioso.caricraft.core.cobbleverse.LuckService(cobbleverse);
         this.state = state;
         this.config = config;
         this.clock = clock;
@@ -86,6 +88,11 @@ public final class CaricraftCore {
 
     public CampService camp() {
         return camp;
+    }
+
+    /** Cajas, tragaperras, mejoras y fusiones del CobbleCentro. */
+    public com.chicoestudioso.caricraft.core.cobbleverse.LuckService luck() {
+        return luck;
     }
 
     public com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseService cobbleverse() {

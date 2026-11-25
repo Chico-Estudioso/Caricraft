@@ -51,4 +51,15 @@ public interface PokemonBackend {
 
     /** Especie al azar entre las implementadas que no son legendarias, singulares, ultraentes ni paradoja. */
     String randomSpecies(java.util.Random random);
+
+    /** IV de un Pokémon del equipo en el orden PS, Ataque, Defensa, At. esp., Def. esp., Velocidad; vacío si ya no está. */
+    Optional<int[]> ivs(ServerPlayer player, UUID uuid);
+
+    /**
+     * Mejora un Pokémon del equipo: {@code iv} pone a 31 la estadística {@code value} (índice como en {@link #ivs}),
+     * {@code level} lo sube al nivel {@code value} y {@code shiny} lo hace variocolor.
+     *
+     * @return {@code false} si el Pokémon ya no está en el equipo
+     */
+    boolean improve(ServerPlayer player, UUID uuid, String kind, int value);
 }

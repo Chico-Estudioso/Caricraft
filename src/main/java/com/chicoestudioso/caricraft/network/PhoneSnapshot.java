@@ -166,7 +166,57 @@ public record PhoneSnapshot(
     public record CobbleverseView(boolean cobbleDollarsInstalled, long cobbleDollars, boolean giftEnabled, boolean giftAvailable,
                                   long nextDayAt, boolean shopEnabled, List<CvOfferView> offers, boolean sellEnabled,
                                   List<SellView> party, int salesToday, int maxSales, boolean wonderEnabled, int wondersLeft,
-                                  int wondersPerDay, int wonderPool, WonderView lastWonder) {
+                                  int wondersPerDay, int wonderPool, WonderView lastWonder, LuckView luck) {
+    }
+
+    /** Cajas, tragaperras, mejoras y fusiones del CobbleCentro. Las partes desactivadas llegan vacías o {@code null}. */
+    public record LuckView(List<CrateView> crates, SlotsView slots, List<UpgradeView> upgrades, List<FusionView> fusions,
+                           LuckResultView last) {
+    }
+
+    public record CrateView(String id, long price, String icon, int opened, int dailyLimit, List<RewardView> rewards) {
+    }
+
+    /**
+     * Premio posible de una caja.
+     *
+     * @param kind   ITEM, POKEMON, CARINS o COBBLEDOLLARS
+     * @param chance probabilidad (0–1)
+     */
+    public record RewardView(String id, String kind, String icon, String item, int min, int max, List<String> species, int level,
+                             boolean shiny, int perfectIvs, String rarity, double chance) {
+    }
+
+    /** @param returnToPlayer lo que devuelve la máquina a la larga por cada CobbleDollar apostado (calculado en el servidor) */
+    public record SlotsView(List<Long> bets, int spinsLeft, int spinsPerDay, List<SymbolView> symbols, double returnToPlayer) {
+    }
+
+    public record SymbolView(String id, String icon, double pay3, double pay2) {
+    }
+
+    /** Mejora de Pokémon: {@code kind} iv, level o shiny. */
+    public record UpgradeView(String id, String kind, long price, int amount, double chance) {
+    }
+
+    public record FusionView(String id, List<IngredientView> inputs, long price, String output, int count, double chance) {
+    }
+
+    public record IngredientView(String item, int count) {
+    }
+
+    /**
+     * Último resultado de suerte del jugador, para la animación.
+     *
+     * @param kind    crate, spin, upgrade o fusion
+     * @param id      caja, mejora o fusión
+     * @param reward  índice del premio de la caja
+     * @param species Pokémon recibido (caja) o mejorado
+     * @param amount  cantidad recibida (objetos, dinero) o valor nuevo (nivel)
+     * @param reels   símbolos de la tragaperras
+     * @param payout  lo que ha pagado la tragaperras
+     */
+    public record LuckResultView(String kind, String id, long time, int reward, String species, List<String> aspects, boolean shiny,
+                                 int amount, List<Integer> reels, long payout, boolean success) {
     }
 
     /**

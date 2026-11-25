@@ -70,30 +70,22 @@ public final class CobbleverseManager {
             }
         }
         List<PhoneSnapshot.SellView> party = new ArrayList<>();
-        if (config.sellPokemon) {
+        if (config.sellPokemon || config.wonderTrade || mod.core().luck().upgradesEnabled()) {
             PokemonBackend backend = CobblemonCompat.backend();
             List<PokemonBackend.PartyMon> mons = backend.party(player);
             boolean inBattle = backend.inBattle(player);
             for (PokemonBackend.PartyMon mon : mons) {
                 party.add(new PhoneSnapshot.SellView(mon.uuid().toString(), mon.species(), mon.nickname(), mon.level(),
-                        mon.info().shiny(), mon.info().ivTotal(), service.sellPrice(mon.info()),
+                        mon.info().shiny(), mon.info().ivTotal(), config.sellPokemon ? service.sellPrice(mon.info()) : 0,
                         service.sellBlocked(mon.info(), mons.size() <= 1, inBattle), mon.aspects()));
-            }
-        } else if (config.wonderTrade) {
-            PokemonBackend backend = CobblemonCompat.backend();
-            List<PokemonBackend.PartyMon> mons = backend.party(player);
-            boolean inBattle = backend.inBattle(player);
-            for (PokemonBackend.PartyMon mon : mons) {
-                party.add(new PhoneSnapshot.SellView(mon.uuid().toString(), mon.species(), mon.nickname(), mon.level(),
-                        mon.info().shiny(), mon.info().ivTotal(), 0, service.sellBlocked(mon.info(), mons.size() <= 1, inBattle),
-                        mon.aspects()));
             }
         }
         return new PhoneSnapshot.CobbleverseView(CobbleDollarsBridge.available(), balance.orElse(-1),
                 config.mysteryGift, service.giftAvailable(profile, day), service.nextDayAt(),
                 config.shop, offers, config.sellPokemon, party, service.salesToday(profile, day), service.maxSalesPerDay(),
                 config.wonderTrade, service.wondersLeft(profile, day), config.wonderTradesPerDay,
-                WonderTradeData.get(mod.server()).entries().size(), LAST_WONDER.get(player.getUUID()));
+                WonderTradeData.get(mod.server()).entries().size(), LAST_WONDER.get(player.getUUID()),
+                LuckManager.view(mod, player, profile, day));
     }
 
     // ------------------------------------------------------------------ regalo misterioso

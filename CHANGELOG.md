@@ -1,6 +1,12 @@
 # Changelog
 
 ## Unreleased
+- **Suerte en el CobbleCentro** (ver `docs/COBBLEVERSE.md`), todo en CobbleDollars y decidido en el servidor:
+  - **Cajas** Poké, Ultra y Maestra con premios por rareza (objetos, dinero, Pokémon, variocolor, pseudolegendarios, Master Ball), probabilidades a la vista y ruleta animada.
+  - **Tragaperras** con 3 apuestas, 30 tiradas al día y premio gordo ×200. Devuelve el 91,5 % a la larga y lo dice en pantalla.
+  - **Mejoras de Pokémon:** IV más bajo a 31, +5 niveles y amuleto variocolor (8 %).
+  - **Fusiones de objetos:** Poké → Super → Ultra Balls, Master Ball (10 %), caramelo raro y Parche habilidad (35 %).
+  - Configurables por partes (`crates`, `slots`, `upgrades`, `fusions`) y en el catálogo. Los catálogos de servidor anteriores reciben las secciones nuevas. Protocolo de red 8.
 - **CobbleCentro** (con `cobbleverse.enabled`; ver `docs/COBBLEVERSE.md`):
   - App nueva del CariPhone que abre una pantalla grande con los **modelos 3D de los Pokémon**, como el PC de Cobblemon: inicio con el equipo, tienda, intercambio prodigioso y venta.
   - Los modelos giran al pasar el ratón. Sin Cobblemon en el cliente se ve una Poké Ball.

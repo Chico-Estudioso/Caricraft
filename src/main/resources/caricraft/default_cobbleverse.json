@@ -525,5 +525,496 @@
       "item": "cobblemon:master_ball",
       "weight": 1
     }
+  ],
+  "crates": [
+    {
+      "id": "crate_poke",
+      "price": 8000,
+      "icon": "cobblemon:poke_ball",
+      "dailyLimit": 10,
+      "rewards": [
+        {
+          "id": "poke_balls",
+          "item": "cobblemon:poke_ball",
+          "amount": {
+            "min": 6,
+            "max": 12
+          },
+          "weight": 300,
+          "rarity": "common"
+        },
+        {
+          "id": "great_balls",
+          "item": "cobblemon:great_ball",
+          "amount": {
+            "min": 3,
+            "max": 6
+          },
+          "weight": 240,
+          "rarity": "common"
+        },
+        {
+          "id": "dollars_small",
+          "cobbledollars": {
+            "min": 3000,
+            "max": 7000
+          },
+          "weight": 160,
+          "rarity": "common"
+        },
+        {
+          "id": "ultra_balls",
+          "item": "cobblemon:ultra_ball",
+          "amount": {
+            "min": 2,
+            "max": 4
+          },
+          "weight": 110,
+          "rarity": "rare"
+        },
+        {
+          "id": "exp_candy",
+          "item": "cobblemon:exp_candy_l",
+          "amount": {
+            "min": 2,
+            "max": 4
+          },
+          "weight": 80,
+          "rarity": "rare"
+        },
+        {
+          "id": "pokemon",
+          "pokemon": {
+            "species": [
+              "pikachu",
+              "eevee",
+              "growlithe",
+              "abra",
+              "ralts",
+              "riolu",
+              "togepi",
+              "pichu",
+              "litwick",
+              "zorua",
+              "axew",
+              "munchlax",
+              "sneasel",
+              "scyther",
+              "magikarp",
+              "ditto",
+              "absol"
+            ],
+            "level": 15,
+            "shinyChance": 0.03,
+            "perfectIvs": 2
+          },
+          "weight": 70,
+          "rarity": "rare"
+        },
+        {
+          "id": "rare_candy",
+          "item": "cobblemon:rare_candy",
+          "amount": {
+            "min": 2,
+            "max": 3
+          },
+          "weight": 30,
+          "rarity": "epic"
+        },
+        {
+          "id": "shiny_pokemon",
+          "pokemon": {
+            "species": [
+              "pikachu",
+              "eevee",
+              "growlithe",
+              "abra",
+              "ralts",
+              "riolu",
+              "togepi",
+              "pichu",
+              "litwick",
+              "zorua",
+              "axew",
+              "munchlax",
+              "sneasel",
+              "scyther",
+              "magikarp",
+              "ditto",
+              "absol"
+            ],
+            "level": 15,
+            "shiny": true,
+            "perfectIvs": 3
+          },
+          "weight": 10,
+          "rarity": "legendary"
+        }
+      ]
+    },
+    {
+      "id": "crate_ultra",
+      "price": 30000,
+      "icon": "cobblemon:ultra_ball",
+      "dailyLimit": 5,
+      "rewards": [
+        {
+          "id": "ultra_balls",
+          "item": "cobblemon:ultra_ball",
+          "amount": {
+            "min": 5,
+            "max": 10
+          },
+          "weight": 280,
+          "rarity": "common"
+        },
+        {
+          "id": "dollars",
+          "cobbledollars": {
+            "min": 12000,
+            "max": 26000
+          },
+          "weight": 200,
+          "rarity": "common"
+        },
+        {
+          "id": "exp_candy_xl",
+          "item": "cobblemon:exp_candy_xl",
+          "amount": {
+            "min": 2,
+            "max": 3
+          },
+          "weight": 180,
+          "rarity": "rare"
+        },
+        {
+          "id": "pseudo",
+          "pokemon": {
+            "species": [
+              "dratini",
+              "larvitar",
+              "bagon",
+              "beldum",
+              "gible",
+              "deino",
+              "goomy",
+              "jangmoo",
+              "dreepy",
+              "frigibax",
+              "axew",
+              "riolu"
+            ],
+            "level": 20,
+            "shinyChance": 0.05,
+            "perfectIvs": 3
+          },
+          "weight": 150,
+          "rarity": "rare"
+        },
+        {
+          "id": "ability_capsule",
+          "item": "cobblemon:ability_capsule",
+          "amount": {
+            "min": 1,
+            "max": 1
+          },
+          "weight": 80,
+          "rarity": "epic"
+        },
+        {
+          "id": "rare_candy",
+          "item": "cobblemon:rare_candy",
+          "amount": {
+            "min": 4,
+            "max": 6
+          },
+          "weight": 60,
+          "rarity": "epic"
+        },
+        {
+          "id": "shiny_pseudo",
+          "pokemon": {
+            "species": [
+              "dratini",
+              "larvitar",
+              "bagon",
+              "beldum",
+              "gible",
+              "deino",
+              "goomy",
+              "jangmoo",
+              "dreepy",
+              "frigibax",
+              "axew",
+              "riolu"
+            ],
+            "level": 20,
+            "shiny": true,
+            "perfectIvs": 3
+          },
+          "weight": 25,
+          "rarity": "legendary"
+        },
+        {
+          "id": "master_ball",
+          "item": "cobblemon:master_ball",
+          "amount": {
+            "min": 1,
+            "max": 1
+          },
+          "weight": 25,
+          "rarity": "legendary"
+        }
+      ]
+    },
+    {
+      "id": "crate_master",
+      "price": 90000,
+      "icon": "cobblemon:master_ball",
+      "dailyLimit": 2,
+      "rewards": [
+        {
+          "id": "dollars_big",
+          "cobbledollars": {
+            "min": 40000,
+            "max": 90000
+          },
+          "weight": 300,
+          "rarity": "common"
+        },
+        {
+          "id": "pseudo_4iv",
+          "pokemon": {
+            "species": [
+              "dratini",
+              "larvitar",
+              "bagon",
+              "beldum",
+              "gible",
+              "deino",
+              "goomy",
+              "jangmoo",
+              "dreepy",
+              "frigibax",
+              "axew",
+              "riolu"
+            ],
+            "level": 25,
+            "shinyChance": 0.1,
+            "perfectIvs": 4
+          },
+          "weight": 240,
+          "rarity": "rare"
+        },
+        {
+          "id": "ability_patch",
+          "item": "cobblemon:ability_patch",
+          "amount": {
+            "min": 1,
+            "max": 1
+          },
+          "weight": 180,
+          "rarity": "rare"
+        },
+        {
+          "id": "shiny_popular",
+          "pokemon": {
+            "species": [
+              "pikachu",
+              "eevee",
+              "growlithe",
+              "abra",
+              "ralts",
+              "riolu",
+              "togepi",
+              "pichu",
+              "litwick",
+              "zorua",
+              "axew",
+              "munchlax",
+              "sneasel",
+              "scyther",
+              "magikarp",
+              "ditto",
+              "absol"
+            ],
+            "level": 25,
+            "shiny": true,
+            "perfectIvs": 4
+          },
+          "weight": 140,
+          "rarity": "epic"
+        },
+        {
+          "id": "master_ball",
+          "item": "cobblemon:master_ball",
+          "amount": {
+            "min": 1,
+            "max": 1
+          },
+          "weight": 100,
+          "rarity": "epic"
+        },
+        {
+          "id": "shiny_pseudo_6iv",
+          "pokemon": {
+            "species": [
+              "dratini",
+              "larvitar",
+              "bagon",
+              "beldum",
+              "gible",
+              "deino",
+              "goomy",
+              "jangmoo",
+              "dreepy",
+              "frigibax",
+              "axew",
+              "riolu"
+            ],
+            "level": 25,
+            "shiny": true,
+            "perfectIvs": 6
+          },
+          "weight": 40,
+          "rarity": "legendary"
+        }
+      ]
+    }
+  ],
+  "slots": {
+    "bets": [
+      1000,
+      5000,
+      20000
+    ],
+    "spinsPerDay": 30,
+    "symbols": [
+      {
+        "id": "poke",
+        "icon": "cobblemon:poke_ball",
+        "weight": 34,
+        "pay3": 4,
+        "pay2": 0.5
+      },
+      {
+        "id": "great",
+        "icon": "cobblemon:great_ball",
+        "weight": 24,
+        "pay3": 8,
+        "pay2": 0.7
+      },
+      {
+        "id": "ultra",
+        "icon": "cobblemon:ultra_ball",
+        "weight": 16,
+        "pay3": 15,
+        "pay2": 1.5
+      },
+      {
+        "id": "berry",
+        "icon": "cobblemon:oran_berry",
+        "weight": 13,
+        "pay3": 25,
+        "pay2": 2
+      },
+      {
+        "id": "candy",
+        "icon": "cobblemon:rare_candy",
+        "weight": 8,
+        "pay3": 50,
+        "pay2": 3
+      },
+      {
+        "id": "master",
+        "icon": "cobblemon:master_ball",
+        "weight": 5,
+        "pay3": 200,
+        "pay2": 5
+      }
+    ]
+  },
+  "upgrades": [
+    {
+      "id": "iv_training",
+      "kind": "iv",
+      "price": 15000
+    },
+    {
+      "id": "level_boost",
+      "kind": "level",
+      "price": 8000,
+      "amount": 5
+    },
+    {
+      "id": "shiny_charm",
+      "kind": "shiny",
+      "price": 25000,
+      "chance": 0.08
+    }
+  ],
+  "fusions": [
+    {
+      "id": "great_balls",
+      "inputs": [
+        {
+          "item": "cobblemon:poke_ball",
+          "count": 4
+        }
+      ],
+      "price": 200,
+      "output": "cobblemon:great_ball",
+      "count": 2
+    },
+    {
+      "id": "ultra_balls",
+      "inputs": [
+        {
+          "item": "cobblemon:great_ball",
+          "count": 4
+        }
+      ],
+      "price": 600,
+      "output": "cobblemon:ultra_ball",
+      "count": 2
+    },
+    {
+      "id": "master_ball",
+      "inputs": [
+        {
+          "item": "cobblemon:ultra_ball",
+          "count": 8
+        }
+      ],
+      "price": 20000,
+      "output": "cobblemon:master_ball",
+      "count": 1,
+      "chance": 0.1
+    },
+    {
+      "id": "rare_candy",
+      "inputs": [
+        {
+          "item": "cobblemon:exp_candy_l",
+          "count": 3
+        }
+      ],
+      "price": 1000,
+      "output": "cobblemon:rare_candy",
+      "count": 1
+    },
+    {
+      "id": "ability_patch",
+      "inputs": [
+        {
+          "item": "cobblemon:ability_capsule",
+          "count": 3
+        }
+      ],
+      "price": 15000,
+      "output": "cobblemon:ability_patch",
+      "count": 1,
+      "chance": 0.35
+    }
   ]
 }

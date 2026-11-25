@@ -94,6 +94,15 @@ public final class PhoneActionHandler {
                         ? com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseManager.sell(mod, player, payload.arg1()) : invalid();
                 case CV_WONDER -> payload.arg1().length() <= 36
                         ? com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseManager.wonderTrade(mod, player, payload.arg1()) : invalid();
+                case CV_CRATE -> payload.arg1().length() <= 48
+                        ? com.chicoestudioso.caricraft.server.cobbleverse.LuckManager.openCrate(mod, player, payload.arg1()) : invalid();
+                case CV_SPIN -> payload.arg1().length() <= 2
+                        ? com.chicoestudioso.caricraft.server.cobbleverse.LuckManager.spin(mod, player, payload.arg1()) : invalid();
+                case CV_UPGRADE -> payload.arg1().length() <= 48 && payload.arg2().length() <= 36
+                        ? com.chicoestudioso.caricraft.server.cobbleverse.LuckManager.upgrade(mod, player, payload.arg1(), payload.arg2())
+                        : invalid();
+                case CV_FUSE -> payload.arg1().length() <= 48
+                        ? com.chicoestudioso.caricraft.server.cobbleverse.LuckManager.fuse(mod, player, payload.arg1()) : invalid();
                 case TOGGLE_TIPS -> {
                     var profile = core.onPlayerJoin(uuid, player.getGameProfile().getName());
                     profile.setTipsEnabled(!profile.tipsEnabled());

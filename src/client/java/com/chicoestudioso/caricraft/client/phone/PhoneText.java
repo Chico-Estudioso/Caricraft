@@ -152,6 +152,10 @@ public final class PhoneText {
         if (raw.indexOf(':') > 0 && ResourceLocation.tryParse(raw) != null) {
             return idName(raw);
         }
+        boolean memberName = snapshot != null && snapshot.party().members().stream().anyMatch(m -> m.name().equals(raw));
+        if (!memberName && raw.length() >= 4 && raw.length() <= 18 && raw.chars().allMatch(Character::isDigit)) {
+            return number(Long.parseLong(raw)); // cantidades: «1.000» en vez de «1000»
+        }
         return raw;
     }
 

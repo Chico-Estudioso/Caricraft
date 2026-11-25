@@ -110,22 +110,27 @@ public final class CaricraftServer {
             net.minecraft.resources.ResourceLocation id = net.minecraft.resources.ResourceLocation.tryParse(item);
             return id != null && net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(id);
         };
+        com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog defaults;
+        try (InputStream in = Objects.requireNonNull(CaricraftServer.class.getResourceAsStream("/caricraft/default_cobbleverse.json"));
+             Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+            defaults = com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog.fromJson(reader, exists, backend::speciesExists);
+        } catch (IOException e) {
+            throw new IllegalStateException("No se pudo leer el catálogo de Cobbleverse por defecto", e);
+        }
+        var loaded = defaults;
         Path custom = configDir.resolve(COBBLEVERSE_FILE);
         if (Files.exists(custom)) {
             try (Reader reader = Files.newBufferedReader(custom, StandardCharsets.UTF_8)) {
-                return com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog.fromJson(reader, exists, backend::speciesExists);
+                // Un archivo anterior a las cajas conserva lo suyo y recibe las secciones nuevas del mod.
+                loaded = com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog.fromJson(reader, exists, backend::speciesExists)
+                        .withMissingFrom(defaults);
             } catch (IOException | IllegalArgumentException e) {
                 CaricraftMod.LOGGER.error("{} no es válido; se usa el catálogo de Cobbleverse por defecto.", custom, e);
             }
         }
-        try (InputStream in = Objects.requireNonNull(CaricraftServer.class.getResourceAsStream("/caricraft/default_cobbleverse.json"));
-             Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-            var loaded = com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog.fromJson(reader, exists, backend::speciesExists);
-            CaricraftMod.LOGGER.info("Cobbleverse: {} ofertas y {} premios de regalo misterioso.", loaded.offers().size(), loaded.gifts().size());
-            return loaded;
-        } catch (IOException e) {
-            throw new IllegalStateException("No se pudo leer el catálogo de Cobbleverse por defecto", e);
-        }
+        CaricraftMod.LOGGER.info("Cobbleverse: {} ofertas, {} premios de regalo misterioso, {} cajas, {} mejoras y {} fusiones.",
+                loaded.offers().size(), loaded.gifts().size(), loaded.crates().size(), loaded.upgrades().size(), loaded.fusions().size());
+        return loaded;
     }
 
     private static MarketCatalog loadMarket(Path configDir, CaricraftConfig config) {

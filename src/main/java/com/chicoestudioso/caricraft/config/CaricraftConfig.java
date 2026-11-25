@@ -177,6 +177,14 @@ public final class CaricraftConfig {
         public double wonderShinyChance = 0.02;
         /** Pokémon de otros jugadores que esperan en el intercambio prodigioso (los más antiguos se van). */
         public int wonderPoolSize = 100;
+        /** Cajas de premios en el CobbleCentro (contenido en {@code caricraft_cobbleverse.json}). */
+        public boolean crates = true;
+        /** Tragaperras en el CobbleCentro. */
+        public boolean slots = true;
+        /** Mejoras de Pokémon (IV, nivel, variocolor) por CobbleDollars. */
+        public boolean upgrades = true;
+        /** Fusiones de objetos (p. ej. Ultra Balls → Master Ball con probabilidad). */
+        public boolean fusions = true;
 
         CobbleverseConfig validate() {
             maxSalesPerDay = clamp(maxSalesPerDay, 0, 100);
