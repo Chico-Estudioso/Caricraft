@@ -118,6 +118,10 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 - `/caricraft desafio preparar` (consola) los quita: la lista pasa de 84 a 74 entradas y se guarda copia `.caricraft.bak`. Tras reiniciar, sin aviso.
 - `/summon zombie` fuera del desafío no deja ningún zombi: el filtro convive con el de MobsBeGone.
 - 35 misiones y 33 ofertas de Mercado cargadas.
+- **CariPhone personal** (exportando las clases con `-Dmixin.debug.export=true`):
+  - Los tres mixins se aplican sin conflictos en `ServerPlayer`, `Player` y `Slot`.
+  - En esos mismos métodos conviven Lenient Death (conservar objetos al morir), Sophisticated Core (tirar desde la mochila), Interactic (fuerza al tirar) y Accessories/Trinkets (soltar accesorios al morir). Todos usan inyecciones compatibles; ninguno reemplaza los métodos.
+  - En un mundo creado con una versión anterior aparece una vez el aviso `Missing data pack caricraft`, porque ya no hay receta. Es inofensivo.
 
 ## Errores encontrados y corregidos durante la QA
 1. **Teléfono borroso (alto):** en 1.21 `Screen.render` vuelve a pintar el fondo desenfocado encima. Corregido en `PhoneScreen`.
