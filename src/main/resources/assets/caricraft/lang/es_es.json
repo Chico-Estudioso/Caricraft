@@ -561,5 +561,17 @@
   "caricraft.phone.settings.on": "Activados",
   "caricraft.phone.settings.off": "Desactivados",
   "caricraft.result.tips_on": "Consejos activados.",
-  "caricraft.result.tips_off": "Consejos desactivados."
+  "caricraft.result.tips_off": "Consejos desactivados.",
+  "caricraft.notify.squad_spawned": "¡Un escuadrón de %3$s guarda un botín a %1$s m al %2$s! Derrótalo para abrir el cofre.",
+  "caricraft.notify.squad_defeated": "¡Escuadrón derrotado! El cofre de botín ya se puede abrir (+%s Carins).",
+  "caricraft.challenge.captain": "Capitán: %s",
+  "caricraft.challenge.squad_locked": "Cofre bloqueado: quedan %s guardias del escuadrón.",
+  "caricraft.chronicle.squad_defeated": "%s y su dúo derrotan un escuadrón de nivel %s y se hacen con su botín.",
+  "caricraft.ledger.challenge_squad": "Escuadrón derrotado",
+  "caricraft.stat.challenge_squads": "Escuadrones derrotados",
+  "caricraft.phone.challenge.caches": "Botines de esta noche",
+  "caricraft.phone.challenge.cache_locked": "Bloqueado",
+  "caricraft.phone.challenge.cache_open": "¡Abierto!",
+  "caricraft.phone.challenge.cache_guards": "Quedan %s guardias",
+  "caricraft.phone.challenge.cache_open_hint": "El cofre ya se puede abrir"
 }

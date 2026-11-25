@@ -198,6 +198,12 @@ public final class CaricraftConfig {
         public boolean gateMobsOutsideChallenge = true;
         /** Radio (bloques) alrededor de un jugador en desafío donde se permiten los mobs. */
         public int radius = 128;
+        /** Escuadrones que protegen un cofre de botín (bloqueado hasta derrotarlos). */
+        public boolean squads = true;
+        /** Escuadrones como mucho por noche (1, y uno más cada 8 niveles). */
+        public int maxSquadsPerNight = 3;
+        /** Carins por derrotar un escuadrón, más 5 por nivel. */
+        public long squadReward = 40;
 
         ChallengeConfig validate() {
             intervalNights = clamp(intervalNights, 1, 30);
@@ -206,6 +212,8 @@ public final class CaricraftConfig {
             maxLevel = clamp(maxLevel, 1, 100);
             nightsPerLevel = clamp(nightsPerLevel, 1, 50);
             radius = clamp(radius, 32, 256);
+            maxSquadsPerNight = clamp(maxSquadsPerNight, 0, 6);
+            squadReward = Math.max(0, Math.min(100_000, squadReward));
             if (mobs == null) {
                 mobs = new ArrayList<>();
             }

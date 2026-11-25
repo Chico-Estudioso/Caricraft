@@ -18,6 +18,7 @@ public record ChronicleEntry(long time, String type, UUID actor, String actorNam
     public static final String LEGENDARY_CATCH = "legendary_catch";
     public static final String EVOLUTION = "evolution";
     public static final String NOTE = "note";
+    public static final String SQUAD_DEFEATED = "squad_defeated";
     public static final String WELCOME = "welcome";
     public static final String CHALLENGE_SURVIVED = "challenge_survived";
     public static final String CAMP_SET = "camp_set";

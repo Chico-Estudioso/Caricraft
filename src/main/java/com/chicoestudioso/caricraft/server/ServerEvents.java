@@ -42,6 +42,7 @@ public final class ServerEvents {
             CaricraftServer.start(server);
             ChallengeManager.onServerStarted(CaricraftServer.get());
         });
+        ServerLifecycleEvents.SERVER_STOPPING.register(com.chicoestudioso.caricraft.server.challenge.ChallengeSquads::clearAll);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             com.chicoestudioso.caricraft.server.challenge.ChallengeBossBars.clear();
             CaricraftServer.stop();
@@ -78,6 +79,12 @@ public final class ServerEvents {
         UseEntityCallback.EVENT.register((player, level, hand, entity, hit) -> PhoneGuard.onUseEntity(player, hand, entity));
         UseBlockCallback.EVENT.register((player, level, hand, hit) ->
                 PhoneGuard.onUseBlock(player, hand, level.getBlockState(hit.getBlockPos())));
+        // Cofres de botín del desafío: cerrados hasta derrotar al escuadrón.
+        UseBlockCallback.EVENT.register((player, level, hand, hit) ->
+                com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.blocksOpening(player, level, hit.getBlockPos())
+                        ? net.minecraft.world.InteractionResult.FAIL : net.minecraft.world.InteractionResult.PASS);
+        PlayerBlockBreakEvents.BEFORE.register((level, player, pos, state, blockEntity) ->
+                !com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.blocksBreaking(player, level, pos));
 
         ServerEntityEvents.ENTITY_LOAD.register(ChallengeManager::onEntityLoad);
 
@@ -99,6 +106,10 @@ public final class ServerEvents {
         });
 
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
+            if (entity.getTags().contains(com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.SQUAD_TAG)) {
+                com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.onGuardDeath(entity,
+                        source.getEntity() instanceof ServerPlayer killer ? killer : null);
+            }
             if (source.getEntity() instanceof ServerPlayer killer && !(entity instanceof ServerPlayer)) {
                 Set<String> keys = new HashSet<>(ProgressKeys.of(entity.getType().builtInRegistryHolder()));
                 if (entity.getTags().contains(ChallengeManager.TAG)) {

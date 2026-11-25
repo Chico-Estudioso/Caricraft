@@ -100,6 +100,17 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 | Petición «Traer» | Cuenta atrás visible en TP Dúo; el compañero llega a 0 bloques |
 | Noche de desafío | CariCamp y TP Dúo bloquean el viaje con aviso rojo; aviso «¡Desafío en curso!» en el inicio |
 
+**Escuadrones con botín** (`runQaChallenge -DqaRole=S`):
+
+| Paso | Resultado |
+|---|---|
+| Noche de desafío (13700) | Aparece un escuadrón de 3 (capitán «Capitán: Disecado») a 24–40 bloques con un cofre. Llega el aviso «a 25 m al Sur» y se ve la columna de llamas |
+| App Desafío | «Botines de esta noche»: brújula, distancia y «Quedan 3 guardias» |
+| Abrir el cofre con guardias vivos | No se abre; aviso «quedan 3 guardias» |
+| Derrotar al escuadrón | «¡Escuadrón derrotado!», +45 Carins (nivel 1) y el cofre se abre con 8–12 objetos del botín de nivel 1 |
+| Amanecer | El cofre abierto se queda |
+| Otra noche sin derrotarlo, hasta el amanecer | El cofre desaparece, 0 guardias y 0 botines en el teléfono |
+
 **Avisos, consejos y barra del desafío** (`runQaChallenge -DqaRole=T`):
 
 | Paso | Resultado |

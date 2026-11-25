@@ -53,7 +53,7 @@ public final class ChallengeManager {
     public static final String TAG = "caricraft_challenge";
     public static final String ELITE_TAG = "caricraft_elite";
     public static final String HORDE_TAG = "caricraft_horde";
-    private static final String LEVEL_TAG_PREFIX = "caricraft_lvl_";
+    static final String LEVEL_TAG_PREFIX = "caricraft_lvl_";
     private static final int MAX_HORDE_SPAWNS_PER_TICK = 4;
 
     private record HordeSpawn(ServerLevel level, EntityType<?> type, double x, double y, double z) {
@@ -181,6 +181,7 @@ public final class ChallengeManager {
                 announce(mod, party, event);
             }
         }
+        ChallengeSquads.tick(mod, online, server.overworld().getDayTime(), day);
         ChallengeBossBars.update(mod, online, server.overworld().getDayTime(), day);
     }
 
@@ -197,6 +198,7 @@ public final class ChallengeManager {
                 }
             }
             case SURVIVED, ENDED -> {
+                ChallengeSquads.endNight(mod, party);
                 for (ServerPlayer player : online) {
                     despawnAround(player, mod.core().config().challenge.radius);
                     if (event.kind() == ChallengeEvent.Kind.SURVIVED) {
@@ -240,6 +242,11 @@ public final class ChallengeManager {
 
     // ------------------------------------------------------------------ aparición
 
+    /** El tipo está en la lista de mobs del desafío de la configuración. */
+    static boolean isConfiguredType(EntityType<?> type) {
+        return types.contains(type);
+    }
+
     public static boolean isChallengeType(Entity entity) {
         return entity instanceof Mob && types.contains(entity.getType());
     }
@@ -277,6 +284,9 @@ public final class ChallengeManager {
 
     /** Lo llama el mixin de {@code ServerLevel.addFreshEntity}. Devuelve falso para impedir la aparición. */
     public static boolean onAddFreshEntity(ServerLevel level, Entity entity) {
+        if (ChallengeSquads.spawning()) {
+            return true;
+        }
         try {
             int challengeLevel = spawnLevel(level, entity);
             if (challengeLevel < 0) {

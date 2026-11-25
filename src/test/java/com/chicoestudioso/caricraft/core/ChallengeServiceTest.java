@@ -230,4 +230,42 @@ class ChallengeServiceTest {
         assertTrue(without.get("elite_hunters").isEmpty());
         assertTrue(without.get("first_steps").isPresent());
     }
+
+    @Test
+    void squadsGrowWithLevelAndSpreadOverTheNight() {
+        TestFixture f = TestFixture.withDefaultMissions();
+        ChallengeService service = f.core.challenge();
+        assertEquals(1, service.squadsPerNight(1));
+        assertEquals(1, service.squadsPerNight(8));
+        assertEquals(2, service.squadsPerNight(9));
+        assertEquals(3, service.squadsPerNight(30), "con el máximo por defecto");
+        assertEquals(3, ChallengeService.squadSize(1));
+        assertEquals(5, ChallengeService.squadSize(10));
+        assertEquals(7, ChallengeService.squadSize(30), "como mucho 7");
+        assertEquals(1, ChallengeService.lootTier(9));
+        assertEquals(2, ChallengeService.lootTier(10));
+        assertEquals(3, ChallengeService.lootTier(25));
+        long first = ChallengeService.squadTime(0, 2);
+        long second = ChallengeService.squadTime(1, 2);
+        assertTrue(ChallengeService.isNight(first) && ChallengeService.isNight(second) && second > first);
+        f.config.challenge.squads = false;
+        assertEquals(0, service.squadsPerNight(20));
+    }
+
+    @Test
+    void defeatingASquadPaysOnlyDuringTheChallenge() {
+        TestFixture f = TestFixture.withDefaultMissions();
+        ChallengeService service = f.core.challenge();
+        Party party = f.state.partyOf(f.alice);
+        assertEquals(0, service.onSquadDefeated(party, 5, f.alice, "Alice"), "fuera del desafío no se paga");
+        service.update(party, 0, false);
+        service.bringForward(party, 0, true);
+        service.update(party, 0, true);
+        long reward = service.onSquadDefeated(party, 5, f.alice, "Alice");
+        assertEquals(f.config.challenge.squadReward + 25, reward);
+        assertEquals(reward, f.balance(f.alice));
+        assertEquals(ChronicleEntry.SQUAD_DEFEATED, party.chronicle().getFirst().type());
+        assertEquals(1L, party.stats().get("challenge_squads"));
+        assertEquals(reward, party.challenge().nightCarins());
+    }
 }

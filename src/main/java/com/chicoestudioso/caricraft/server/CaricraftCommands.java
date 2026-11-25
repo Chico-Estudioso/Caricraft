@@ -310,6 +310,7 @@ public final class CaricraftCommands {
             ctx.getSource().sendFailure(Component.translatable("caricraft.command.challenge.not_active"));
             return 0;
         }
+        com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.endNight(mod, party);
         for (java.util.UUID member : party.members()) {
             ServerPlayer online = mod.server().getPlayerList().getPlayer(member);
             if (online != null) {

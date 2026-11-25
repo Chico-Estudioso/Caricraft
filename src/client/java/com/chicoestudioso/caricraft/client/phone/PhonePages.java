@@ -1397,10 +1397,14 @@ final class PhonePages {
         y += 7;
         if (c.active()) {
             Component wave = Component.translatable("caricraft.phone.challenge.wave", c.wave() + 1, c.effectiveLevel());
-            ui.text(wave, x, y, CHALLENGE_RED);
-            y += 11;
+            y += ui.wrapped(wave, x, y, w, CHALLENGE_RED) + 2;
         }
         y += 3;
+
+        // Botines de los escuadrones de esta noche
+        if (c.caches() != null && !c.caches().isEmpty()) {
+            y += squadCaches(s, c, x, y, w);
+        }
 
         // Botón
         if (!c.active() && !c.tonight()) {
@@ -1439,6 +1443,37 @@ final class PhonePages {
         Component rules = Component.translatable("caricraft.phone.challenge.rules_text", c.intervalNights(),
                 c.killReward(), c.nightReward());
         y += ui.wrapped(rules, x, y, w, t.textDim());
+        return y - top;
+    }
+
+    private static int squadCaches(PhoneScreen s, PhoneSnapshot.ChallengeView c, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        net.minecraft.client.player.LocalPlayer me = net.minecraft.client.Minecraft.getInstance().player;
+        if (me == null) {
+            return 0;
+        }
+        int top = y;
+        String myDimension = me.level().dimension().location().toString();
+        ui.text(Component.translatable("caricraft.phone.challenge.caches").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+        y += 12;
+        int gold = 0xFFE0A100;
+        for (PhoneSnapshot.CacheView cache : c.caches()) {
+            int h = 44;
+            int color = cache.open() ? t.good() : CHALLENGE_RED;
+            ui.round(x, y, x + w, y + h, PhoneTheme.mix(cache.open() ? gold : CHALLENGE_RED, t.card(), 0.85f));
+            PhoneSnapshot.PositionView position = new PhoneSnapshot.PositionView("", "", cache.dimension(), "", cache.x(), cache.y(), cache.z());
+            compass(s, me, myDimension, position, x + 22, y + 22, color);
+            Component status = Component.translatable(cache.open() ? "caricraft.phone.challenge.cache_open" : "caricraft.phone.challenge.cache_locked");
+            ui.item("minecraft:chest", x + 43, y + 3);
+            ui.textClipped(status.copy().withStyle(ChatFormatting.BOLD), x + 61, y + 7, w - 65, color);
+            locationText(s, me, myDimension, position, x + 44, y + 21, w - 48);
+            Component detail = cache.open() ? Component.translatable("caricraft.phone.challenge.cache_open_hint")
+                    : Component.translatable("caricraft.phone.challenge.cache_guards", cache.guardsLeft());
+            ui.textClipped(detail, x + 44, y + 32, w - 48, t.textDim());
+            y += h + 4;
+        }
+        y += 2;
         return y - top;
     }
 

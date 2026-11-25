@@ -152,6 +152,11 @@ public record PhoneSnapshot(
                                 long nightsUntilForced, int intervalNights, int level, int maxLevel,
                                 int nightsCompleted, long totalKills, long totalCarins, int nightKills,
                                 long nightCarins, long killReward, long nightReward, boolean blockSleep,
-                                List<String> blockedMobs, int wave, int effectiveLevel, boolean waves) {
+                                List<String> blockedMobs, int wave, int effectiveLevel, boolean waves,
+                                List<CacheView> caches) {
+    }
+
+    /** Botín protegido por un escuadrón: dónde está, cuántos guardias quedan y si ya se puede abrir. */
+    public record CacheView(String dimension, double x, double y, double z, int guardsLeft, boolean open) {
     }
 }

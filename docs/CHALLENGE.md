@@ -17,6 +17,28 @@ Noches de desafío con mobs vanilla equipados. Es una app de serie del CariPhone
   - Los mobs del desafío desaparecen.
 - Fuera del desafío **no aparecen** esos mobs: el mundo queda como siempre en COBBLEVERSE.
 
+## Escuadrones con botín
+Además de los mobs normales del desafío, de vez en cuando aparece cerca del dúo un **escuadrón protegiendo un cofre de botín** (`challenge.squads`).
+- **Cuántos:** 1 por noche, y uno más cada 8 niveles, hasta `maxSquadsPerNight` (3). Se reparten a lo largo de la noche.
+- **Dónde:** en la superficie, a 24–40 bloques de un miembro del dúo que esté en el mundo normal.
+  - Se avisa con una notificación que dice la distancia y la dirección: «¡Un escuadrón de 3 guarda un botín a 25 m al Sur!».
+  - Sobre el cofre sale una columna de llamas de alma visible de lejos.
+  - La app Desafío Dúo lo muestra en «Botines de esta noche», con brújula, distancia y guardias que quedan.
+- **El escuadrón:**
+  - Tiene 3 mobs, y uno más cada 5 niveles (máx. 7): zombis, momias, esqueletos, esqueletos glaciales y arañas, si están en `challenge.mobs`.
+  - Llevan un nivel más de equipo y no se alejan del cofre.
+  - El **capitán** brilla, lleva el nombre «Capitán: …» y +3 niveles.
+- **Cofre bloqueado:** no se abre ni se rompe mientras quede algún guardia. Al intentarlo se avisa de cuántos quedan.
+- **Al derrotarlo:**
+  - El cofre se abre y da `squadReward + 5 × nivel` Carins (por defecto 40 + 5 por nivel).
+  - Además, una entrada en las Crónicas y la estadística «Escuadrones derrotados».
+- **Botín:** tablas de botín propias por nivel (`data/caricraft/loot_table/challenge/squad_cache_1..3.json`). Se pueden cambiar con un datapack.
+  - Nivel 1–9: hierro, oro, esmeraldas, comida, flechas, frascos de experiencia, libros encantados y, a veces, un diamante.
+  - Nivel 10–19: además diamantes, perlas, manzanas de oro, chatarra de netherita y espadas de diamante encantadas.
+  - Nivel 20 o más: más diamantes y esmeraldas, bloques de oro, armadura y pico de diamante encantados, tótems y, rara vez, una manzana de oro encantada.
+- **Al amanecer** (o con `/caricraft desafio terminar`) los cofres que no se han ganado desaparecen con sus guardias. Los ya abiertos se quedan.
+- Los escuadrones viven en memoria: al parar el servidor se quitan los cofres que seguían bloqueados.
+
 ## Barra de la noche
 Barra de jefe del dúo (`challenge.bossBar`, activada). La ven los miembros conectados en el mundo normal.
 - **Amarilla, en los 75 s antes de anochecer** si esa noche toca desafío: «El Desafío Dúo empieza en 1:00: ¡prepárate!».
