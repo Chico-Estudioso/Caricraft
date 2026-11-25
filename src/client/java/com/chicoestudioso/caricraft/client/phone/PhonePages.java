@@ -81,7 +81,7 @@ final class PhonePages {
     }
 
     private static final List<HomeSection> HOME_SECTIONS = List.of(
-            new HomeSection("daily", List.of("missions", "wallet", "market", "shop")),
+            new HomeSection("daily", List.of("missions", "wallet", "market", "shop", "cobblecentro")),
             new HomeSection("duo", List.of("duo", "tpduo", "caribox", "chronicles")),
             new HomeSection("adventure", List.of("challenge", "explorer", "caricamp", "carilens")),
             new HomeSection("system", List.of("stats", "settings")));
@@ -129,7 +129,9 @@ final class PhonePages {
 
         // Apps por secciones
         Map<String, AppView> apps = new java.util.LinkedHashMap<>();
-        snap.apps().stream().filter(a -> "APP".equals(a.kind())).forEach(a -> apps.put(a.id(), a));
+        snap.apps().stream().filter(a -> "APP".equals(a.kind()))
+                .filter(a -> !"cobblecentro".equals(a.id()) || snap.cobbleverse() != null)
+                .forEach(a -> apps.put(a.id(), a));
         List<HomeSection> sections = new ArrayList<>();
         for (HomeSection section : HOME_SECTIONS) {
             List<String> present = section.apps().stream().filter(apps::containsKey).toList();
@@ -1387,6 +1389,10 @@ final class PhonePages {
         PhoneTheme t = ui.theme;
         int top = y;
         long left = cv.nextDayAt() - snap.serverTime();
+
+        // Acceso a la pantalla grande
+        ui.button(x, y, w, BUTTON_H + 2, Component.translatable("caricraft.cc.open"), Style.PRIMARY, s::openCobbleCentro);
+        y += BUTTON_H + 8;
 
         // Saldo de CobbleDollars
         if (cv.cobbleDollarsInstalled() && cv.cobbleDollars() >= 0) {

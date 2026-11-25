@@ -1,6 +1,13 @@
 # Changelog
 
 ## Unreleased
+- **CobbleCentro** (con `cobbleverse.enabled`; ver `docs/COBBLEVERSE.md`):
+  - App nueva del CariPhone que abre una pantalla grande con los **modelos 3D de los Pokémon**, como el PC de Cobblemon: inicio con el equipo, tienda, intercambio prodigioso y venta.
+  - Los modelos giran al pasar el ratón. Sin Cobblemon en el cliente se ve una Poké Ball.
+  - Botón para abrirlo desde la pestaña Cobbleverse del Mercado.
+- **Intercambio prodigioso diario:** envías un Pokémon del equipo y recibes uno al azar de los que han enviado otros jugadores, o de «un entrenador lejano» si no hay. Animación de la Poké Ball y aviso al dueño cuando su Pokémon llega a otro jugador. Configurable (`wonderTrade`, `wonderTradesPerDay`, `wonderShinyChance`, `wonderPoolSize`). Protocolo de red 7.
+- 2 consejos nuevos sobre el CobbleCentro y el intercambio prodigioso.
+- `tools/cobblemon_qa.py`: QA con un cliente y un servidor de producción con Cobblemon y CobbleDollars reales.
 - **Nuevo modelo 3D del CariPhone** con el diseño del autor (rojo y morado, pantalla de apps, botones laterales y textura de 128×128). Ajustado para verse bien en la mano, en tercera persona y en el inventario.
 - **Cobbleverse en el Mercado** (`cobbleverse.enabled`, desactivado por defecto; ver `docs/COBBLEVERSE.md`):
   - Pestaña nueva con el saldo de CobbleDollars.

@@ -25,6 +25,7 @@ public final class PlayerProfile {
     /** Día al que se refieren los contadores de la tienda Cobbleverse. */
     private long cobbleverseDay = -1;
     private int salesToday;
+    private int wondersToday;
     private final java.util.Map<String, Integer> boughtToday = new java.util.HashMap<>();
     /** Momento de la primera pulsación de "desvincular" (no se persiste). */
     private transient long leaveRequestedAt;
@@ -122,6 +123,14 @@ public final class PlayerProfile {
 
     public void setSalesToday(int salesToday) {
         this.salesToday = Math.max(0, salesToday);
+    }
+
+    public int wondersToday() {
+        return wondersToday;
+    }
+
+    public void setWondersToday(int wondersToday) {
+        this.wondersToday = Math.max(0, wondersToday);
     }
 
     /** Compras de hoy en la tienda Cobbleverse, por oferta. */

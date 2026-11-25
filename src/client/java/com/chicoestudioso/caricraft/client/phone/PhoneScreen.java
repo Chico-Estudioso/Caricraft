@@ -172,11 +172,21 @@ public class PhoneScreen extends Screen {
     }
 
     void openApp(String appId, String state) {
+        if ("cobblecentro".equals(appId) && ("BUILTIN".equals(state) || "OWNED".equals(state))) {
+            openCobbleCentro();
+            return;
+        }
         PhonePage target = PhonePage.forApp(appId);
         if (target == null || "COMING_SOON".equals(state) || "LOCKED".equals(state) || "AVAILABLE".equals(state)) {
             navigate(PhonePage.LOCKED, appId);
         } else {
             navigate(target);
+        }
+    }
+
+    void openCobbleCentro() {
+        if (minecraft != null) {
+            minecraft.setScreen(new CobbleCentroScreen(this));
         }
     }
 

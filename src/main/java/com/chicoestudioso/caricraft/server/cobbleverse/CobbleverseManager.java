@@ -31,6 +31,8 @@ import java.util.UUID;
  */
 public final class CobbleverseManager {
     private static final Random RANDOM = new Random();
+    /** Último intercambio prodigioso de cada jugador (solo para la animación del teléfono). */
+    private static final java.util.Map<UUID, PhoneSnapshot.WonderView> LAST_WONDER = new java.util.HashMap<>();
 
     private CobbleverseManager() {
     }
@@ -75,12 +77,23 @@ public final class CobbleverseManager {
             for (PokemonBackend.PartyMon mon : mons) {
                 party.add(new PhoneSnapshot.SellView(mon.uuid().toString(), mon.species(), mon.nickname(), mon.level(),
                         mon.info().shiny(), mon.info().ivTotal(), service.sellPrice(mon.info()),
-                        service.sellBlocked(mon.info(), mons.size() <= 1, inBattle)));
+                        service.sellBlocked(mon.info(), mons.size() <= 1, inBattle), mon.aspects()));
+            }
+        } else if (config.wonderTrade) {
+            PokemonBackend backend = CobblemonCompat.backend();
+            List<PokemonBackend.PartyMon> mons = backend.party(player);
+            boolean inBattle = backend.inBattle(player);
+            for (PokemonBackend.PartyMon mon : mons) {
+                party.add(new PhoneSnapshot.SellView(mon.uuid().toString(), mon.species(), mon.nickname(), mon.level(),
+                        mon.info().shiny(), mon.info().ivTotal(), 0, service.sellBlocked(mon.info(), mons.size() <= 1, inBattle),
+                        mon.aspects()));
             }
         }
         return new PhoneSnapshot.CobbleverseView(CobbleDollarsBridge.available(), balance.orElse(-1),
                 config.mysteryGift, service.giftAvailable(profile, day), service.nextDayAt(),
-                config.shop, offers, config.sellPokemon, party, service.salesToday(profile, day), service.maxSalesPerDay());
+                config.shop, offers, config.sellPokemon, party, service.salesToday(profile, day), service.maxSalesPerDay(),
+                config.wonderTrade, service.wondersLeft(profile, day), config.wonderTradesPerDay,
+                WonderTradeData.get(mod.server()).entries().size(), LAST_WONDER.get(player.getUUID()));
     }
 
     // ------------------------------------------------------------------ regalo misterioso
@@ -195,6 +208,86 @@ public final class CobbleverseManager {
         player.playNotifySound(SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.8f, 1.0f);
         mod.markDirty();
         return delivered;
+    }
+
+    // ------------------------------------------------------------------ intercambio prodigioso
+
+    public static ActionResult wonderTrade(CaricraftServer mod, ServerPlayer player, String pokemonId) {
+        if (!active(mod) || !mod.core().config().cobbleverse.wonderTrade) {
+            return ActionResult.fail("cv_disabled");
+        }
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(pokemonId);
+        } catch (IllegalArgumentException e) {
+            return ActionResult.fail("invalid_request");
+        }
+        CobbleverseService service = mod.core().cobbleverse();
+        PokemonBackend backend = CobblemonCompat.backend();
+        List<PokemonBackend.PartyMon> mons = backend.party(player);
+        PokemonBackend.PartyMon offered = mons.stream().filter(m -> m.uuid().equals(uuid)).findFirst().orElse(null);
+        if (offered == null) {
+            return ActionResult.fail("cv_pokemon_gone");
+        }
+        String blocked = service.sellBlocked(offered.info(), mons.size() <= 1, backend.inBattle(player));
+        if (blocked != null) {
+            return ActionResult.fail("cv_wonder_blocked_" + blocked);
+        }
+        PlayerProfile profile = profile(mod, player);
+        long day = service.day();
+        ActionResult check = service.canWonderTrade(profile, day);
+        if (!check.success()) {
+            return check;
+        }
+        WonderTradeData pool = WonderTradeData.get(mod.server());
+        var registries = mod.server().registryAccess();
+        Optional<Object> taken = backend.take(player, uuid);
+        if (taken.isEmpty()) {
+            return ActionResult.fail("cv_pokemon_gone");
+        }
+        Object received;
+        WonderTradeData.Entry fromPool = null;
+        try {
+            int index = CobbleverseService.pickFromPool(pool.owners(), player.getUUID(), RANDOM);
+            if (index >= 0) {
+                fromPool = pool.take(index);
+                received = backend.load(fromPool.pokemon(), registries);
+            } else {
+                received = backend.create(backend.randomSpecies(RANDOM), CobbleverseService.wonderLevel(offered.level(), RANDOM),
+                        RANDOM.nextDouble() < service.wonderShinyChance(), 2, List.of());
+            }
+            pool.add(new WonderTradeData.Entry(player.getUUID(), player.getGameProfile().getName(), System.currentTimeMillis(),
+                    backend.save(taken.get(), registries)), mod.core().config().cobbleverse.wonderPoolSize);
+            backend.restore(player, received);
+        } catch (RuntimeException e) {
+            backend.restore(player, taken.get());
+            CaricraftMod.LOGGER.error("Falló el intercambio prodigioso de {}; se devuelve su Pokémon.", player.getGameProfile().getName(), e);
+            return ActionResult.fail("internal_error");
+        }
+        service.recordWonderTrade(profile, day);
+        Party party = mod.core().partyOf(player.getUUID());
+        if (party != null) {
+            party.incrementStat("wonder_trades", 1);
+        }
+        PokemonBackend.PartyMon got = backend.describe(received);
+        String from = fromPool == null ? "" : fromPool.ownerName();
+        LAST_WONDER.put(player.getUUID(), new PhoneSnapshot.WonderView(got.species(), got.aspects(), got.level(), got.info().shiny(),
+                from, offered.species(), System.currentTimeMillis()));
+        if (fromPool != null) {
+            ServerPlayer owner = mod.server().getPlayerList().getPlayer(fromPool.owner());
+            if (owner != null) {
+                mod.notify(owner, true, "caricraft.notify.wonder_arrived",
+                        List.of(got.species(), String.valueOf(got.level()), player.getGameProfile().getName()));
+            }
+        }
+        player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7f, got.info().shiny() ? 2.0f : 1.2f);
+        mod.markDirty();
+        return ActionResult.ok(got.info().shiny() ? "cv_wonder_shiny" : "cv_wonder", got.species(), got.level(),
+                from.isEmpty() ? "caricraft.phone.cv.wonder_far" : from);
+    }
+
+    public static void forget(UUID player) {
+        LAST_WONDER.remove(player);
     }
 
     // ------------------------------------------------------------------ venta

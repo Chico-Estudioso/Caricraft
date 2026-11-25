@@ -29,6 +29,7 @@ public final class AppCatalog {
     public static final String CARIBOX = "caribox";
     public static final String CARIBOX_ROWS = "caribox_rows";
     public static final String MARKET = "market";
+    public static final String COBBLECENTRO = "cobblecentro";
 
     private final Map<String, ShopItem> items = new LinkedHashMap<>();
 
@@ -42,6 +43,9 @@ public final class AppCatalog {
         catalog.register(builtin(SETTINGS, "minecraft:comparator", 0xFF6C757D));
         if (config.market.enabled) {
             catalog.register(builtin(MARKET, "minecraft:chest", 0xFF6A4C93));
+        }
+        if (config.cobbleverse.enabled) {
+            catalog.register(builtin(COBBLECENTRO, "cobblemon:poke_ball", 0xFF1B998B));
         }
         if (config.challenge.enabled) {
             catalog.register(builtin(CHALLENGE, "minecraft:skeleton_skull", 0xFF9D0208));

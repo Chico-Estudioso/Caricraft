@@ -320,6 +320,7 @@ public final class StateCodec {
         tag.putLong("giftDay", profile.giftDay());
         tag.putLong("cvDay", profile.cobbleverseDay());
         tag.putInt("cvSales", profile.salesToday());
+        tag.putInt("cvWonders", profile.wondersToday());
         CompoundTag bought = new CompoundTag();
         profile.boughtToday().forEach(bought::putInt);
         tag.put("cvBought", bought);
@@ -340,6 +341,7 @@ public final class StateCodec {
         profile.setGiftDay(tag.contains("giftDay") ? tag.getLong("giftDay") : -1);
         profile.setCobbleverseDay(tag.contains("cvDay") ? tag.getLong("cvDay") : -1);
         profile.setSalesToday(tag.getInt("cvSales"));
+        profile.setWondersToday(tag.getInt("cvWonders"));
         CompoundTag bought = tag.getCompound("cvBought");
         for (String key : bought.getAllKeys()) {
             profile.boughtToday().put(key, bought.getInt(key));

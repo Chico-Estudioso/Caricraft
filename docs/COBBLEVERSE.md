@@ -1,6 +1,33 @@
-# Cobbleverse en el Mercado
+# Cobbleverse: CobbleCentro y pestaña del Mercado
 
-Pestaña **Cobbleverse** de la app Mercado. Aparece con `cobbleverse.enabled` (desactivado por defecto) y Cobblemon instalado. La tienda y la venta de Pokémon usan **CobbleDollars**, la moneda del modpack, no Carins.
+La parte Cobbleverse aparece con `cobbleverse.enabled` (desactivado por defecto) y Cobblemon instalado. La tienda y la venta de Pokémon usan **CobbleDollars**, la moneda del modpack, no Carins. Se puede usar de dos formas:
+- **CobbleCentro:** app del CariPhone que abre una pantalla grande con los **modelos 3D de los Pokémon**, como en el PC de Cobblemon. Tiene pestañas Inicio, Tienda, Prodigioso y Vender.
+- **Pestaña Cobbleverse del Mercado:** lo mismo en formato teléfono, con un botón para abrir el CobbleCentro.
+
+## CobbleCentro
+![CobbleCentro: inicio](img/cobblecentro_inicio.png)
+
+- **Inicio:** regalo misterioso, tu equipo con sus modelos y accesos a lo de hoy (intercambios y ventas que quedan, cuándo cambia la tienda).
+- **Tienda:** las ofertas del día con el Pokémon en 3D (si es variocolor, con sus colores) o el objeto en grande. Las ofertas de «Pokémon misterioso» van rotando entre las especies posibles.
+- **Prodigioso:** intercambio prodigioso diario (ver abajo).
+- **Vender:** el equipo en tarjetas con su modelo y el precio. Hay que tocar dos veces para confirmar.
+
+  ![CobbleCentro: vender](img/cobblecentro_vender.png)
+- Los modelos giran al pasar el ratón por encima. Sin Cobblemon en el cliente se ve una Poké Ball en su lugar.
+- Capturas tomadas con `tools/cobblemon_qa.py`: cliente de producción con Cobblemon 1.8.4 y CobbleDollars reales.
+- La pantalla solo muestra lo que manda el servidor y le pide las acciones, igual que el teléfono. Con la tecla del teléfono se cierra; con ◀, Esc o el botón «atrás» del ratón se vuelve al CariPhone.
+
+## Intercambio prodigioso
+![Intercambio prodigioso](img/cobblecentro_prodigioso.png)
+
+- **Uno al día por jugador** (`wonderTradesPerDay`). Eliges un Pokémon de tu equipo y se va para siempre.
+- A cambio recibes uno al azar de la **bolsa de intercambios**: los Pokémon que han enviado **otros** jugadores (nunca uno tuyo). Llega tal cual lo envió su dueño: especie, nivel, IV, movimientos, mote y variocolor.
+- Si en la bolsa no hay ninguno de otro jugador, te llega uno de **«un entrenador lejano»**: una especie al azar (sin legendarios, singulares, ultraentes ni paradoja), con un nivel parecido al del Pokémon que envías (±3), 2 IV perfectos y un 2 % de ser variocolor (`wonderShinyChance`).
+- Tu Pokémon entra en la bolsa para otro jugador. Cuando alguien lo recibe, te llega un aviso: «Tu Pikachu (Nv. 24) del intercambio prodigioso le ha llegado a Dev2».
+- La bolsa guarda como mucho `wonderPoolSize` (100) Pokémon; si se llena, sale el más antiguo. Se guarda en `data/caricraft_wonder.dat` del mundo.
+- Animación: la Poké Ball se agita mientras se busca entrenador, destello y aparece el Pokémon recibido girando, con estrellas si es variocolor.
+- No se puede intercambiar un legendario (salvo con `sellLegendaries`), el último Pokémon del equipo ni nada en mitad de un combate. El servidor lo vuelve a comprobar todo.
+- Si algo falla al entregar, el intercambio se deshace y cada Pokémon vuelve a su sitio.
 
 ![Pestaña Cobbleverse](img/cobbleverse.png)
 
@@ -70,7 +97,11 @@ Cada día salen **6 ofertas** de un catálogo de 24. Son las mismas para todos y
 | `mysteryGift` / `shop` / `sellPokemon` | `true` | Cada parte por separado |
 | `maxSalesPerDay` | 10 | Ventas por jugador y día |
 | `sellPriceMultiplier` | 1.0 | Multiplica lo que se paga |
-| `sellLegendaries` | `false` | Permite vender legendarios |
+| `sellLegendaries` | `false` | Permite vender (e intercambiar) legendarios |
+| `wonderTrade` | `true` | Intercambio prodigioso |
+| `wonderTradesPerDay` | 1 | Intercambios prodigiosos por jugador y día |
+| `wonderShinyChance` | 0.02 | Probabilidad de variocolor de los Pokémon de «un entrenador lejano» |
+| `wonderPoolSize` | 100 | Pokémon que caben en la bolsa de intercambios |
 
 - Quien ya tenía `market.includeCobblemonItems: true` pasa a tener `cobbleverse.enabled: true` (migración a la versión 3 de la configuración).
 - El catálogo (ofertas, precios, premios y pesos) se puede cambiar en `config/caricraft_cobbleverse.json`. Si no existe, se usa el del mod.
@@ -80,6 +111,7 @@ Cada día salen **6 ofertas** de un catálogo de 24. Son las mismas para todos y
 `/caricraft cobbleverse prueba` (nivel 4, también desde la consola) usa un jugador ficticio para comprobar:
 - Crear un Pokémon de tienda (variocolor, IV y movimientos especiales).
 - Quitarlo y devolverlo al equipo.
+- Guardarlo en la bolsa del intercambio prodigioso y recuperarlo idéntico, y elegir una especie al azar para «un entrenador lejano».
 - Sumar y restar CobbleDollars.
 
 Al terminar deja todo como estaba. Conviene usarlo al actualizar el modpack.

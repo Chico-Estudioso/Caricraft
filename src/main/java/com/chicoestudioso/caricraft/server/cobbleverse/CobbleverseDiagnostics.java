@@ -63,7 +63,10 @@ public final class CobbleverseDiagnostics {
                 int afterRestore = backend.party(fake).size();
                 out.add((taken.isPresent() && afterTake == afterRestore - 1 ? "OK" : "FALLO")
                         + " Quitar y devolver al equipo (venta deshecha): " + afterTake + " → " + afterRestore + ".");
+                wonderRoundTrip(mod, backend, fake, mon, out);
             }
+            String random = backend.randomSpecies(new java.util.Random());
+            out.add((random != null ? "OK" : "FALLO") + " Especie al azar para «un entrenador lejano»: " + random + ".");
         } catch (RuntimeException e) {
             out.add("FALLO Crear el Pokémon: " + e);
         } finally {
@@ -89,5 +92,23 @@ public final class CobbleverseDiagnostics {
                     + " → −1000 = " + end + "; sin saldo se rechaza: " + refused + ".");
         }
         return out;
+    }
+
+    /** Intercambio prodigioso: el Pokémon se guarda en la bolsa (NBT) y vuelve idéntico. */
+    private static void wonderRoundTrip(CaricraftServer mod, PokemonBackend backend, FakePlayer fake, PokemonBackend.PartyMon mon,
+                                        List<String> out) {
+        Optional<Object> taken = backend.take(fake, mon.uuid());
+        if (taken.isEmpty()) {
+            out.add("FALLO Intercambio prodigioso: no se pudo sacar el Pokémon del equipo.");
+            return;
+        }
+        var registries = mod.server().registryAccess();
+        Object loaded = backend.load(backend.save(taken.get(), registries), registries);
+        PokemonBackend.PartyMon copy = backend.describe(loaded);
+        boolean ok = copy.species().equals(mon.species()) && copy.level() == mon.level()
+                && copy.info().shiny() == mon.info().shiny() && copy.info().ivTotal() == mon.info().ivTotal();
+        backend.restore(fake, loaded);
+        out.add((ok ? "OK" : "FALLO") + " Intercambio prodigioso: guardar en la bolsa y recuperar " + copy.species() + " nv. "
+                + copy.level() + ", IV=" + copy.info().ivTotal() + "/186, variocolor=" + copy.info().shiny() + ".");
     }
 }
