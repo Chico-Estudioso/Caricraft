@@ -1,6 +1,12 @@
 # Changelog
 
 ## Unreleased
+- **Desafío escalado:**
+  - Un nivel por noche superada (hasta 30) y 3 oleadas por noche.
+  - Equipo hasta netherita con encantamientos crecientes y efectos (velocidad, fuerza, resistencia, regeneración).
+  - Élites que brillan, con nombre y triple recompensa, y hordas.
+  - `/caricraft desafio nivel <n>`.
+  - Migración automática de `config/caricraft.json` (versión 2).
 - **CariLens:**
   - Álbum de fotos compartido del dúo: captura sin interfaz, vista previa con pie de foto, subida troceada y validada, y archivos en el mundo del servidor.
   - Ampliaciones de álbum (mejoras compradas por niveles en la Tienda).

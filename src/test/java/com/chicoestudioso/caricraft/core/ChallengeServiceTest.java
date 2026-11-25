@@ -113,14 +113,47 @@ class ChallengeServiceTest {
         assertEquals(4 + f.config.challenge.nightReward, f.balance(f.alice));
         assertEquals(ChronicleEntry.CHALLENGE_SURVIVED, party.chronicle().getFirst().type());
 
-        // Tras 2 noches superadas sube a nivel 2: cada mob da 3.
+        // Cada noche superada sube un nivel: más fuertes y mejor pagados.
+        assertEquals(2, service.level(party));
         service.bringForward(party, 1, true);
         service.update(party, 1, true);
         service.update(party, 2, false);
-        assertEquals(2, service.level(party));
+        assertEquals(3, service.level(party));
         service.bringForward(party, 2, true);
         service.update(party, 2, true);
         assertEquals(3, service.onKill(party));
+        assertEquals(2 + 10 / 2, service.onKill(party, 10, false));
+        assertEquals((2 + 10 / 2) * 3, service.onKill(party, 10, true), "los élite pagan el triple");
+    }
+
+    @Test
+    void wavesMakeTheNightHarder() {
+        TestFixture f = TestFixture.withDefaultMissions();
+        ChallengeService service = f.core.challenge();
+        Party party = f.state.partyOf(f.alice);
+        assertEquals(0, ChallengeService.wave(DAY * 3 + 14_000));
+        assertEquals(1, ChallengeService.wave(DAY * 3 + 17_000));
+        assertEquals(2, ChallengeService.wave(DAY * 3 + 21_000));
+        assertEquals(0, ChallengeService.wave(DAY * 3 + 6_000));
+        assertEquals(service.level(party) + 2, service.effectiveLevel(party, 2));
+        f.config.challenge.waves = false;
+        assertEquals(service.level(party), service.effectiveLevel(party, 2));
+        assertTrue(service.eliteChance(30) <= 0.25);
+        assertTrue(service.hordeChance(5) < service.hordeChance(20));
+        assertTrue(service.hordeChance(100) <= 0.5);
+    }
+
+    @Test
+    void levelKeepsGrowingUpToTheConfiguredMaximum() {
+        TestFixture f = TestFixture.withDefaultMissions();
+        ChallengeService service = f.core.challenge();
+        Party party = f.state.partyOf(f.alice);
+        for (long d = 0; d < 12; d++) {
+            service.bringForward(party, d, true);
+            service.update(party, d, true);
+            service.update(party, d + 1, false);
+        }
+        assertEquals(13, service.level(party), "un nivel por noche superada");
     }
 
     @Test

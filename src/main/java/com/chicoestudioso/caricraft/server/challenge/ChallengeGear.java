@@ -5,6 +5,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -21,89 +22,181 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 /**
- * Equipa y refuerza a los mobs del Desafío Dúo según el nivel (1 = suave, 5 = muy duro).
- * Las piezas casi nunca caen al morir, para no convertir el desafío en una fuente de armaduras.
+ * Equipa y refuerza a los mobs del Desafío Dúo. La escala no tiene techo fijo: cada nivel suma vida, daño,
+ * velocidad y resistencia, y el equipo pasa de cota de malla a hierro, diamante y netherita con encantamientos
+ * y efectos cada vez mayores. Ver la tabla en docs/CHALLENGE.md.
  */
 public final class ChallengeGear {
     private static final float DROP_CHANCE = 0.04f;
     private static final EquipmentSlot[] ARMOR = {EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
 
+    private enum Tier { CHAIN, IRON, DIAMOND, NETHERITE }
+
     private ChallengeGear() {
     }
 
+    /**
+     * @param level nivel efectivo (grupo + oleada, +3 si es élite), desde 1
+     */
     public static void apply(Mob mob, int level, RandomSource random) {
-        level = Math.max(1, Math.min(5, level));
+        level = Math.max(1, level);
         mob.setCanPickUpLoot(false);
-        modifier(mob, Attributes.MAX_HEALTH, "challenge_health", 0.15 * level);
-        modifier(mob, Attributes.ATTACK_DAMAGE, "challenge_damage", 0.10 * level);
-        modifier(mob, Attributes.FOLLOW_RANGE, "challenge_follow", 0.5);
-        modifier(mob, Attributes.MOVEMENT_SPEED, "challenge_speed", Math.min(0.15, 0.03 * level));
-        mob.setHealth(mob.getMaxHealth());
+        modifier(mob, Attributes.MAX_HEALTH, "challenge_health", 0.12 * level);
+        modifier(mob, Attributes.ATTACK_DAMAGE, "challenge_damage", 0.08 * level);
+        modifier(mob, Attributes.FOLLOW_RANGE, "challenge_follow", Math.min(1.5, 0.5 + 0.05 * level));
+        modifier(mob, Attributes.MOVEMENT_SPEED, "challenge_speed", Math.min(0.25, 0.02 * level));
+        modifier(mob, Attributes.KNOCKBACK_RESISTANCE, "challenge_knockback", Math.min(0.6, 0.03 * level));
 
         EntityType<?> type = mob.getType();
-        if (type == EntityType.ZOMBIE || type == EntityType.HUSK || type == EntityType.DROWNED) {
+        boolean zombie = type == EntityType.ZOMBIE || type == EntityType.HUSK || type == EntityType.DROWNED;
+        boolean skeleton = type == EntityType.SKELETON || type == EntityType.STRAY;
+        if (zombie) {
+            modifier(mob, Attributes.SPAWN_REINFORCEMENTS_CHANCE, "challenge_reinforcements", Math.min(0.5, 0.02 * level));
             armor(mob, level, random);
             if (type == EntityType.DROWNED && random.nextFloat() < 0.25f) {
-                equip(mob, EquipmentSlot.MAINHAND, new ItemStack(Items.TRIDENT));
+                ItemStack trident = new ItemStack(Items.TRIDENT);
+                if (level >= 6) {
+                    enchant(mob, trident, Enchantments.IMPALING, Math.min(5, (level - 4) / 2));
+                }
+                equip(mob, EquipmentSlot.MAINHAND, trident);
             } else {
-                equip(mob, EquipmentSlot.MAINHAND, meleeWeapon(mob, level));
+                equip(mob, EquipmentSlot.MAINHAND, meleeWeapon(mob, level, random));
             }
-        } else if (type == EntityType.SKELETON || type == EntityType.STRAY) {
+        } else if (skeleton) {
             armor(mob, level, random);
-            ItemStack bow = new ItemStack(Items.BOW);
-            if (level >= 2) {
-                enchant(mob, bow, Enchantments.POWER, level - 1);
-            }
-            if (level >= 5) {
-                enchant(mob, bow, Enchantments.PUNCH, 1);
-            }
-            equip(mob, EquipmentSlot.MAINHAND, bow);
-        } else if (type == EntityType.SPIDER || type == EntityType.CAVE_SPIDER) {
-            if (level >= 2) {
-                mob.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, MobEffectInstance.INFINITE_DURATION, 0));
-            }
-            if (level >= 4) {
-                mob.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, MobEffectInstance.INFINITE_DURATION, 0));
-            }
+            equip(mob, EquipmentSlot.MAINHAND, bow(mob, level));
         }
+
+        // Efectos permanentes. Las arañas los reciben antes (no llevan equipo).
+        int effectLevel = (type == EntityType.SPIDER || type == EntityType.CAVE_SPIDER) ? level + 2 : level;
+        effect(mob, MobEffects.MOVEMENT_SPEED, effectLevel, 6, 14);
+        effect(mob, MobEffects.DAMAGE_BOOST, effectLevel, 8, 16);
+        effect(mob, MobEffects.DAMAGE_RESISTANCE, effectLevel, 10, 20);
+        effect(mob, MobEffects.FIRE_RESISTANCE, effectLevel, 12, Integer.MAX_VALUE);
+        effect(mob, MobEffects.REGENERATION, effectLevel, 18, 26);
+        mob.setHealth(mob.getMaxHealth());
+    }
+
+    /** Marca visual de élite: nombre visible y brillo. */
+    public static void markElite(Mob mob) {
+        mob.addEffect(new MobEffectInstance(MobEffects.GLOWING, MobEffectInstance.INFINITE_DURATION, 0, false, false));
+        mob.setCustomName(net.minecraft.network.chat.Component.translatable("caricraft.challenge.elite", mob.getType().getDescription())
+                .withStyle(net.minecraft.ChatFormatting.DARK_RED, net.minecraft.ChatFormatting.BOLD));
+        mob.setCustomNameVisible(true);
+    }
+
+    private static void effect(Mob mob, Holder<MobEffect> effect, int level, int firstLevel, int secondLevel) {
+        if (level >= firstLevel) {
+            int amplifier = level >= secondLevel ? 1 : 0;
+            mob.addEffect(new MobEffectInstance(effect, MobEffectInstance.INFINITE_DURATION, amplifier, false, false));
+        }
+    }
+
+    private static Tier tier(int level, RandomSource random) {
+        if (level >= 20) {
+            return Tier.NETHERITE;
+        }
+        if (level >= 15) {
+            return random.nextFloat() < (level - 14) * 0.15f ? Tier.NETHERITE : Tier.DIAMOND;
+        }
+        if (level >= 10) {
+            return Tier.DIAMOND;
+        }
+        if (level >= 6) {
+            return random.nextFloat() < (level - 5) * 0.2f ? Tier.DIAMOND : Tier.IRON;
+        }
+        return level >= 3 ? Tier.IRON : Tier.CHAIN;
     }
 
     private static void armor(Mob mob, int level, RandomSource random) {
-        float chance = Math.min(0.95f, 0.25f + 0.15f * level);
+        float chance = Math.min(1.0f, 0.25f + 0.15f * level);
         for (EquipmentSlot slot : ARMOR) {
-            if (random.nextFloat() < chance) {
-                ItemStack piece = new ItemStack(armorPiece(slot, level, random));
-                if (level >= 4) {
-                    enchant(mob, piece, Enchantments.PROTECTION, level - 3);
-                }
-                equip(mob, slot, piece);
+            if (random.nextFloat() >= chance) {
+                continue;
             }
+            ItemStack piece = new ItemStack(armorPiece(slot, tier(level, random)));
+            if (level >= 4) {
+                enchant(mob, piece, Enchantments.PROTECTION, Math.min(4, (level - 2) / 2));
+            }
+            if (level >= 12) {
+                enchant(mob, piece, Enchantments.THORNS, Math.min(3, (level - 8) / 4));
+            }
+            equip(mob, slot, piece);
         }
     }
 
-    private static Item armorPiece(EquipmentSlot slot, int level, RandomSource random) {
-        boolean diamond = level >= 5 && random.nextFloat() < 0.35f;
-        boolean iron = level >= 3;
+    private static Item armorPiece(EquipmentSlot slot, Tier tier) {
         return switch (slot) {
-            case HEAD -> diamond ? Items.DIAMOND_HELMET : iron ? Items.IRON_HELMET : Items.CHAINMAIL_HELMET;
-            case CHEST -> diamond ? Items.DIAMOND_CHESTPLATE : iron ? Items.IRON_CHESTPLATE : Items.CHAINMAIL_CHESTPLATE;
-            case LEGS -> diamond ? Items.DIAMOND_LEGGINGS : iron ? Items.IRON_LEGGINGS : Items.CHAINMAIL_LEGGINGS;
-            default -> diamond ? Items.DIAMOND_BOOTS : iron ? Items.IRON_BOOTS : Items.CHAINMAIL_BOOTS;
+            case HEAD -> switch (tier) {
+                case CHAIN -> Items.CHAINMAIL_HELMET;
+                case IRON -> Items.IRON_HELMET;
+                case DIAMOND -> Items.DIAMOND_HELMET;
+                case NETHERITE -> Items.NETHERITE_HELMET;
+            };
+            case CHEST -> switch (tier) {
+                case CHAIN -> Items.CHAINMAIL_CHESTPLATE;
+                case IRON -> Items.IRON_CHESTPLATE;
+                case DIAMOND -> Items.DIAMOND_CHESTPLATE;
+                case NETHERITE -> Items.NETHERITE_CHESTPLATE;
+            };
+            case LEGS -> switch (tier) {
+                case CHAIN -> Items.CHAINMAIL_LEGGINGS;
+                case IRON -> Items.IRON_LEGGINGS;
+                case DIAMOND -> Items.DIAMOND_LEGGINGS;
+                case NETHERITE -> Items.NETHERITE_LEGGINGS;
+            };
+            default -> switch (tier) {
+                case CHAIN -> Items.CHAINMAIL_BOOTS;
+                case IRON -> Items.IRON_BOOTS;
+                case DIAMOND -> Items.DIAMOND_BOOTS;
+                case NETHERITE -> Items.NETHERITE_BOOTS;
+            };
         };
     }
 
-    private static ItemStack meleeWeapon(Mob mob, int level) {
-        ItemStack weapon = new ItemStack(switch (level) {
-            case 1 -> Items.STONE_SWORD;
-            case 2 -> Items.IRON_SWORD;
-            case 3 -> Items.IRON_AXE;
-            case 4 -> Items.IRON_SWORD;
-            default -> Items.DIAMOND_SWORD;
-        });
+    private static ItemStack meleeWeapon(Mob mob, int level, RandomSource random) {
+        Item item;
+        if (level >= 20) {
+            item = random.nextBoolean() ? Items.NETHERITE_SWORD : Items.NETHERITE_AXE;
+        } else if (level >= 15) {
+            item = random.nextBoolean() ? Items.NETHERITE_SWORD : Items.DIAMOND_AXE;
+        } else if (level >= 10) {
+            item = Items.DIAMOND_AXE;
+        } else if (level >= 6) {
+            item = Items.DIAMOND_SWORD;
+        } else {
+            item = switch (level) {
+                case 1 -> Items.STONE_SWORD;
+                case 2 -> Items.IRON_SWORD;
+                case 3 -> Items.IRON_AXE;
+                default -> Items.IRON_SWORD;
+            };
+        }
+        ItemStack weapon = new ItemStack(item);
         if (level >= 4) {
-            enchant(mob, weapon, Enchantments.SHARPNESS, level - 3);
+            enchant(mob, weapon, Enchantments.SHARPNESS, Math.min(5, (level - 2) / 2));
+        }
+        if (level >= 8) {
+            enchant(mob, weapon, Enchantments.FIRE_ASPECT, Math.min(2, (level - 4) / 4));
+        }
+        if (level >= 12) {
+            enchant(mob, weapon, Enchantments.KNOCKBACK, 1);
         }
         return weapon;
+    }
+
+    private static ItemStack bow(Mob mob, int level) {
+        ItemStack bow = new ItemStack(Items.BOW);
+        if (level >= 2) {
+            enchant(mob, bow, Enchantments.POWER, Math.min(5, level - 1));
+        }
+        if (level >= 5) {
+            enchant(mob, bow, Enchantments.PUNCH, Math.min(2, (level - 2) / 3));
+        }
+        if (level >= 9) {
+            enchant(mob, bow, Enchantments.FLAME, 1);
+        }
+        return bow;
     }
 
     private static void equip(Mob mob, EquipmentSlot slot, ItemStack stack) {
@@ -112,6 +205,9 @@ public final class ChallengeGear {
     }
 
     private static void enchant(Mob mob, ItemStack stack, ResourceKey<Enchantment> key, int level) {
+        if (level <= 0) {
+            return;
+        }
         mob.level().registryAccess().registryOrThrow(Registries.ENCHANTMENT).getHolder(key)
                 .ifPresent(holder -> stack.enchant(holder, level));
     }

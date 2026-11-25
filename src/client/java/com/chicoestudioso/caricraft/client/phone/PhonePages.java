@@ -1016,19 +1016,19 @@ final class PhonePages {
         ui.wrapped(subtitle, x + 6, y + 5 + titleHeight + 2, textWidth, 0xFFFFE3E3);
         y += cardHeight + 6;
 
-        // Nivel
+        // Nivel (sin techo bajo: sube con cada noche superada)
         Component level = Component.translatable("caricraft.phone.challenge.level", c.level(), c.maxLevel())
                 .withStyle(ChatFormatting.BOLD);
         ui.text(level, x, y + 1, t.text());
-        int pipX = x + ui.font.width(level) + 6;
-        for (int i = 0; i < c.maxLevel(); i++) {
-            int px = pipX + i * 9;
-            if (px + 7 > x + w) {
-                break;
-            }
-            ui.round(px, y, px + 7, y + 9, i < c.level() ? CHALLENGE_RED : t.track());
+        y += 11;
+        ui.progressBar(x, y, w, c.level(), Math.max(1, c.maxLevel()), CHALLENGE_RED);
+        y += 7;
+        if (c.active()) {
+            Component wave = Component.translatable("caricraft.phone.challenge.wave", c.wave() + 1, c.effectiveLevel());
+            ui.text(wave, x, y, CHALLENGE_RED);
+            y += 11;
         }
-        y += 14;
+        y += 3;
 
         // Botón
         if (!c.active() && !c.tonight()) {

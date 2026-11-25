@@ -300,7 +300,7 @@
   "caricraft.phone.challenge.next": "Next mandatory challenge",
   "caricraft.phone.challenge.next_tonight": "Tonight.",
   "caricraft.phone.challenge.next_in": "In %s nights.",
-  "caricraft.phone.challenge.level": "Level %s of %s",
+  "caricraft.phone.challenge.level": "Level %s (max %s)",
   "caricraft.phone.challenge.bring_forward": "Bring it forward to tonight",
   "caricraft.phone.challenge.bring_forward_help": "Bringing it forward counts as the mandatory challenge: the next one comes a few nights later.",
   "caricraft.phone.challenge.no_sleep": "You can't sleep during the challenge.",
@@ -310,8 +310,8 @@
   "caricraft.phone.challenge.kills": "Mobs defeated",
   "caricraft.phone.challenge.carins": "Carins earned",
   "caricraft.phone.challenge.rules": "How it works",
-  "caricraft.phone.challenge.rules_text": "Every %s nights there is a mandatory challenge, and you can bring it forward. That night you can't sleep and zombies, skeletons, spiders and more spawn with armor and weapons. The more nights you survive, the higher the level and the tougher they get. Each mob gives %s Carins (+1 per level) and you earn %s more at dawn. When the sun rises, the mobs vanish.",
-  "caricraft.hud.challenge": "☠ Challenge night · level %s · %s mobs",
+  "caricraft.phone.challenge.rules_text": "Every %s nights there is a mandatory challenge, and you can bring it forward. That night you can't sleep and zombies, skeletons, spiders and more spawn with armor and weapons. Each night survived raises the level and the mobs keep getting stronger: more health, damage and speed, gear from chainmail to netherite, enchantments and effects. Each night has 3 waves, each harder than the last. Some are elites (they glow, have a name and pay triple) and sometimes they come in hordes. Each mob gives %s Carins plus half its level, and you earn %s more at dawn. When the sun rises, the mobs vanish.",
+  "caricraft.hud.challenge": "☠ Challenge · level %s · wave %s/3 · %s mobs",
   "caricraft.challenge.actionbar_start": "☠ Challenge night! Level %s",
   "caricraft.challenge.kill_reward": "+%s Carins",
   "caricraft.challenge.no_sleep": "You can't sleep on a challenge night!",
@@ -441,5 +441,10 @@
   "caricraft.notify.partner_photo": "%s took a photo. Check it out in CariLens.",
   "caricraft.chronicle.photo": "%s adds a photo to the album: “%s”",
   "caricraft.chronicle.photo_plain": "%s adds a photo to the album.",
-  "caricraft.stat.photos": "Photos taken"
+  "caricraft.stat.photos": "Photos taken",
+  "caricraft.phone.challenge.wave": "Wave %s of 3 · mobs spawn at level %s",
+  "caricraft.challenge.elite": "Elite %s",
+  "caricraft.challenge.elite_reward": "Elite defeated! +%s Carins",
+  "caricraft.stat.challenge_elites": "Elites defeated",
+  "caricraft.command.challenge.level_set": "Group challenge level set to %s."
 }

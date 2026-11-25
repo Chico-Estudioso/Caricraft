@@ -163,7 +163,8 @@ public final class SnapshotBuilder {
                 state.forced(), night, service.nightsUntilForced(party, day), config.intervalNights, service.level(party),
                 config.maxLevel, state.nightsCompleted(), state.totalKills(), state.totalCarins(), state.nightKills(),
                 state.nightCarins(), config.killReward, config.nightReward, config.blockSleep,
-                ChallengeManager.blockedByModpack());
+                ChallengeManager.blockedByModpack(), ChallengeService.wave(mod.server().overworld().getDayTime()),
+                service.effectiveLevel(party, ChallengeService.wave(mod.server().overworld().getDayTime())), config.waves);
     }
 
     private static String appState(CaricraftCore core, Party party, PlayerProfile profile, ShopItem item) {

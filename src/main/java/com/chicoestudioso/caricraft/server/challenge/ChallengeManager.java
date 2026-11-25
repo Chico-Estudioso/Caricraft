@@ -51,6 +51,15 @@ import java.util.UUID;
 public final class ChallengeManager {
     /** Etiqueta de los mobs que aparecen gracias al desafío. */
     public static final String TAG = "caricraft_challenge";
+    public static final String ELITE_TAG = "caricraft_elite";
+    public static final String HORDE_TAG = "caricraft_horde";
+    private static final String LEVEL_TAG_PREFIX = "caricraft_lvl_";
+    private static final int MAX_HORDE_SPAWNS_PER_TICK = 4;
+
+    private record HordeSpawn(ServerLevel level, EntityType<?> type, double x, double y, double z) {
+    }
+
+    private static final java.util.ArrayDeque<HordeSpawn> HORDES = new java.util.ArrayDeque<>();
     private static final String MOBSBEGONE_CLASS = "moe.okaeri.mobsbegone.MobsBeGone";
     private static final String MOBSBEGONE_FILE = "mobsbegone-blacklist.json";
 
@@ -151,8 +160,9 @@ public final class ChallengeManager {
         return ChallengeService.isNight(server.overworld().getDayTime());
     }
 
-    /** Llamado cada tick; trabaja una vez por segundo. */
+    /** Llamado cada tick: hordas pendientes y, una vez por segundo, el ciclo de noches. */
     public static void tick(MinecraftServer server, CaricraftServer mod) {
+        spawnHordes();
         if (++ticks % 20 != 0) {
             return;
         }
@@ -247,6 +257,7 @@ public final class ChallengeManager {
             return -1;
         }
         double radiusSq = (double) config.radius * config.radius;
+        int wave = ChallengeService.wave(mod.server().overworld().getDayTime());
         int best = 0;
         for (ServerPlayer player : level.players()) {
             if (player.distanceToSqr(entity) > radiusSq) {
@@ -254,7 +265,7 @@ public final class ChallengeManager {
             }
             Party party = mod.core().partyOf(player.getUUID());
             if (party != null && party.challenge().active()) {
-                best = Math.max(best, mod.core().challenge().level(party));
+                best = Math.max(best, mod.core().challenge().effectiveLevel(party, wave));
             }
         }
         if (best == 0 && !config.gateMobsOutsideChallenge) {
@@ -274,13 +285,61 @@ public final class ChallengeManager {
                 return false;
             }
             if (entity.addTag(TAG)) {
-                ChallengeGear.apply((Mob) entity, challengeLevel, level.getRandom());
+                Mob mob = (Mob) entity;
+                ChallengeService service = CaricraftServer.get().core().challenge();
+                int mobLevel = challengeLevel;
+                if (level.getRandom().nextDouble() < service.eliteChance(challengeLevel)) {
+                    mobLevel += 3;
+                    mob.addTag(ELITE_TAG);
+                    ChallengeGear.markElite(mob);
+                }
+                mob.addTag(LEVEL_TAG_PREFIX + mobLevel);
+                ChallengeGear.apply(mob, mobLevel, level.getRandom());
+                if (!mob.getTags().contains(HORDE_TAG) && level.getRandom().nextDouble() < service.hordeChance(challengeLevel)) {
+                    HORDES.add(new HordeSpawn(level, mob.getType(), mob.getX(), mob.getY(), mob.getZ()));
+                }
             }
             return true;
         } catch (RuntimeException e) {
             CaricraftMod.LOGGER.error("Error en el filtro del Desafío Dúo", e);
             return true;
         }
+    }
+
+    /** Crea los acompañantes de las hordas fuera del propio addFreshEntity. */
+    private static void spawnHordes() {
+        for (int i = 0; i < MAX_HORDE_SPAWNS_PER_TICK && !HORDES.isEmpty(); i++) {
+            HordeSpawn spawn = HORDES.poll();
+            try {
+                Entity created = spawn.type().create(spawn.level());
+                if (!(created instanceof Mob mob)) {
+                    continue;
+                }
+                double x = spawn.x() + spawn.level().getRandom().nextInt(5) - 2;
+                double z = spawn.z() + spawn.level().getRandom().nextInt(5) - 2;
+                mob.moveTo(x, spawn.y(), z, spawn.level().getRandom().nextFloat() * 360f, 0f);
+                mob.addTag(HORDE_TAG);
+                mob.finalizeSpawn(spawn.level(), spawn.level().getCurrentDifficultyAt(mob.blockPosition()),
+                        net.minecraft.world.entity.MobSpawnType.REINFORCEMENT, null);
+                spawn.level().addFreshEntity(mob);
+            } catch (RuntimeException e) {
+                CaricraftMod.LOGGER.warn("No se pudo crear un mob de horda", e);
+            }
+        }
+    }
+
+    /** Nivel con el que apareció un mob del desafío (1 si no consta). */
+    public static int levelOf(Entity entity) {
+        for (String tag : entity.getTags()) {
+            if (tag.startsWith(LEVEL_TAG_PREFIX)) {
+                try {
+                    return Integer.parseInt(tag.substring(LEVEL_TAG_PREFIX.length()));
+                } catch (NumberFormatException ignored) {
+                    return 1;
+                }
+            }
+        }
+        return 1;
     }
 
     /** Al cargar chunks: retira mobs de desafíos pasados que quedaron guardados. */
@@ -304,7 +363,7 @@ public final class ChallengeManager {
     }
 
     /** Recompensa por derrotar un mob del desafío. */
-    public static void onKill(ServerPlayer killer) {
+    public static void onKill(ServerPlayer killer, Entity victim) {
         CaricraftServer mod = CaricraftServer.get();
         if (mod == null) {
             return;
@@ -313,9 +372,10 @@ public final class ChallengeManager {
         if (party == null) {
             return;
         }
-        long reward = mod.core().challenge().onKill(party);
+        boolean elite = victim.getTags().contains(ELITE_TAG);
+        long reward = mod.core().challenge().onKill(party, levelOf(victim), elite);
         if (reward > 0) {
-            killer.displayClientMessage(Component.translatable("caricraft.challenge.kill_reward", reward)
+            killer.displayClientMessage(Component.translatable(elite ? "caricraft.challenge.elite_reward" : "caricraft.challenge.kill_reward", reward)
                     .withStyle(ChatFormatting.GOLD), true);
         }
         mod.markDirty();

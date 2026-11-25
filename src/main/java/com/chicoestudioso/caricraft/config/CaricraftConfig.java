@@ -25,6 +25,11 @@ public final class CaricraftConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger("Caricraft Mod");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     public static final String FILE_NAME = "caricraft.json";
+    /** Versión del formato de configuración; permite migrar valores por defecto antiguos. */
+    public static final int CURRENT_VERSION = 2;
+
+    /** Versión con la que se escribió el archivo (0 = anterior a las migraciones). */
+    public int configVersion = CURRENT_VERSION;
 
     /** Entregar un CariPhone la primera vez que un jugador entra al servidor. */
     public boolean giveStarterPhone = true;
@@ -137,9 +142,15 @@ public final class CaricraftConfig {
         /** Carins por sobrevivir una noche de desafío completa. */
         public long nightReward = 50;
         /** Nivel máximo de desafío (equipamiento y fuerza de los mobs). */
-        public int maxLevel = 5;
+        public int maxLevel = 30;
         /** Noches superadas necesarias para subir un nivel. */
-        public int nightsPerLevel = 2;
+        public int nightsPerLevel = 1;
+        /** Tres oleadas por noche: la segunda y la tercera suman +1 y +2 niveles. */
+        public boolean waves = true;
+        /** Mobs élite (con nombre, brillan, +3 niveles de equipo y triple recompensa). */
+        public boolean elites = true;
+        /** Hordas: a más nivel, más probable que un mob aparezca acompañado. */
+        public boolean hordes = true;
         /** Impide dormir durante la noche de desafío. */
         public boolean blockSleep = true;
         /** Fuera del desafío, impide que aparezcan los mobs de la lista (el mundo queda como sin ellos). */
@@ -151,7 +162,7 @@ public final class CaricraftConfig {
             intervalNights = clamp(intervalNights, 1, 30);
             killReward = Math.max(0, Math.min(1000, killReward));
             nightReward = Math.max(0, Math.min(100_000, nightReward));
-            maxLevel = clamp(maxLevel, 1, 10);
+            maxLevel = clamp(maxLevel, 1, 100);
             nightsPerLevel = clamp(nightsPerLevel, 1, 50);
             radius = clamp(radius, 32, 256);
             if (mobs == null) {
@@ -167,11 +178,15 @@ public final class CaricraftConfig {
         CaricraftConfig config = new CaricraftConfig();
         if (Files.exists(file)) {
             try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-                CaricraftConfig loaded = GSON.fromJson(reader, CaricraftConfig.class);
+                com.google.gson.JsonObject json = com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
+                CaricraftConfig loaded = GSON.fromJson(json, CaricraftConfig.class);
                 if (loaded != null) {
-                    config = loaded;
+                    if (!json.has("configVersion")) {
+                        loaded.configVersion = 0;
+                    }
+                    config = loaded.migrated();
                 }
-            } catch (IOException | JsonParseException e) {
+            } catch (IOException | JsonParseException | IllegalStateException e) {
                 LOGGER.error("No se pudo leer {}; se usan valores por defecto.", file, e);
                 return config.validated();
             }
@@ -186,6 +201,25 @@ public final class CaricraftConfig {
             LOGGER.warn("No se pudo escribir {}.", file, e);
         }
         return config;
+    }
+
+    /**
+     * Actualiza archivos antiguos: solo cambia valores que siguen en el antiguo valor por defecto, para respetar
+     * lo que el administrador haya ajustado a mano.
+     */
+    CaricraftConfig migrated() {
+        if (configVersion < 2 && challenge != null) {
+            // v2: el desafío escala sin techo bajo (antes máx. 5 y un nivel cada 2 noches).
+            if (challenge.maxLevel == 5) {
+                challenge.maxLevel = 30;
+            }
+            if (challenge.nightsPerLevel == 2) {
+                challenge.nightsPerLevel = 1;
+            }
+            LOGGER.info("Configuración de Caricraft Mod migrada a la versión {}.", CURRENT_VERSION);
+        }
+        configVersion = CURRENT_VERSION;
+        return this;
     }
 
     /** Corrige valores fuera de rango y devuelve la misma instancia. */

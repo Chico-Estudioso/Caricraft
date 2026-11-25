@@ -126,6 +126,6 @@ public record PhoneSnapshot(
                                 long nightsUntilForced, int intervalNights, int level, int maxLevel,
                                 int nightsCompleted, long totalKills, long totalCarins, int nightKills,
                                 long nightCarins, long killReward, long nightReward, boolean blockSleep,
-                                List<String> blockedMobs) {
+                                List<String> blockedMobs, int wave, int effectiveLevel, boolean waves) {
     }
 }
