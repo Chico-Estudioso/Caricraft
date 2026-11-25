@@ -58,6 +58,7 @@ public final class CobbleverseService {
         if (profile.cobbleverseDay() != day) {
             profile.setCobbleverseDay(day);
             profile.setSalesToday(0);
+            profile.setWondersToday(0);
             profile.boughtToday().clear();
         }
     }
@@ -122,6 +123,56 @@ public final class CobbleverseService {
             return "legendary";
         }
         return null;
+    }
+
+    // ------------------------------------------------------------------ intercambio prodigioso
+
+    public int wondersLeft(PlayerProfile profile, long day) {
+        if (!config.cobbleverse.wonderTrade) {
+            return 0;
+        }
+        int done = profile.cobbleverseDay() == day ? profile.wondersToday() : 0;
+        return Math.max(0, config.cobbleverse.wonderTradesPerDay - done);
+    }
+
+    public ActionResult canWonderTrade(PlayerProfile profile, long day) {
+        if (!config.cobbleverse.wonderTrade) {
+            return ActionResult.fail("cv_disabled");
+        }
+        if (wondersLeft(profile, day) <= 0) {
+            return ActionResult.fail("cv_wonder_done");
+        }
+        return ActionResult.ok("ok");
+    }
+
+    public void recordWonderTrade(PlayerProfile profile, long day) {
+        rollDay(profile, day);
+        profile.setWondersToday(profile.wondersToday() + 1);
+    }
+
+    /**
+     * Elige al azar un Pokémon de la bolsa que no sea del propio jugador.
+     *
+     * @param owners dueño de cada Pokémon de la bolsa, en orden
+     * @return índice elegido, o -1 si no hay ninguno de otro jugador (entonces se genera uno)
+     */
+    public static int pickFromPool(List<java.util.UUID> owners, java.util.UUID player, Random random) {
+        List<Integer> candidates = new ArrayList<>();
+        for (int i = 0; i < owners.size(); i++) {
+            if (!owners.get(i).equals(player)) {
+                candidates.add(i);
+            }
+        }
+        return candidates.isEmpty() ? -1 : candidates.get(random.nextInt(candidates.size()));
+    }
+
+    /** Nivel del Pokémon generado: el del ofrecido ±3. */
+    public static int wonderLevel(int offeredLevel, Random random) {
+        return Math.max(1, Math.min(100, offeredLevel + random.nextInt(7) - 3));
+    }
+
+    public double wonderShinyChance() {
+        return config.cobbleverse.wonderShinyChance;
     }
 
     // ------------------------------------------------------------------ regalo misterioso

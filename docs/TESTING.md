@@ -31,6 +31,10 @@ Guion B: recibir y aceptar la invitación y viajar.
 - `./gradlew runQaChallenge -DqaRole=I`: cómo se ve el ítem del CariPhone en primera y tercera persona y en el inventario.
 - `./gradlew runQaChallenge -DqaRole=V`: aspecto de la pestaña Cobbleverse con datos de ejemplo. En desarrollo no hay Cobblemon.
 - En un servidor COBBLEVERSE real: `/caricraft cobbleverse prueba` (desde la consola) comprueba Cobblemon y CobbleDollars con un jugador ficticio.
+- **Con Cobblemon real** (modelos 3D, compras, ventas e intercambio prodigioso): `./gradlew build remapQaJar` y después `python3 tools/cobblemon_qa.py <servidor_cobbleverse> <carpeta_de_trabajo> W`.
+  - `<servidor_cobbleverse>` es el que prepara `tools/cobbleverse_server_test.py`; de ahí se copian Cobblemon, CobbleDollars, Fabric API, Kotlin y Architectury.
+  - Monta un servidor mínimo (mundo plano, puerto 25566) y un cliente de producción en español con el JAR de QA (`remapQaJar`, nunca se publica), y juega el rol W: pestaña Cobbleverse del Mercado, regalo, compra, venta, las cuatro pestañas del CobbleCentro y un intercambio prodigioso.
+  - Imprime el registro `[QA]` y deja las capturas en `<carpeta_de_trabajo>/client/screenshots`. Sin pantalla usa `xvfb-run`.
 - `./gradlew runQaChallenge -DqaRole=S` (con `runServer`): escuadrón con botín. Comprueba la aparición, el aviso y la app, el cofre bloqueado, la derrota (Carins y botín) y que al amanecer el cofre abierto se queda y el no ganado desaparece.
 - `./gradlew runQaChallenge -DqaRole=T` (con `runServer`): consejo en el chat, notificación con el teléfono cerrado, barra amarilla antes de la noche y roja durante el desafío, interruptor de consejos y aviso al amanecer.
 - `./gradlew runQaChallenge -DqaRole=P` (con `runServer`): CariPhone personal. Comprueba que:

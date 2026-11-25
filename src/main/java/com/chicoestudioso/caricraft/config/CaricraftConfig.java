@@ -169,9 +169,22 @@ public final class CaricraftConfig {
         public double sellPriceMultiplier = 1.0;
         /** Permite vender legendarios, singulares y ultraentes (por defecto no, para evitar sustos). */
         public boolean sellLegendaries = false;
+        /** Intercambio prodigioso: un Pokémon del equipo por otro al azar (de otro jugador o generado). */
+        public boolean wonderTrade = true;
+        /** Intercambios prodigiosos por jugador y día. */
+        public int wonderTradesPerDay = 1;
+        /** Probabilidad de que el Pokémon generado (si no hay ninguno de otro jugador) sea variocolor. */
+        public double wonderShinyChance = 0.02;
+        /** Pokémon de otros jugadores que esperan en el intercambio prodigioso (los más antiguos se van). */
+        public int wonderPoolSize = 100;
 
         CobbleverseConfig validate() {
             maxSalesPerDay = clamp(maxSalesPerDay, 0, 100);
+            wonderTradesPerDay = clamp(wonderTradesPerDay, 0, 50);
+            wonderPoolSize = clamp(wonderPoolSize, 1, 1000);
+            if (!(wonderShinyChance >= 0) || wonderShinyChance > 1) {
+                wonderShinyChance = 0.02;
+            }
             if (!(sellPriceMultiplier >= 0) || sellPriceMultiplier > 100) {
                 sellPriceMultiplier = 1.0;
             }

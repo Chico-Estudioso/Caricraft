@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface PokemonBackend {
     /** Un Pokémon del equipo. {@code species} es el id ({@code cobblemon:pikachu}); {@code nickname} puede ir vacío. */
     record PartyMon(int slot, UUID uuid, String species, String nickname, int level, boolean fainted,
-                    PokemonPricing.PokemonInfo info) {
+                    PokemonPricing.PokemonInfo info, List<String> aspects) {
     }
 
     List<PartyMon> party(ServerPlayer player);
@@ -36,4 +36,19 @@ public interface PokemonBackend {
     String give(ServerPlayer player, String species, int level, boolean shiny, int perfectIvs, List<String> moves);
 
     boolean speciesExists(String species);
+
+    /** Crea un Pokémon sin dárselo a nadie (se entrega con {@link #restore}). */
+    Object create(String species, int level, boolean shiny, int perfectIvs, List<String> moves);
+
+    /** Datos de un Pokémon quitado, creado o cargado. */
+    PartyMon describe(Object pokemon);
+
+    /** Guarda un Pokémon con el formato NBT de Cobblemon. */
+    net.minecraft.nbt.CompoundTag save(Object pokemon, net.minecraft.core.RegistryAccess registries);
+
+    /** Carga un Pokémon guardado con {@link #save}. */
+    Object load(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.RegistryAccess registries);
+
+    /** Especie al azar entre las implementadas que no son legendarias, singulares, ultraentes ni paradoja. */
+    String randomSpecies(java.util.Random random);
 }

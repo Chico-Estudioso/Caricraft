@@ -154,3 +154,19 @@ jar {
         rename { "${it}_${inputs.properties.archivesName}" }
     }
 }
+
+// QA en producción: el módulo de QA (source set devtools) remapeado a intermediary para usarlo en un
+// cliente de producción con Cobblemon real (ver tools/cobblemon_qa.py y docs/TESTING.md). Nunca se publica.
+tasks.register('qaDevJar', Jar) {
+    from sourceSets.devtools.output
+    archiveClassifier = 'qa-dev'
+    destinationDirectory = layout.buildDirectory.dir('devlibs')
+}
+tasks.register('remapQaJar', net.fabricmc.loom.task.RemapJarTask) {
+    dependsOn 'qaDevJar'
+    inputFile = tasks.named('qaDevJar').flatMap { it.archiveFile }
+    archiveClassifier = 'qa'
+    destinationDirectory = layout.buildDirectory.dir('qa')
+    classpath.from(sourceSets.client.compileClasspath)
+    classpath.from(sourceSets.main.output, sourceSets.client.output)
+}

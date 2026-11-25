@@ -183,4 +183,30 @@ class CobbleverseServiceTest {
         assertEquals(-1, loaded.profiles().get(f.bob).giftDay());
         assertFalse(UUID.randomUUID().equals(f.alice));
     }
+
+    @Test
+    void wonderTradeOncePerDayFromOtherPlayers() {
+        TestFixture f = TestFixture.withDefaultMissions();
+        CobbleverseService service = service(f);
+        PlayerProfile profile = f.state.profiles().get(f.alice);
+        long day = service.day();
+        assertEquals(1, service.wondersLeft(profile, day));
+        assertTrue(service.canWonderTrade(profile, day).success());
+        service.recordWonderTrade(profile, day);
+        assertEquals("caricraft.result.cv_wonder_done", service.canWonderTrade(profile, day).key());
+        assertTrue(service.canWonderTrade(profile, day + 1).success(), "al día siguiente vuelve");
+        f.config.cobbleverse.wonderTradesPerDay = 3;
+        assertEquals(2, service.wondersLeft(profile, day));
+
+        Random random = new Random(5);
+        assertEquals(-1, CobbleverseService.pickFromPool(List.of(f.alice, f.alice), f.alice, random), "solo propios: se genera");
+        for (int i = 0; i < 50; i++) {
+            int pick = CobbleverseService.pickFromPool(List.of(f.alice, f.bob, f.alice, f.carol), f.alice, random);
+            assertTrue(pick == 1 || pick == 3, "nunca el propio");
+        }
+        for (int i = 0; i < 50; i++) {
+            int level = CobbleverseService.wonderLevel(2, random);
+            assertTrue(level >= 1 && level <= 5);
+        }
+    }
 }

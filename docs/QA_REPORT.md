@@ -155,6 +155,17 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
   - En esos mismos métodos conviven Lenient Death (conservar objetos al morir), Sophisticated Core (tirar desde la mochila), Interactic (fuerza al tirar) y Accessories/Trinkets (soltar accesorios al morir). Todos usan inyecciones compatibles; ninguno reemplaza los métodos.
   - En un mundo creado con una versión anterior aparece una vez el aviso `Missing data pack caricraft`, porque ya no hay receta. Es inofensivo.
 
+**CobbleCentro e intercambio prodigioso con Cobblemon real** (`tools/cobblemon_qa.py`, rol W; cliente de producción en español con Cobblemon 1.8.4 y CobbleDollars):
+
+| Paso | Resultado |
+|---|---|
+| Abrir el CobbleCentro desde el Mercado | Se abre; Inicio con los 6 Pokémon del equipo en 3D (los variocolor con el borde dorado) |
+| Tienda | Tarjetas horizontales con el objeto en grande o el Pokémon en 3D, precio y «Comprar» |
+| Vender | Tarjetas con el modelo, nivel, IV y «Vender · ₽…»; el segundo toque confirma |
+| Prodigioso: elegir Pikachu Nv. 24 e intercambiar | Llega un Porygon Nv. 24 (luego un Pansage Nv. 23) de «un entrenador lejano»: en la bolsa solo estaba el Pikachu del propio jugador, que no se puede recibir |
+| Animación | Poké Ball agitándose, destello y el Pokémon recibido girando; el aviso de texto no se adelanta a la animación |
+| Otro intercambio sin quedar | «Ya has hecho hoy todos los intercambios prodigiosos» |
+
 ## Errores encontrados y corregidos durante la QA
 1. **Teléfono borroso (alto):** en 1.21 `Screen.render` vuelve a pintar el fondo desenfocado encima. Corregido en `PhoneScreen`.
 2. **Pestañas de misiones cortadas (bajo):** se quitaron los contadores y se añadió un punto rojo si hay misiones para reclamar.
@@ -162,7 +173,9 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 4. **Servidor montado a mano sin `athena`/`fusion` (medio):** documentado; el script de prueba los incluye.
 5. **Tarjeta del Desafío (bajo):** el título se cortaba y los indicadores de nivel se montaban sobre el texto en negrita. Corregido.
 6. **Mercado (bajo):** el texto de stock quedaba tapado por el botón Comprar. Corregido.
-7. **Etiquetas del inicio pegadas (bajo):** con 4 columnas, «Misiones», «Cartera» y «Mercado» se tocaban. Ahora dejan margen y algunas apps usan un nombre corto.
+7. **CobbleCentro: barra lateral congelada (medio):** los recortes anidados de las tarjetas dejaban activo el recorte de pantalla de un fotograma a otro, y fuera del contenido se veía siempre el primer fotograma (la pestaña activa no cambiaba). Corregido con recortes anidados de `GuiGraphics`.
+8. **Cliente de QA en inglés (bajo):** el índice de recursos de Loom se llama `1.21.1-17`; con `17` no se cargaba ningún idioma salvo el inglés del JAR. Corregido en `tools/cobblemon_qa.py`.
+9. **Etiquetas del inicio pegadas (bajo):** con 4 columnas, «Misiones», «Cartera» y «Mercado» se tocaban. Ahora dejan margen y algunas apps usan un nombre corto.
 
 ## Pendiente (priorizado)
 1. **Medio:** probar captura, evolución y combate con un cliente COBBLEVERSE completo.

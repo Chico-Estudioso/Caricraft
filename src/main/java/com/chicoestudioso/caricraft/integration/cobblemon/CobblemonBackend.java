@@ -35,22 +35,30 @@ final class CobblemonBackend implements PokemonBackend {
         List<PartyMon> result = new ArrayList<>();
         for (int slot = 0; slot < party.size(); slot++) {
             Pokemon pokemon = party.get(slot);
-            if (pokemon == null) {
-                continue;
+            if (pokemon != null) {
+                result.add(describe(pokemon, slot));
             }
-            int ivTotal = 0;
-            for (Stats stat : IV_STATS) {
-                Integer iv = pokemon.getIvs().get(stat);
-                ivTotal += iv == null ? 0 : iv;
-            }
-            boolean legendary = pokemon.isLegendary() || pokemon.isMythical() || pokemon.isUltraBeast();
-            String species = pokemon.getSpecies().getResourceIdentifier().toString();
-            String nickname = pokemon.getNickname() == null ? "" : pokemon.getNickname().getString();
-            result.add(new PartyMon(slot, pokemon.getUuid(), species, nickname, pokemon.getLevel(), pokemon.isFainted(),
-                    new PokemonPricing.PokemonInfo(species, pokemon.getLevel(), pokemon.getSpecies().getCatchRate(), ivTotal,
-                            pokemon.getShiny(), legendary)));
         }
         return result;
+    }
+
+    private static PartyMon describe(Pokemon pokemon, int slot) {
+        int ivTotal = 0;
+        for (Stats stat : IV_STATS) {
+            Integer iv = pokemon.getIvs().get(stat);
+            ivTotal += iv == null ? 0 : iv;
+        }
+        boolean legendary = pokemon.isLegendary() || pokemon.isMythical() || pokemon.isUltraBeast();
+        String species = pokemon.getSpecies().getResourceIdentifier().toString();
+        String nickname = pokemon.getNickname() == null ? "" : pokemon.getNickname().getString();
+        return new PartyMon(slot, pokemon.getUuid(), species, nickname, pokemon.getLevel(), pokemon.isFainted(),
+                new PokemonPricing.PokemonInfo(species, pokemon.getLevel(), pokemon.getSpecies().getCatchRate(), ivTotal,
+                        pokemon.getShiny(), legendary), List.copyOf(pokemon.getAspects()));
+    }
+
+    @Override
+    public PartyMon describe(Object pokemon) {
+        return describe((Pokemon) pokemon, -1);
     }
 
     @Override
@@ -81,9 +89,9 @@ final class CobblemonBackend implements PokemonBackend {
     }
 
     @Override
-    public String give(ServerPlayer player, String species, int level, boolean shiny, int perfectIvs, List<String> moves) {
+    public Object create(String species, int level, boolean shiny, int perfectIvs, List<String> moves) {
         Pokemon pokemon = PokemonProperties.Companion.parse("species=" + species + " level=" + level + (shiny ? " shiny=true" : ""))
-                .create(player);
+                .create();
         pokemon.setShiny(shiny);
         List<Stats> stats = new ArrayList<>(IV_STATS);
         Collections.shuffle(stats);
@@ -98,8 +106,32 @@ final class CobblemonBackend implements PokemonBackend {
             }
             pokemon.getMoveSet().setMove(i, template.create());
         }
+        return pokemon;
+    }
+
+    @Override
+    public String give(ServerPlayer player, String species, int level, boolean shiny, int perfectIvs, List<String> moves) {
+        Pokemon pokemon = (Pokemon) create(species, level, shiny, perfectIvs, moves);
         store(player).add(pokemon);
         return pokemon.getSpecies().getResourceIdentifier().toString();
+    }
+
+    @Override
+    public net.minecraft.nbt.CompoundTag save(Object pokemon, net.minecraft.core.RegistryAccess registries) {
+        return ((Pokemon) pokemon).saveToNBT(registries, new net.minecraft.nbt.CompoundTag());
+    }
+
+    @Override
+    public Object load(net.minecraft.nbt.CompoundTag tag, net.minecraft.core.RegistryAccess registries) {
+        return Pokemon.Companion.loadFromNBT(registries, tag);
+    }
+
+    @Override
+    public String randomSpecies(java.util.Random random) {
+        List<com.cobblemon.mod.common.pokemon.Species> pool = PokemonSpecies.getImplemented().stream()
+                .filter(s -> java.util.Collections.disjoint(s.getLabels(), java.util.Set.of("legendary", "mythical", "ultra_beast", "paradox")))
+                .toList();
+        return pool.get(random.nextInt(pool.size())).getResourceIdentifier().getPath();
     }
 
     @Override

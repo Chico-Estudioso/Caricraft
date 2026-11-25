@@ -165,7 +165,16 @@ public record PhoneSnapshot(
      */
     public record CobbleverseView(boolean cobbleDollarsInstalled, long cobbleDollars, boolean giftEnabled, boolean giftAvailable,
                                   long nextDayAt, boolean shopEnabled, List<CvOfferView> offers, boolean sellEnabled,
-                                  List<SellView> party, int salesToday, int maxSales) {
+                                  List<SellView> party, int salesToday, int maxSales, boolean wonderEnabled, int wondersLeft,
+                                  int wondersPerDay, int wonderPool, WonderView lastWonder) {
+    }
+
+    /**
+     * Último intercambio prodigioso del jugador (para la animación). {@code from} vacío = Pokémon generado.
+     *
+     * @param time momento del intercambio (la animación se lanza cuando cambia)
+     */
+    public record WonderView(String species, List<String> aspects, int level, boolean shiny, String from, String sent, long time) {
     }
 
     /** Oferta de la tienda Cobbleverse: un objeto ({@code item}) o un Pokémon ({@code species} no vacía). */
@@ -175,7 +184,7 @@ public record PhoneSnapshot(
 
     /** Pokémon del equipo que se puede vender. {@code blocked} es el motivo si no se puede, o {@code null}. */
     public record SellView(String uuid, String species, String nickname, int level, boolean shiny, int ivTotal, long price,
-                           String blocked) {
+                           String blocked, List<String> aspects) {
     }
 
     /** Botín protegido por un escuadrón: dónde está, cuántos guardias quedan y si ya se puede abrir. */

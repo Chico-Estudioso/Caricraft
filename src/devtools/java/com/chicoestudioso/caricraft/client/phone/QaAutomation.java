@@ -50,6 +50,8 @@ public final class QaAutomation implements ClientModInitializer {
             scriptSquads();
         } else if ("V".equals(role)) {
             scriptCobbleverseUi();
+        } else if ("W".equals(role)) {
+            scriptCobblemonReal();
         } else if ("I".equals(role)) {
             scriptPhoneItem();
         } else {
@@ -588,6 +590,112 @@ public final class QaAutomation implements ClientModInitializer {
         shot("m03_caribox_companero");
         closePhone();
         then(1200, () -> Minecraft.getInstance().stop());
+    }
+
+    // ------------------------------------------------------------------ cobbleverse con Cobblemon real
+
+    private static void logNotices() {
+        var n = ClientPhoneState.notifications().peekFirst();
+        log("aviso: " + (n == null ? "-" : n.key() + " " + n.args()));
+    }
+
+    /** Pestaña Cobbleverse con Cobblemon y CobbleDollars de verdad (cliente de producción, rol W). */
+    private void scriptCobblemonReal() {
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("time set 6000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("tp @s 0 -60 0 0 10");
+            cmd("cobbledollars give @s 200000");
+            cmd("pokegive pikachu level=24");
+            cmd("pokegive gible level=31 shiny");
+            cmd("pokegive magikarp level=10");
+        });
+        then(60, () -> {
+        });
+        page(PhonePage.MARKET, 0);
+        then(30, () -> phone().marketTab = 1);
+        then(40, () -> {
+            var cv = snap().cobbleverse();
+            log("CV vista: " + (cv == null ? "null" : "₽" + cv.cobbleDollars() + ", regalo=" + cv.giftAvailable()
+                    + ", ofertas=" + cv.offers().stream().map(PhoneSnapshot.CvOfferView::id).toList()
+                    + ", equipo=" + cv.party().stream().map(m -> m.species() + ":" + m.price() + (m.blocked() == null ? "" : "(" + m.blocked() + ")")).toList()));
+        });
+        shot("w01_cobbleverse_real");
+        then(10, () -> act(PhoneAction.CV_GIFT, ""));
+        then(40, QaAutomation::logNotices);
+        shot("w02_regalo");
+        then(10, () -> {
+            var cv = snap().cobbleverse();
+            var offer = cv.offers().stream().filter(o -> !o.species().isEmpty()).findFirst()
+                    .orElse(cv.offers().getFirst());
+            log("CV compro " + offer.id() + " por ₽" + offer.price());
+            act(PhoneAction.CV_BUY, offer.id());
+        });
+        then(40, () -> {
+            logNotices();
+            log("CV saldo tras comprar: ₽" + snap().cobbleverse().cobbleDollars() + " · equipo="
+                    + snap().cobbleverse().party().stream().map(PhoneSnapshot.SellView::species).toList());
+        });
+        then(10, () -> {
+            var mon = snap().cobbleverse().party().stream().filter(m -> m.species().endsWith("magikarp")).findFirst().orElse(null);
+            if (mon != null) {
+                log("CV vendo magikarp por ₽" + mon.price());
+                act(PhoneAction.CV_SELL, mon.uuid());
+            }
+        });
+        then(40, () -> {
+            logNotices();
+            log("CV saldo tras vender: ₽" + snap().cobbleverse().cobbleDollars() + " · equipo="
+                    + snap().cobbleverse().party().stream().map(PhoneSnapshot.SellView::species).toList());
+        });
+        then(5, () -> phone().mouseScrolled(0, 0, 0, -40));
+        shot("w03_tras_vender");
+        // CobbleCentro: la pantalla grande con modelos 3D.
+        then(10, () -> {
+            phone().mouseScrolled(0, 0, 0, 40);
+            phone().openCobbleCentro();
+        });
+        then(40, () -> cc().select(CobbleCentroScreen.Tab.HOME));
+        shot("w04_cc_inicio");
+        then(10, () -> cc().select(CobbleCentroScreen.Tab.SHOP));
+        shot("w05_cc_tienda");
+        then(10, () -> cc().select(CobbleCentroScreen.Tab.SELL));
+        shot("w06_cc_vender");
+        then(10, () -> {
+            CobbleCentroScreen cc = cc();
+            cc.select(CobbleCentroScreen.Tab.WONDER);
+            var mon = snap().cobbleverse().party().stream().filter(m -> m.species().endsWith("pikachu")).findFirst().orElse(null);
+            log("CC prodigioso: quedan " + snap().cobbleverse().wondersLeft() + ", bolsa=" + snap().cobbleverse().wonderPool()
+                    + ", elijo " + (mon == null ? "-" : mon.species()));
+            if (mon != null) {
+                cc.wonderPick = mon.uuid();
+            }
+        });
+        shot("w07_cc_prodigioso_elegido");
+        then(5, () -> cc().startWonder());
+        then(4, () -> {
+        });
+        shot("w08_cc_prodigioso_buscando");
+        then(60, () -> {
+            logNotices();
+            var cv = snap().cobbleverse();
+            log("CC recibido: " + (cv.lastWonder() == null ? "-" : cv.lastWonder().species() + " Nv." + cv.lastWonder().level()
+                    + (cv.lastWonder().shiny() ? " shiny" : "") + " de '" + cv.lastWonder().from() + "'")
+                    + " · quedan " + cv.wondersLeft() + " · equipo=" + cv.party().stream().map(PhoneSnapshot.SellView::species).toList());
+        });
+        shot("w09_cc_prodigioso_recibido");
+        then(10, () -> {
+            cc().dismissReveal();
+            act(PhoneAction.CV_WONDER, snap().cobbleverse().party().getFirst().uuid());
+        });
+        then(30, QaAutomation::logNotices);
+        shot("w10_cc_prodigioso_agotado");
+        then(20, () -> Minecraft.getInstance().stop());
+    }
+
+    private static CobbleCentroScreen cc() {
+        return (CobbleCentroScreen) Minecraft.getInstance().screen;
     }
 
     // ------------------------------------------------------------------ modelo del CariPhone
