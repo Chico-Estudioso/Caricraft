@@ -31,7 +31,8 @@ public record PhoneSnapshot(
         ChallengeView challenge,
         MarketView market,
         CampView camp,
-        LensView lens) {
+        LensView lens,
+        BoxView box) {
 
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
@@ -60,6 +61,10 @@ public record PhoneSnapshot(
      */
     public record AppView(String id, String kind, String ownership, long price, String state, List<String> requires,
                           String icon, int color, int level, int maxLevel) {
+    }
+
+    /** CariBox: filas y huecos ocupados. */
+    public record BoxView(boolean enabled, int rows, int usedSlots) {
     }
 
     /** Álbum de CariLens (vacío si el grupo no tiene la app). */

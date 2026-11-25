@@ -64,7 +64,11 @@ public final class PhoneActionHandler {
                         ? core.missions().deliver(state, uuid, payload.arg1(), new ServerInventoryAccess(player)) : invalid();
                 case INVITE_PLAYER -> invite(mod, player, payload.arg1(), alsoRefresh);
                 case ACCEPT_INVITE -> withUuid(payload.arg1(), from -> {
+                    UUID sourceParty = core.partyOf(uuid).id();
                     ActionResult r = core.parties().accept(state, uuid, from);
+                    if (r.success()) {
+                        com.chicoestudioso.caricraft.server.box.CariBoxManager.onMerge(mod, sourceParty, core.partyOf(uuid), player);
+                    }
                     alsoRefresh.add(from);
                     return r;
                 });
@@ -103,6 +107,7 @@ public final class PhoneActionHandler {
                 case TRAVEL_REQUEST -> TravelManager.request(mod, player,
                         "bring".equals(payload.arg1()) ? TravelRequest.Kind.BRING : TravelRequest.Kind.GO);
                 case TRAVEL_ACCEPT -> TravelManager.accept(mod, player);
+                case CARIBOX_OPEN -> com.chicoestudioso.caricraft.server.box.CariBoxManager.open(mod, player);
                 case TRAVEL_DECLINE -> TravelManager.decline(mod, player);
                 case CHALLENGE_BRING_FORWARD -> core.challenge().bringForward(core.partyOf(uuid),
                         ChallengeManager.day(mod.server()), ChallengeManager.night(mod.server()));
@@ -112,8 +117,8 @@ public final class PhoneActionHandler {
             result = ActionResult.fail("internal_error");
         }
 
-        if (payload.action() == PhoneAction.PHOTO_REQUEST && result == null) {
-            return; // solo se envía la foto
+        if ((payload.action() == PhoneAction.PHOTO_REQUEST || payload.action() == PhoneAction.CARIBOX_OPEN) && result == null) {
+            return; // la respuesta es la foto o el propio cofre
         }
         if (result != null) {
             mod.markDirty();

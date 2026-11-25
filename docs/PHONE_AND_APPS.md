@@ -18,6 +18,7 @@ Marco de teléfono centrado que se adapta a la escala de la GUI, barra de estado
 | Crónicas | 250 | Diario compartido y notas. |
 | Exploración | 400 | Biomas descubiertos + bonificación por bioma nuevo. |
 | Estadísticas | 200 | Distancia, capturas, victorias, misiones del dúo. |
+| CariBox | 400 | Cofre compartido del dúo desde el teléfono; ampliación por filas (250, hasta 3 veces) (`docs/CARIBOX.md`). |
 | CariCamp | 500 | Campamento del dúo, brújula y viajes de pago (`docs/CARICAMP.md`). |
 | CariLens | 300 | Álbum de fotos compartido; ampliación de álbum (200, hasta 4 veces) en Mejoras (`docs/CARILENS.md`). |
 

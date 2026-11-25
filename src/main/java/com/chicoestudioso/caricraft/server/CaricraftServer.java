@@ -121,6 +121,10 @@ public final class CaricraftServer {
         }
     }
 
+    public CaricraftSavedData savedData() {
+        return savedData;
+    }
+
     public com.chicoestudioso.caricraft.server.lens.PhotoStore photos() {
         return photos;
     }

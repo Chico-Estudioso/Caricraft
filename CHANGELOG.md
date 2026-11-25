@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+- **CariBox:**
+  - Cofre compartido del dúo que se abre desde el teléfono en cualquier lugar.
+  - 27 huecos ampliables hasta 54.
+  - Se guarda con el estado del mundo; fusión al vincularse y cierre seguro al ampliar.
 - **Viajes estilo /tpa en CariCamp:**
   - «Ir» hasta el compañero o «Traer» al compañero, siempre con su aceptación (teléfono, botones clicables en el chat o `/tpduo aceptar`).
   - Petición que caduca a los 60 s y cuenta atrás de 3 s sin moverse; se cobra al llegar.

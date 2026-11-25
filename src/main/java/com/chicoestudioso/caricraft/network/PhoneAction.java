@@ -51,7 +51,9 @@ public enum PhoneAction {
     /** Acepta la petición de viaje recibida. */
     TRAVEL_ACCEPT,
     /** Rechaza la petición recibida o cancela la enviada. */
-    TRAVEL_DECLINE;
+    TRAVEL_DECLINE,
+    /** Abre el CariBox (cofre compartido). */
+    CARIBOX_OPEN;
 
     private static final PhoneAction[] VALUES = values();
 

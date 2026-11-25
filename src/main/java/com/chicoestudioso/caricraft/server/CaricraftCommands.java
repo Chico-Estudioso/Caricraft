@@ -359,7 +359,14 @@ public final class CaricraftCommands {
         java.util.List<UUID> previousMembers = java.util.List.copyOf(before.members());
         ActionResult result = switch (action) {
             case INVITE -> core.parties().invite(core.state(), uuid, other.getUUID());
-            case ACCEPT -> core.parties().accept(core.state(), uuid, other.getUUID());
+            case ACCEPT -> {
+                UUID sourceParty = core.partyOf(uuid).id();
+                ActionResult accepted = core.parties().accept(core.state(), uuid, other.getUUID());
+                if (accepted.success()) {
+                    com.chicoestudioso.caricraft.server.box.CariBoxManager.onMerge(mod, sourceParty, core.partyOf(uuid), self);
+                }
+                yield accepted;
+            }
             case DECLINE -> core.parties().decline(core.state(), uuid, other.getUUID());
             case LEAVE -> core.parties().leavePending(core.state(), uuid)
                     ? core.parties().confirmLeave(core.state(), uuid)
