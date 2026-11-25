@@ -23,6 +23,8 @@ public final class CaricraftState {
     private final Map<UUID, PlayerProfile> profiles = new LinkedHashMap<>();
     /** Invitaciones en memoria (no persistidas). */
     private final List<Invite> invites = new ArrayList<>();
+    /** Peticiones de viaje estilo /tpa (no persistidas). */
+    private final List<com.chicoestudioso.caricraft.core.camp.TravelRequest> travelRequests = new ArrayList<>();
     private Supplier<UUID> idGenerator = UUID::randomUUID;
 
     public Map<UUID, Party> parties() {
@@ -35,6 +37,10 @@ public final class CaricraftState {
 
     public List<Invite> invites() {
         return invites;
+    }
+
+    public List<com.chicoestudioso.caricraft.core.camp.TravelRequest> travelRequests() {
+        return travelRequests;
     }
 
     public UUID newId() {

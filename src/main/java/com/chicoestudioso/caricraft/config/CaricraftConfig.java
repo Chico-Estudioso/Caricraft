@@ -102,12 +102,18 @@ public final class CaricraftConfig {
         public boolean blockDuringChallenge = true;
         /** Distancia máxima a la hoguera para fijar el campamento. */
         public int campfireRadius = 3;
+        /** Segundos que dura una petición de viaje al compañero sin responder. */
+        public int requestSeconds = 60;
+        /** Cuenta atrás (sin moverse) antes de viajar. */
+        public int warmupSeconds = 3;
 
         CampConfig validate() {
             campTravelCost = Math.max(0, Math.min(100_000, campTravelCost));
             partnerTravelCost = Math.max(0, Math.min(100_000, partnerTravelCost));
             cooldownSeconds = clamp(cooldownSeconds, 0, 86_400);
             campfireRadius = clamp(campfireRadius, 1, 8);
+            requestSeconds = clamp(requestSeconds, 10, 600);
+            warmupSeconds = clamp(warmupSeconds, 0, 30);
             return this;
         }
     }

@@ -407,15 +407,26 @@ public final class QaAutomation implements ClientModInitializer {
         page(PhonePage.CARICAMP, 0);
         shot("n04_caricamp_lejos");
         then(10, () -> act(PhoneAction.CAMP_TRAVEL, "camp"));
-        then(40, () -> {
+        page(PhonePage.CARICAMP, 0);
+        shot("n04b_cuenta_atras");
+        then(80, () -> {
             var me = Minecraft.getInstance().player;
             double d = Math.sqrt(me.distanceToSqr(camp[0], camp[1], camp[2]));
             log("distancia al campamento tras viajar (debe ser < 4): " + String.format("%.1f", d));
         });
         page(PhonePage.CARICAMP, 0);
         shot("n05_caricamp_en_campamento");
-        then(140, () -> act(PhoneAction.CAMP_TRAVEL, "partner"));
-        then(40, () -> log("distancia a Dev2 tras viajar (debe ser < 2): " + String.format("%.1f", distanceTo("Dev2"))));
+        // Viajes estilo /tpa: Dev2 tiene que aceptar.
+        then(140, () -> act(PhoneAction.TRAVEL_REQUEST, "go"));
+        page(PhonePage.CARICAMP, 0);
+        shot("n05b_peticion_enviada");
+        when(() -> distanceTo("Dev2") >= 0 && distanceTo("Dev2") < 3, () ->
+                log("IR: distancia a Dev2 tras aceptar y esperar (debe ser < 3): " + String.format("%.1f", distanceTo("Dev2"))));
+        closePhone();
+        then(140, () -> cmd("tp @s 0 120 -30 0 10"));
+        then(20, () -> act(PhoneAction.TRAVEL_REQUEST, "bring"));
+        when(() -> distanceTo("Dev2") >= 0 && distanceTo("Dev2") < 3, () ->
+                log("TRAER: Dev2 ha llegado hasta mí: " + String.format("%.1f", distanceTo("Dev2"))));
         // Foto
         then(20, () -> {
             cmd("tp @s 0 121 -6 0 10");
@@ -460,6 +471,19 @@ public final class QaAutomation implements ClientModInitializer {
         then(10, () -> cmd("fill -43 119 22 -37 119 28 minecraft:stone"));
         when(() -> snap() != null && !snap().incomingInvites().isEmpty(),
                 () -> act(PhoneAction.ACCEPT_INVITE, snap().incomingInvites().getFirst().uuid()));
+        // Petición "ir": la vemos en el chat (botones clicables) y en el teléfono, y aceptamos.
+        when(() -> snap() != null && snap().camp() != null && snap().camp().incoming() != null, () -> {
+        });
+        shot("m00_chat_peticion");
+        page(PhonePage.CARICAMP, 0);
+        shot("m00b_peticion_recibida");
+        then(10, () -> act(PhoneAction.TRAVEL_ACCEPT, ""));
+        closePhone();
+        // Petición "traer": aceptamos y nos quedamos quietos durante la cuenta atrás.
+        when(() -> snap() != null && snap().camp() != null && snap().camp().incoming() != null, () -> {
+            log("petición recibida: " + snap().camp().incoming().kind());
+            act(PhoneAction.TRAVEL_ACCEPT, "");
+        });
         when(() -> snap() != null && snap().lens() != null && !snap().lens().photos().isEmpty(), () -> {
         });
         page(PhonePage.CARILENS, 0);

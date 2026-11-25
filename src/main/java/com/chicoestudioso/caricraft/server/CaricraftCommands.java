@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
  *   <li>{@code /carins give|take|set <jugadores> <cantidad>}: administración (nivel 2).</li>
  *   <li>{@code /caricraft duo invite|accept|decline <jugador>}, {@code /caricraft duo leave}.</li>
  *   <li>{@code /caricraft info <jugador>} y {@code /caricraft reload} (nivel 2).</li>
+ *   <li>{@code /tpduo [ir|traer|aceptar|rechazar|campamento]} y {@code /caricraft viaje ...}: viajes de CariCamp.</li>
  *   <li>{@code /caricraft desafio [estado]}; {@code preparar} (nivel 3), {@code iniciar|terminar|nivel <n>} (nivel 2).</li>
  * </ul>
  */
@@ -56,7 +57,23 @@ public final class CaricraftCommands {
                                 .then(Commands.argument("amount", LongArgumentType.longArg(0, EconomyService.MAX_BALANCE))
                                         .executes(ctx -> adjust(ctx, Mode.SET))))));
 
+        // Viajes estilo /tpa con el compañero (requiere CariCamp).
+        com.mojang.brigadier.builder.LiteralArgumentBuilder<CommandSourceStack> travel = Commands.literal("tpduo")
+                .executes(ctx -> travel(ctx, "ir"))
+                .then(Commands.literal("ir").executes(ctx -> travel(ctx, "ir")))
+                .then(Commands.literal("traer").executes(ctx -> travel(ctx, "traer")))
+                .then(Commands.literal("aceptar").executes(ctx -> travel(ctx, "aceptar")))
+                .then(Commands.literal("rechazar").executes(ctx -> travel(ctx, "rechazar")))
+                .then(Commands.literal("campamento").executes(ctx -> travel(ctx, "campamento")));
+        dispatcher.register(travel);
+
         dispatcher.register(Commands.literal("caricraft")
+                .then(Commands.literal("viaje")
+                        .then(Commands.literal("ir").executes(ctx -> travel(ctx, "ir")))
+                        .then(Commands.literal("traer").executes(ctx -> travel(ctx, "traer")))
+                        .then(Commands.literal("aceptar").executes(ctx -> travel(ctx, "aceptar")))
+                        .then(Commands.literal("rechazar").executes(ctx -> travel(ctx, "rechazar")))
+                        .then(Commands.literal("campamento").executes(ctx -> travel(ctx, "campamento"))))
                 .then(Commands.literal("reload").requires(src -> src.hasPermission(2))
                         .executes(CaricraftCommands::reload))
                 .then(Commands.literal("desafio")
@@ -216,6 +233,33 @@ public final class CaricraftCommands {
         Component message = Component.translatable(result.key(), result.args().toArray());
         if (result.success()) {
             ctx.getSource().sendSuccess(() -> message, true);
+        } else {
+            ctx.getSource().sendFailure(message);
+        }
+        mod.markDirty();
+        mod.sendPartySnapshots(player.getUUID());
+        return result.success() ? 1 : 0;
+    }
+
+    private static int travel(CommandContext<CommandSourceStack> ctx, String what) throws CommandSyntaxException {
+        CaricraftServer mod = mod(ctx);
+        if (mod == null) {
+            return 0;
+        }
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        mod.core().onPlayerJoin(player.getUUID(), player.getGameProfile().getName());
+        ActionResult result = switch (what) {
+            case "traer" -> com.chicoestudioso.caricraft.server.camp.TravelManager.request(mod, player,
+                    com.chicoestudioso.caricraft.core.camp.TravelRequest.Kind.BRING);
+            case "aceptar" -> com.chicoestudioso.caricraft.server.camp.TravelManager.accept(mod, player);
+            case "rechazar" -> com.chicoestudioso.caricraft.server.camp.TravelManager.decline(mod, player);
+            case "campamento" -> com.chicoestudioso.caricraft.server.camp.TravelManager.travelToCamp(mod, player);
+            default -> com.chicoestudioso.caricraft.server.camp.TravelManager.request(mod, player,
+                    com.chicoestudioso.caricraft.core.camp.TravelRequest.Kind.GO);
+        };
+        Component message = Component.translatable(result.key(), result.args().toArray());
+        if (result.success()) {
+            ctx.getSource().sendSuccess(() -> message, false);
         } else {
             ctx.getSource().sendFailure(message);
         }

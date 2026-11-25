@@ -45,6 +45,7 @@ public final class ServerEvents {
             UUID uuid = handler.getPlayer().getUUID();
             TRACKER.forget(uuid);
             com.chicoestudioso.caricraft.server.lens.PhotoUploads.forget(uuid);
+            com.chicoestudioso.caricraft.server.camp.TravelManager.forget(uuid);
             CaricraftServer mod = CaricraftServer.get();
             if (mod != null) {
                 mod.rateLimiter().forget(uuid);
@@ -56,6 +57,7 @@ public final class ServerEvents {
             if (mod != null) {
                 TRACKER.tick(server, mod);
                 ChallengeManager.tick(server, mod);
+                com.chicoestudioso.caricraft.server.camp.TravelManager.tick(mod);
             }
         });
 

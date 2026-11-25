@@ -844,25 +844,68 @@ final class PhonePages {
                 () -> s.send(PhoneAction.CAMP_SET, ""));
         y += BUTTON_H + 2 + 8;
 
-        // Compañero
+        // Compañero: viajes estilo /tpa (el otro tiene que aceptar)
         ui.text(Component.translatable("caricraft.phone.camp.partner").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
         y += 12;
+        if (camp.warmupSeconds() > 0) {
+            ui.round(x, y, x + w, y + 16, PhoneTheme.mix(t.header(), t.card(), 0.6f));
+            ui.textClipped(Component.translatable("caricraft.phone.camp.warmup", camp.warmupSeconds()), x + 5, y + 4, w - 10, t.text());
+            y += 16 + 4;
+        }
+        if (camp.incoming() != null) {
+            PhoneSnapshot.TravelView in = camp.incoming();
+            long left = Math.max(1, (in.expiresAt() - snap.serverTime()) / 1000);
+            Component text = Component.translatable("GO".equals(in.kind()) ? "caricraft.phone.camp.incoming_go"
+                    : "caricraft.phone.camp.incoming_bring", in.name(), left);
+            int th = ui.wrappedHeight(text, w - 10);
+            int ch = th + BUTTON_H + 12;
+            ui.round(x, y, x + w, y + ch, PhoneTheme.mix(t.card(), t.accent(), 0.18f));
+            ui.wrapped(text, x + 5, y + 4, w - 10, t.text());
+            Component accept = Component.translatable("caricraft.phone.duo.accept");
+            Component decline = Component.translatable("caricraft.phone.duo.decline");
+            int aw = ui.buttonWidth(accept);
+            int dw = ui.buttonWidth(decline);
+            ui.button(x + w - 5 - aw, y + ch - BUTTON_H - 4, aw, BUTTON_H, accept, Style.GOOD,
+                    () -> s.send(PhoneAction.TRAVEL_ACCEPT, ""));
+            ui.button(x + w - 5 - aw - GAP - dw, y + ch - BUTTON_H - 4, dw, BUTTON_H, decline, Style.SECONDARY,
+                    () -> s.send(PhoneAction.TRAVEL_DECLINE, ""));
+            y += ch + 4;
+        }
+        if (camp.outgoing() != null) {
+            PhoneSnapshot.TravelView out = camp.outgoing();
+            long left = Math.max(1, (out.expiresAt() - snap.serverTime()) / 1000);
+            Component text = Component.translatable("caricraft.phone.camp.outgoing", out.name(), left);
+            Component cancel = Component.translatable("caricraft.phone.duo.cancel");
+            int cw = ui.buttonWidth(cancel);
+            int th = ui.wrappedHeight(text, w - cw - 14);
+            int ch = Math.max(th + 8, BUTTON_H + 8);
+            ui.round(x, y, x + w, y + ch, t.card());
+            ui.wrapped(text, x + 5, y + 4, w - cw - 14, t.textDim());
+            ui.button(x + w - 5 - cw, y + (ch - BUTTON_H) / 2, cw, BUTTON_H, cancel, Style.SECONDARY,
+                    () -> s.send(PhoneAction.TRAVEL_DECLINE, ""));
+            y += ch + 4;
+        }
         if (!snap.party().duo()) {
             y += ui.wrapped(Component.translatable("caricraft.phone.camp.no_duo"), x, y, w, t.textDim()) + 4;
         } else if (camp.others().isEmpty()) {
             y += ui.wrapped(Component.translatable("caricraft.phone.camp.partner_offline"), x, y, w, t.textDim()) + 4;
         }
+        boolean canRequest = canTravel && camp.outgoing() == null && camp.warmupSeconds() == 0 && snap.balance() >= camp.partnerCost();
         for (PhoneSnapshot.PositionView other : camp.others()) {
-            ui.round(x, y, x + w, y + 50, t.card());
+            int ch = 54;
+            ui.round(x, y, x + w, y + ch, t.card());
             compass(s, me, myDimension, other, x + 22, y + 22, t.header());
             ui.textClipped(Component.literal(other.name()).withStyle(ChatFormatting.BOLD), x + 44, y + 6, w - 48, t.text());
             locationText(s, me, myDimension, other, x + 44, y + 17, w - 48);
-            Component travel = Component.translatable("caricraft.phone.camp.travel", camp.partnerCost());
-            int bw = ui.buttonWidth(travel);
-            ui.button(x + w - 5 - bw, y + 50 - BUTTON_H - 5, bw, BUTTON_H, travel,
-                    canTravel && snap.balance() >= camp.partnerCost() ? Style.PRIMARY : Style.DISABLED,
-                    () -> s.send(PhoneAction.CAMP_TRAVEL, "partner"));
-            y += 50 + 4;
+            Component go = Component.translatable("caricraft.phone.camp.go", camp.partnerCost());
+            Component bring = Component.translatable("caricraft.phone.camp.bring", camp.partnerCost());
+            int gw = ui.buttonWidth(go);
+            int bw = ui.buttonWidth(bring);
+            ui.button(x + w - 5 - gw, y + ch - BUTTON_H - 5, gw, BUTTON_H, go, canRequest ? Style.PRIMARY : Style.DISABLED,
+                    () -> s.send(PhoneAction.TRAVEL_REQUEST, "go"));
+            ui.button(x + w - 5 - gw - GAP - bw, y + ch - BUTTON_H - 5, bw, BUTTON_H, bring,
+                    canRequest ? Style.SECONDARY : Style.DISABLED, () -> s.send(PhoneAction.TRAVEL_REQUEST, "bring"));
+            y += ch + 4;
         }
 
         y += 4;
