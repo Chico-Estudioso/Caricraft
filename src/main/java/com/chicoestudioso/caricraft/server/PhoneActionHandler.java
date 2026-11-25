@@ -5,6 +5,7 @@ import com.chicoestudioso.caricraft.core.ActionResult;
 import com.chicoestudioso.caricraft.core.CaricraftCore;
 import com.chicoestudioso.caricraft.core.CaricraftState;
 import com.chicoestudioso.caricraft.network.PhoneAction;
+import com.chicoestudioso.caricraft.server.camp.CampTravel;
 import com.chicoestudioso.caricraft.server.challenge.ChallengeManager;
 import com.chicoestudioso.caricraft.network.PhoneActionPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -80,6 +81,8 @@ public final class PhoneActionHandler {
                 case ADD_NOTE -> core.addNote(uuid, payload.arg1());
                 case MARKET_BUY -> validId(payload.arg1())
                         ? core.market().buy(state, uuid, payload.arg1(), (item, count) -> giveItem(player, item, count)) : invalid();
+                case CAMP_SET -> CampTravel.setCamp(mod, player);
+                case CAMP_TRAVEL -> CampTravel.travel(mod, player, payload.arg1());
                 case CHALLENGE_BRING_FORWARD -> core.challenge().bringForward(core.partyOf(uuid),
                         ChallengeManager.day(mod.server()), ChallengeManager.night(mod.server()));
             };
@@ -96,6 +99,9 @@ public final class PhoneActionHandler {
             }
             if (result.success() && payload.action() == PhoneAction.BUY_ITEM) {
                 notifyPartner(mod, player, "caricraft.notify.partner_bought", List.of(player.getGameProfile().getName(), payload.arg1()));
+            }
+            if (result.success() && payload.action() == PhoneAction.CAMP_TRAVEL && "partner".equals(payload.arg1())) {
+                notifyPartner(mod, player, "caricraft.notify.partner_arrived", List.of(player.getGameProfile().getName()));
             }
             if (result.success() && payload.action() == PhoneAction.CHALLENGE_BRING_FORWARD) {
                 notifyPartner(mod, player, "caricraft.notify.partner_challenge", List.of(player.getGameProfile().getName()));

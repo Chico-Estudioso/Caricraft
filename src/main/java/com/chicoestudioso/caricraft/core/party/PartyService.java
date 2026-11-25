@@ -185,6 +185,9 @@ public final class PartyService {
             target.missions().putIfAbsent(entry.getKey(), entry.getValue());
         }
         target.claimedEver().addAll(source.claimedEver());
+        if (target.camp() == null) {
+            target.setCamp(source.camp());
+        }
         chronicle.mergeInto(target, source.chronicle());
     }
 
@@ -233,6 +236,7 @@ public final class PartyService {
         party.stats().forEach(solo::incrementStat);
         solo.claimedEver().addAll(party.claimedEver());
         solo.challenge().copyFrom(party.challenge());
+        solo.setCamp(party.camp());
         chronicle.mergeInto(solo, party.chronicle());
 
         String suffix = "@" + player;

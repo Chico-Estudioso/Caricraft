@@ -18,6 +18,7 @@ Marco de teléfono centrado que se adapta a la escala de la GUI, barra de estado
 | Crónicas | 250 | Diario compartido y notas. |
 | Exploración | 400 | Biomas descubiertos + bonificación por bioma nuevo. |
 | Estadísticas | 200 | Distancia, capturas, victorias, misiones del dúo. |
-| CariLens / CariCamp | Próximamente | Visibles, no comprables. |
+| CariCamp | 500 | Campamento del dúo, brújula y viajes de pago (`docs/CARICAMP.md`). |
+| CariLens | Próximamente | Visible, no comprable. |
 
 La UI no decide precios ni desbloqueos: todo viene del snapshot del servidor.

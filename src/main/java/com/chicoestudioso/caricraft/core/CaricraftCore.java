@@ -1,6 +1,7 @@
 package com.chicoestudioso.caricraft.core;
 
 import com.chicoestudioso.caricraft.config.CaricraftConfig;
+import com.chicoestudioso.caricraft.core.camp.CampService;
 import com.chicoestudioso.caricraft.core.challenge.ChallengeService;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleEntry;
 import com.chicoestudioso.caricraft.core.chronicle.ChronicleService;
@@ -39,6 +40,7 @@ public final class CaricraftCore {
     private final PartyService parties;
     private final ChallengeService challenge;
     private final MarketService market;
+    private final CampService camp;
 
     public CaricraftCore(CaricraftState state, CaricraftConfig config, MissionCatalog missionCatalog, Clock clock) {
         this(state, config, missionCatalog, MarketCatalog.of(java.util.List.of(), source -> true, item -> true), clock);
@@ -56,6 +58,11 @@ public final class CaricraftCore {
         this.parties = new PartyService(config, clock, economy, chronicle);
         this.challenge = new ChallengeService(config, economy, chronicle);
         this.market = new MarketService(config, economy, clock, marketCatalog);
+        this.camp = new CampService(config, economy, chronicle, shop, clock);
+    }
+
+    public CampService camp() {
+        return camp;
     }
 
     public MarketService market() {
