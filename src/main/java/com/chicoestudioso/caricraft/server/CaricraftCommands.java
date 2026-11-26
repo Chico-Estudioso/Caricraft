@@ -76,7 +76,12 @@ public final class CaricraftCommands {
                         .then(Commands.literal("campamento").executes(ctx -> travel(ctx, "campamento"))))
                 .then(Commands.literal("consejo").executes(CaricraftCommands::tip))
                 .then(Commands.literal("cobbleverse").requires(src -> src.hasPermission(4))
-                        .then(Commands.literal("prueba").executes(CaricraftCommands::cobbleverseDiagnostics)))
+                        .then(Commands.literal("prueba").executes(CaricraftCommands::cobbleverseDiagnostics))
+                        .then(Commands.literal("expediciones").executes(CaricraftCommands::finishExpeditions))
+                        .then(Commands.literal("variocolor").executes(ctx -> shinyTest(ctx, "cobblemon:gible"))
+                                .then(Commands.argument("especie", com.mojang.brigadier.arguments.StringArgumentType.string())
+                                        .executes(ctx -> shinyTest(ctx, com.mojang.brigadier.arguments.StringArgumentType.getString(ctx, "especie")))))
+                        .then(Commands.literal("cap").executes(CaricraftCommands::levelCap)))
                 .then(Commands.literal("reload").requires(src -> src.hasPermission(2))
                         .executes(CaricraftCommands::reload))
                 .then(Commands.literal("desafio")
@@ -176,6 +181,58 @@ public final class CaricraftCommands {
         java.util.List<String> lines = com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseDiagnostics.run(mod);
         lines.forEach(line -> ctx.getSource().sendSuccess(() -> Component.literal("[Cobbleverse] " + line), false));
         return lines.stream().anyMatch(line -> line.startsWith("FALLO")) ? 0 : 1;
+    }
+
+    /** Administración/QA: las expediciones en marcha terminan ya. */
+    private static int finishExpeditions(CommandContext<CommandSourceStack> ctx) {
+        CaricraftServer mod = CaricraftServer.get();
+        if (mod == null) {
+            return 0;
+        }
+        int n = com.chicoestudioso.caricraft.server.cobbleverse.ExpeditionManager.finishAll(mod.server());
+        ctx.getSource().sendSuccess(() -> Component.literal("[Cobbleverse] Expediciones terminadas: " + n), true);
+        return n;
+    }
+
+    /** Administración/QA: aparece un variocolor salvaje a unos 40 bloques y salta el aviso con brújula. */
+    private static int shinyTest(CommandContext<CommandSourceStack> ctx, String species)
+            throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        CaricraftServer mod = CaricraftServer.get();
+        var backend = com.chicoestudioso.caricraft.integration.cobblemon.CobblemonCompat.backend();
+        if (mod == null || backend == null) {
+            ctx.getSource().sendFailure(Component.literal("[Cobbleverse] Cobblemon no está instalado."));
+            return 0;
+        }
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        String id = species.contains(":") ? species : "cobblemon:" + species;
+        if (!backend.speciesExists(id)) {
+            ctx.getSource().sendFailure(Component.literal("[Cobbleverse] Especie desconocida: " + id));
+            return 0;
+        }
+        net.minecraft.server.level.ServerLevel level = player.serverLevel();
+        double angle = player.getRandom().nextDouble() * Math.PI * 2;
+        int x = net.minecraft.util.Mth.floor(player.getX() + Math.cos(angle) * 40);
+        int z = net.minecraft.util.Mth.floor(player.getZ() + Math.sin(angle) * 40);
+        int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+        net.minecraft.world.entity.Entity entity = backend.spawnWild(level, id, 20, true, x + 0.5, y, z + 0.5);
+        if (entity == null) {
+            ctx.getSource().sendFailure(Component.literal("[Cobbleverse] No se pudo crear el Pokémon."));
+            return 0;
+        }
+        com.chicoestudioso.caricraft.server.cobbleverse.ShinyAlerts.onShinySpawn(mod, level, entity, id, 20);
+        ctx.getSource().sendSuccess(() -> Component.literal("[Cobbleverse] Variocolor de prueba en " + x + " " + y + " " + z), true);
+        return 1;
+    }
+
+    /** Administración/QA: level cap de RCT del jugador. */
+    private static int levelCap(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        com.chicoestudioso.caricraft.integration.rct.RctBridge.forget(player.getUUID());
+        var cap = com.chicoestudioso.caricraft.integration.rct.RctBridge.levelCap(player);
+        String text = !com.chicoestudioso.caricraft.integration.rct.RctBridge.available() ? "RCT no está instalado"
+                : cap.isPresent() ? "level cap " + cap.getAsInt() : "sin level cap";
+        ctx.getSource().sendSuccess(() -> Component.literal("[Cobbleverse] " + player.getGameProfile().getName() + ": " + text), false);
+        return cap.orElse(0);
     }
 
     /** Muestra un consejo del CariPhone ahora mismo (aunque estén desactivados). */

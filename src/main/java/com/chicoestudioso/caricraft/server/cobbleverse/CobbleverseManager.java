@@ -57,6 +57,7 @@ public final class CobbleverseManager {
         PlayerProfile profile = profile(mod, player);
         long day = service.day();
         OptionalLong balance = CobbleDollarsBridge.balance(player);
+        Party partyOf = mod.core().partyOf(player.getUUID());
 
         List<PhoneSnapshot.CvOfferView> offers = new ArrayList<>();
         if (config.shop) {
@@ -85,7 +86,12 @@ public final class CobbleverseManager {
                 config.shop, offers, config.sellPokemon, party, service.salesToday(profile, day), service.maxSalesPerDay(),
                 config.wonderTrade, service.wondersLeft(profile, day), config.wonderTradesPerDay,
                 WonderTradeData.get(mod.server()).entries().size(), LAST_WONDER.get(player.getUUID()),
-                LuckManager.view(mod, player, profile, day), service.giftsLeft(profile, day), service.giftsPerDay());
+                LuckManager.view(mod, player, profile, day), service.giftsLeft(profile, day), service.giftsPerDay(),
+                DuoPokemonManager.healView(mod, player, profile), DuoPokemonManager.huntView(mod, partyOf),
+                ExpeditionManager.view(mod, player, profile), DuoPokemonManager.dexView(mod, partyOf),
+                partyOf == null || !config.shinyAlerts ? List.of() : ShinyAlerts.views(partyOf), profile.shinyCompass(),
+                com.chicoestudioso.caricraft.integration.rct.RctBridge.levelCap(player).orElse(0),
+                config.levelCapSpawns && com.chicoestudioso.caricraft.integration.rct.RctBridge.available(), config.legendaryMinLevelCap);
     }
 
     // ------------------------------------------------------------------ regalo misterioso

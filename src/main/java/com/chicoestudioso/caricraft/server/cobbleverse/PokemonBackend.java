@@ -14,7 +14,7 @@ import java.util.UUID;
 public interface PokemonBackend {
     /** Un Pokémon del equipo. {@code species} es el id ({@code cobblemon:pikachu}); {@code nickname} puede ir vacío. */
     record PartyMon(int slot, UUID uuid, String species, String nickname, int level, boolean fainted,
-                    PokemonPricing.PokemonInfo info, List<String> aspects) {
+                    PokemonPricing.PokemonInfo info, List<String> aspects, List<String> types) {
     }
 
     List<PartyMon> party(ServerPlayer player);
@@ -79,4 +79,10 @@ public interface PokemonBackend {
 
     /** ¿Tiene el jugador ese Pokémon en su equipo o en su PC? (p. ej. porque lo acaba de capturar) */
     boolean owns(ServerPlayer player, UUID pokemonId);
+
+    /** ¿Algún Pokémon del equipo está herido, debilitado, con un estado alterado o sin todos sus PP? */
+    boolean partyNeedsHeal(ServerPlayer player);
+
+    /** Cura el equipo entero (vida, estado y PP), como un Centro Pokémon. */
+    void healParty(ServerPlayer player);
 }

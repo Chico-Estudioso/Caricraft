@@ -103,6 +103,18 @@ public final class PhoneActionHandler {
                         : invalid();
                 case CV_FUSE -> payload.arg1().length() <= 48
                         ? com.chicoestudioso.caricraft.server.cobbleverse.LuckManager.fuse(mod, player, payload.arg1()) : invalid();
+                case CV_HEAL -> com.chicoestudioso.caricraft.server.cobbleverse.DuoPokemonManager.heal(mod, player);
+                case CV_EXP_START -> payload.arg1().length() <= 32 && payload.arg2().length() <= 36
+                        ? com.chicoestudioso.caricraft.server.cobbleverse.ExpeditionManager.start(mod, player, payload.arg1(), payload.arg2())
+                        : invalid();
+                case CV_EXP_CLAIM -> com.chicoestudioso.caricraft.server.cobbleverse.ExpeditionManager.claim(mod, player);
+                case CV_EXP_CANCEL -> com.chicoestudioso.caricraft.server.cobbleverse.ExpeditionManager.cancel(mod, player);
+                case TOGGLE_SHINY_COMPASS -> {
+                    var profile = core.onPlayerJoin(uuid, player.getGameProfile().getName());
+                    profile.setShinyCompass(!profile.shinyCompass());
+                    mod.markDirty();
+                    yield com.chicoestudioso.caricraft.core.ActionResult.ok(profile.shinyCompass() ? "shiny_compass_on" : "shiny_compass_off");
+                }
                 case TOGGLE_TIPS -> {
                     var profile = core.onPlayerJoin(uuid, player.getGameProfile().getName());
                     profile.setTipsEnabled(!profile.tipsEnabled());

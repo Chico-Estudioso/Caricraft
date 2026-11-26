@@ -44,6 +44,9 @@ public final class CaricraftCore {
     private final MarketService market;
     private final com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseService cobbleverse;
     private final com.chicoestudioso.caricraft.core.cobbleverse.LuckService luck;
+    private final com.chicoestudioso.caricraft.core.cobbleverse.HuntService hunt;
+    private final com.chicoestudioso.caricraft.core.cobbleverse.DuoDexService duoDex;
+    private final com.chicoestudioso.caricraft.core.cobbleverse.ExpeditionService expeditions;
     private final CampService camp;
     private final LensService lens;
     private final BoxService box;
@@ -63,6 +66,9 @@ public final class CaricraftCore {
                          Clock clock) {
         this.cobbleverse = new com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseService(config, cobbleverseCatalog, clock);
         this.luck = new com.chicoestudioso.caricraft.core.cobbleverse.LuckService(cobbleverse);
+        this.hunt = new com.chicoestudioso.caricraft.core.cobbleverse.HuntService(config);
+        this.duoDex = new com.chicoestudioso.caricraft.core.cobbleverse.DuoDexService();
+        this.expeditions = new com.chicoestudioso.caricraft.core.cobbleverse.ExpeditionService(config);
         this.state = state;
         this.config = config;
         this.clock = clock;
@@ -88,6 +94,18 @@ public final class CaricraftCore {
 
     public CampService camp() {
         return camp;
+    }
+
+    public com.chicoestudioso.caricraft.core.cobbleverse.HuntService hunt() {
+        return hunt;
+    }
+
+    public com.chicoestudioso.caricraft.core.cobbleverse.DuoDexService duoDex() {
+        return duoDex;
+    }
+
+    public com.chicoestudioso.caricraft.core.cobbleverse.ExpeditionService expeditions() {
+        return expeditions;
     }
 
     /** Cajas, tragaperras, mejoras y fusiones del CobbleCentro. */

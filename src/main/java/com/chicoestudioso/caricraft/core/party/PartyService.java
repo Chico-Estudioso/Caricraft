@@ -191,6 +191,7 @@ public final class PartyService {
         source.upgradeLevels().forEach((id, level) -> target.upgradeLevels().merge(id, level, Math::max));
         target.photos().addAll(source.photos());
         target.photos().sort(java.util.Comparator.comparingLong(com.chicoestudioso.caricraft.core.lens.Photo::time).reversed());
+        target.pokemon().mergeFrom(source.pokemon());
         chronicle.mergeInto(target, source.chronicle());
     }
 
@@ -242,6 +243,7 @@ public final class PartyService {
         solo.setCamp(party.camp());
         solo.upgradeLevels().putAll(party.upgradeLevels());
         solo.photos().addAll(party.photos());
+        solo.pokemon().copyDexFrom(party.pokemon());
         chronicle.mergeInto(solo, party.chronicle());
 
         String suffix = "@" + player;

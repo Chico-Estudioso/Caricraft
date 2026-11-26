@@ -71,7 +71,17 @@ public enum PhoneAction {
     /** Mejora de un Pokémon: arg1 = id de la mejora, arg2 = UUID del Pokémon. */
     CV_UPGRADE,
     /** Fusión de objetos: arg1 = id de la fusión. */
-    CV_FUSE;
+    CV_FUSE,
+    /** Centro Pokémon de bolsillo: curar el equipo. */
+    CV_HEAL,
+    /** Mandar de expedición: arg1 = "destino:horas", arg2 = UUID del Pokémon. */
+    CV_EXP_START,
+    /** Recoger al Pokémon que ha vuelto de la expedición (con su botín). */
+    CV_EXP_CLAIM,
+    /** Hacer volver antes al Pokémon (sin botín). */
+    CV_EXP_CANCEL,
+    /** Activa o desactiva la brújula del aviso de variocolor (personal). */
+    TOGGLE_SHINY_COMPASS;
 
     private static final PhoneAction[] VALUES = values();
 

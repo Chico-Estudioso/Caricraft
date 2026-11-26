@@ -46,6 +46,7 @@ public final class ServerEvents {
         ServerLifecycleEvents.SERVER_STOPPING.register(com.chicoestudioso.caricraft.server.challenge.ChallengeChests::clearAll);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             com.chicoestudioso.caricraft.server.challenge.ChallengeBossBars.clear();
+            com.chicoestudioso.caricraft.server.cobbleverse.ShinyAlerts.clear();
             CaricraftServer.stop();
         });
 
@@ -60,6 +61,7 @@ public final class ServerEvents {
             com.chicoestudioso.caricraft.server.camp.TravelManager.forget(uuid);
             com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseManager.forget(uuid);
             com.chicoestudioso.caricraft.server.cobbleverse.LuckManager.forget(uuid);
+            com.chicoestudioso.caricraft.integration.rct.RctBridge.forget(uuid);
             CaricraftServer mod = CaricraftServer.get();
             if (mod != null) {
                 mod.rateLimiter().forget(uuid);
@@ -74,6 +76,8 @@ public final class ServerEvents {
                 com.chicoestudioso.caricraft.server.camp.TravelManager.tick(mod);
                 PhoneGuard.tick(server, mod);
                 com.chicoestudioso.caricraft.server.tips.TipManager.tick(server, mod);
+                com.chicoestudioso.caricraft.server.cobbleverse.ShinyAlerts.tick(server, mod);
+                com.chicoestudioso.caricraft.server.cobbleverse.ExpeditionManager.tick(server, mod);
             }
         });
 
@@ -152,6 +156,7 @@ public final class ServerEvents {
             mod.notify(player, true, "caricraft.notify.welcome", List.of());
         }
         com.chicoestudioso.caricraft.server.tips.TipManager.onJoin(mod, player);
+        com.chicoestudioso.caricraft.server.cobbleverse.DuoPokemonManager.onJoin(mod, player);
         mod.markDirty();
         mod.sendPartySnapshots(player.getUUID());
         core.parties().incomingInvites(core.state(), player.getUUID()).forEach(invite ->

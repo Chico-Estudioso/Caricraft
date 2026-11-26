@@ -53,7 +53,36 @@ final class CobblemonBackend implements PokemonBackend {
         String nickname = pokemon.getNickname() == null ? "" : pokemon.getNickname().getString();
         return new PartyMon(slot, pokemon.getUuid(), species, nickname, pokemon.getLevel(), pokemon.isFainted(),
                 new PokemonPricing.PokemonInfo(species, pokemon.getLevel(), pokemon.getSpecies().getCatchRate(), ivTotal,
-                        pokemon.getShiny(), legendary), List.copyOf(pokemon.getAspects()));
+                        pokemon.getShiny(), legendary), List.copyOf(pokemon.getAspects()), types(pokemon));
+    }
+
+    /** Tipos en minúsculas ({@code fire}, {@code water}…). */
+    static List<String> types(Pokemon pokemon) {
+        List<String> types = new ArrayList<>();
+        for (com.cobblemon.mod.common.api.types.ElementalType type : pokemon.getTypes()) {
+            types.add(type.getName().toLowerCase(java.util.Locale.ROOT));
+        }
+        return List.copyOf(types);
+    }
+
+    @Override
+    public boolean partyNeedsHeal(ServerPlayer player) {
+        for (Pokemon pokemon : store(player)) {
+            if (pokemon.isFainted() || pokemon.getCurrentHealth() < pokemon.getMaxHealth() || pokemon.getStatus() != null) {
+                return true;
+            }
+            for (com.cobblemon.mod.common.api.moves.Move move : pokemon.getMoveSet().getMoves()) {
+                if (move.getCurrentPp() < move.getMaxPp()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void healParty(ServerPlayer player) {
+        store(player).heal();
     }
 
     @Override
