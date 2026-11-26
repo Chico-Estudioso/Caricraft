@@ -2,6 +2,8 @@
 
 Tres cosas para jugar un poco cada día y tener algo que enseñar. Todo lo decide el servidor: qué cuenta, cuándo se paga y cuánto. Los Carins van al monedero del dúo. Se configuran en el bloque `routine` de `config/caricraft.json`.
 
+![Racha y evento semanal en el Inicio](img/rutina_inicio.png)
+
 ## Racha diaria
 - **Un día cuenta cuando el dúo reclama al menos una misión** (cualquiera: diaria, de historia, semanal…). Da igual cuál de los dos la reclame.
 - Cada día de racha paga Carins, más cuanto más larga es la semana de racha: **15, 20, 25, 30, 40, 50 y 100** el séptimo. Luego vuelve a empezar el ciclo (`streakRewardMultiplier`).
@@ -29,6 +31,8 @@ Cada semana (de lunes a domingo) hay un evento para todo el servidor, en rotaci�
 - `weeklyBonus` cambia la ventaja (1,5 = un 50 % más).
 
 ## Vitrina
+![Vitrina](img/vitrina.png)
+
 App gratuita del CariPhone (sección Dúo) con las **medallas** del dúo y los **trofeos** de los jefes del desafío.
 
 - **16 medallas**, cada una con bronce, plata y oro, que pagan **25, 75 y 200 Carins** (`medalRewardMultiplier`). Se miden con las estadísticas del grupo, así que **cuenta lo que ya habíais hecho** (al instalar la actualización puede llegar más de una de golpe).

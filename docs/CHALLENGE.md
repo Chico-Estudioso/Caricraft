@@ -110,6 +110,8 @@ Las arañas no llevan equipo y reciben los efectos 2 niveles antes. El equipo so
 **Servidores que ya tenían `config/caricraft.json`:** se migran solos a la versión 2. Si seguían con los valores antiguos (máx. 5 y un nivel cada 2 noches) pasan a 30 y 1; si el administrador los había cambiado, se respetan.
 
 ## Jefes del desafío
+![El Rey Zombi con su barra de jefe](img/desafio_jefe.png)
+
 - **Cada 5 niveles** (`bossEvery`) hay un jefe: al llegar al nivel 5, en la siguiente noche de desafío aparece cerca del dúo (a unos 20–30 bloques, unos 100 s después de anochecer). Avisa con distancia y dirección, sonido y barra de jefe morada para quien esté a menos de 64 bloques.
 - Son **versiones gigantes y reforzadas de los mobs del desafío**, así que funcionan con MobsBeGone en COBBLEVERSE igual que el resto (los vindicadores, devastadores o esqueletos wither los bloquea el modpack):
 
@@ -127,6 +129,7 @@ Las arañas no llevan equipo y reciben los efectos 2 niveles antes. El equipo so
   - Cada miembro conectado recibe un **Trofeo del desafío** con el nombre del jefe, el nivel, el dúo y la fecha. Es decorativo y queda también en la **Vitrina** (`docs/ROUTINE.md`).
   - `bossReward` (150) + 20 Carins por nivel, `xpPerBoss` (150) de experiencia y botín en el suelo: diamantes, esmeraldas, manzanas de oro, frascos de experiencia y, desde el nivel 15, restos de netherita (desde el 25, una manzana de oro encantada).
   - Queda en las Crónicas.
+  ![Jefe derrotado: aviso y trofeo en la barra](img/desafio_jefe_trofeo.png)
 - Si sale el sol antes de derrotarlo, se retira con el resto del desafío y **vuelve en la siguiente noche de desafío**. Cada jefe solo se puede derrotar una vez.
 - La app Desafío muestra el jefe pendiente o el próximo, la vida del que está en combate y cuántos trofeos lleváis.
 - `/caricraft desafio jefe` (nivel 2, con la noche de desafío en marcha) lo saca ya para probar.

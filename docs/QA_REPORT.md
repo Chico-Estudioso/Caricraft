@@ -228,6 +228,7 @@ Por defecto `levelCapSpawns` está desactivado y los niveles de los salvajes son
 | Completar la meta | +300 Carins; medallas «Eventos» y «Artesano» de bronce (+25 cada una); la de «Nivel» (nivel 6 del desafío) ya había salido al entrar |
 | Vitrina | 3/48 medallas, cada una con su progreso al siguiente tramo; las de bronce en color bronce |
 | Noche de desafío a nivel 6 y `/caricraft desafio jefe` | «¡El Rey Zombi (jefe de nivel 5) ha aparecido a 20 bloques al Suroeste!», barra morada «El Rey Zombi · jefe de nivel 5» bajo la de la noche, tarjeta en la app Desafío |
+| Segunda pasada tras los arreglos | Jefe con 144/144 de vida, más grande y brillando; tarjeta del evento sin solapes («✔ mitad: 100 C · ✔ meta: 300 C»), «Racha: 1 día» y los trofeos primero en la Vitrina |
 | Derrotarlo (`/damage … by @s`) | «¡El Rey Zombi derrotado (nivel 5)!»: +250 Carins, **Trofeo del desafío** en el inventario, botín en el suelo (diamantes, esmeraldas, manzana de oro y frascos de experiencia), medalla «Jefes» de bronce y el trofeo en la Vitrina |
 
 ## Errores encontrados y corregidos durante la QA
