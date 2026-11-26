@@ -11,6 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.function.BooleanSupplier;
 
@@ -58,6 +59,8 @@ public final class QaAutomation implements ClientModInitializer {
             scriptChests();
         } else if ("I".equals(role)) {
             scriptPhoneItem();
+        } else if ("D".equals(role)) {
+            scriptDuoCobbleverse();
         } else {
             scriptB();
         }
@@ -992,6 +995,195 @@ public final class QaAutomation implements ClientModInitializer {
 
     private static CobbleCentroScreen cc() {
         return (CobbleCentroScreen) Minecraft.getInstance().screen;
+    }
+
+    // ------------------------------------------------------------------ bloque Cobbleverse del dúo (rol D)
+
+    /** Una especie de cada tipo de la caza del día, para simular capturas que cuenten. */
+    private static final java.util.Map<String, String> SPECIES_OF_TYPE = java.util.Map.ofEntries(
+            java.util.Map.entry("normal", "rattata"), java.util.Map.entry("water", "magikarp"), java.util.Map.entry("grass", "oddish"),
+            java.util.Map.entry("bug", "caterpie"), java.util.Map.entry("flying", "pidgey"), java.util.Map.entry("rock", "geodude"),
+            java.util.Map.entry("ground", "diglett"), java.util.Map.entry("poison", "ekans"), java.util.Map.entry("electric", "pikachu"),
+            java.util.Map.entry("fire", "growlithe"), java.util.Map.entry("fighting", "machop"), java.util.Map.entry("psychic", "abra"));
+
+    private static void logRecentNotices(int n) {
+        var list = new ArrayList<>(ClientPhoneState.notifications());
+        for (int i = Math.min(n, list.size()) - 1; i >= 0; i--) {
+            var notice = list.get(i);
+            log("aviso: " + notice.key() + " " + notice.args());
+        }
+    }
+
+    private static void logHunt(String label) {
+        var hunt = snap().cobbleverse().hunt();
+        log("CAZA " + label + ": " + hunt.targets().stream().map(t -> t.kind() + ":" + t.value() + " " + t.progress() + "/" + t.count()
+                + (t.done() ? "✔" : "")).toList() + " completa=" + hunt.cleared() + " duo=" + hunt.duoBonus() + " semana="
+                + hunt.weekClears() + "/" + hunt.weeklyClears() + " aportes=" + hunt.contrib() + " ₽" + snap().cobbleverse().cobbleDollars()
+                + " carins=" + snap().balance());
+    }
+
+    private void scriptDuoCobbleverse() {
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("time set 6000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("tp @s 0 -60 0 0 10");
+            cmd("clear @s");
+            cmd("cobbledollars give @s 50000");
+            cmd("pokegive geodude level=18");
+            cmd("pokegive pidgey level=12");
+            cmd("pokegive magikarp level=8");
+        });
+        then(40, () -> {
+            cmd("caricraft cobbleverse herir");
+            cmd("caricraft cobbleverse cap");
+        });
+        then(60, () -> phone().openCobbleCentro());
+        then(40, () -> {
+            var cv = snap().cobbleverse();
+            log("DUO vista: cap=" + cv.levelCap() + " capSpawns=" + cv.levelCapSpawns() + " heal=" + cv.heal() + " brújula=" + cv.shinyCompass());
+        });
+        shot("d01_inicio_curar");
+        then(5, () -> cc().send(PhoneAction.CV_HEAL, ""));
+        then(45, () -> {
+            logRecentNotices(1);
+            log("CURA después: " + snap().cobbleverse().heal() + " ₽" + snap().cobbleverse().cobbleDollars());
+        });
+        shot("d02_curado");
+        then(5, () -> cc().send(PhoneAction.CV_HEAL, ""));
+        then(30, () -> logRecentNotices(1));
+
+        // Caza del día
+        then(5, () -> {
+            cc().select(CobbleCentroScreen.Tab.HUNT);
+            logHunt("inicio");
+        });
+        shot("d03_caza_inicio");
+        then(5, () -> {
+            var hunt = snap().cobbleverse().hunt();
+            var first = hunt.targets().getFirst();
+            cmd("caricraft cobbleverse captura " + species(first));
+        });
+        then(40, () -> logHunt("una captura"));
+        shot("d04_caza_progreso");
+        then(5, () -> {
+            for (var target : snap().cobbleverse().hunt().targets()) {
+                for (int i = target.progress(); i < target.count(); i++) {
+                    cmd("caricraft cobbleverse captura " + species(target));
+                }
+            }
+        });
+        then(60, () -> {
+            logHunt("completa");
+            logRecentNotices(6);
+        });
+        shot("d05_caza_completa");
+
+        // Pokédex del dúo
+        then(5, () -> {
+            cmd("caricraft cobbleverse captura gible variocolor");
+            cmd("caricraft cobbleverse captura magikarp variocolor");
+            cmd("caricraft cobbleverse captura mewtwo");
+            cmd("caricraft cobbleverse captura dratini");
+            cc().select(CobbleCentroScreen.Tab.DEX);
+        });
+        then(50, () -> {
+            var dex = snap().cobbleverse().dex();
+            log("DEX: especies=" + dex.species() + " capturas=" + dex.captures() + " shinies=" + dex.shinyList().stream()
+                    .map(e -> e.species() + "@" + e.player()).toList() + " legendarios=" + dex.legendList().stream().map(e -> e.species()).toList()
+                    + " raras=" + dex.rares().stream().map(e -> e.species() + ":" + e.catchRate()).toList() + " metas="
+                    + dex.goals().stream().filter(g -> g.done()).map(g -> g.id()).toList());
+            logRecentNotices(5);
+        });
+        shot("d06_dex");
+        then(5, () -> cc().mouseScrolled(0, 0, 0, -12));
+        shot("d07_dex_metas");
+
+        // Expedición
+        then(5, () -> cc().select(CobbleCentroScreen.Tab.EXPEDITION));
+        shot("d08_expedicion_elegir");
+        then(5, () -> {
+            var geodude = snap().cobbleverse().party().stream().filter(m -> m.species().endsWith("geodude")).findFirst().orElseThrow();
+            log("EXP mando " + geodude.species() + " nv." + geodude.level() + " a la cueva 4 h; ₽" + snap().cobbleverse().cobbleDollars());
+            cc().send(PhoneAction.CV_EXP_START, "cave:4", geodude.uuid());
+        });
+        then(45, () -> {
+            logRecentNotices(1);
+            log("EXP fuera: " + snap().cobbleverse().expedition().away() + " equipo=" + snap().cobbleverse().party().size());
+        });
+        shot("d09_expedicion_fuera");
+        then(5, () -> cc().send(PhoneAction.CV_EXP_CLAIM, ""));
+        then(30, () -> logRecentNotices(1));
+        then(5, () -> cmd("caricraft cobbleverse expediciones"));
+        then(50, () -> log("EXP lista: " + snap().cobbleverse().expedition().away()));
+        shot("d10_expedicion_vuelta");
+        then(5, () -> {
+            log("EXP antes de recoger: ₽" + snap().cobbleverse().cobbleDollars() + " carbón=" + itemCount("minecraft:coal")
+                    + " hierro=" + itemCount("minecraft:raw_iron") + " amatista=" + itemCount("minecraft:amethyst_shard"));
+            cc().send(PhoneAction.CV_EXP_CLAIM, "");
+        });
+        then(45, () -> {
+            logRecentNotices(1);
+            log("EXP recogida: ₽" + snap().cobbleverse().cobbleDollars() + " equipo=" + snap().cobbleverse().party().size()
+                    + " hoy=" + snap().cobbleverse().expedition().startedToday());
+        });
+        shot("d11_expedicion_recogida");
+
+        // Aviso de variocolor con brújula
+        then(5, () -> {
+            Minecraft.getInstance().setScreen(null);
+            cmd("caricraft cobbleverse variocolor gible");
+        });
+        then(30, () -> {
+            logRecentNotices(1);
+            log("VARIOCOLOR avisos: " + snap().cobbleverse().shinyAlerts());
+        });
+        shot("d12_brujula");
+        then(5, () -> {
+            var player = Minecraft.getInstance().player;
+            var alert = snap().cobbleverse().shinyAlerts().getFirst();
+            // Mira hacia el sur (yaw 0) para comprobar la flecha.
+            log("VARIOCOLOR jugador en " + Math.round(player.getX()) + "," + Math.round(player.getZ()) + " → " + Math.round(alert.x()) + ","
+                    + Math.round(alert.z()));
+            cmd("tp @s ~ ~ ~ 0 10");
+        });
+        then(25, () -> {
+        });
+        shot("d13_brujula_sur");
+        then(5, () -> phone().openCobbleCentro());
+        then(20, () -> cc().select(CobbleCentroScreen.Tab.HOME));
+        shot("d14_aviso_inicio");
+        then(5, () -> {
+            Minecraft.getInstance().setScreen(null);
+            var alert = snap().cobbleverse().shinyAlerts().getFirst();
+            cmd("tp @s " + (alert.x() + 2) + " " + (alert.y() + 1) + " " + alert.z());
+        });
+        then(30, () -> {
+        });
+        shot("d15_aqui");
+        then(5, () -> cmd("kill @e[type=cobblemon:pokemon,distance=..12]"));
+        then(60, () -> log("VARIOCOLOR tras desaparecer: " + snap().cobbleverse().shinyAlerts()));
+
+        // Level cap con RCT: un Pokémon de nivel alto sube el rango de apariciones; el cap las frena.
+        then(5, () -> {
+            cmd("tp @s 0 -60 0 0 10");
+            cmd("pokegive charizard level=70");
+        });
+        then(1200, () -> cmd("caricraft cobbleverse cap"));
+        then(40, () -> {
+            phone().openCobbleCentro();
+        });
+        then(30, () -> cc().select(CobbleCentroScreen.Tab.HOME));
+        shot("d16_level_cap");
+        then(20, () -> Minecraft.getInstance().stop());
+    }
+
+    private static String species(PhoneSnapshot.HuntTargetView target) {
+        return switch (target.kind()) {
+            case "SPECIES" -> target.value();
+            case "TYPE" -> SPECIES_OF_TYPE.getOrDefault(target.value(), "rattata");
+            default -> "rattata";
+        };
     }
 
     // ------------------------------------------------------------------ modelo del CariPhone

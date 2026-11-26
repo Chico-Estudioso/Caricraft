@@ -193,11 +193,61 @@ public final class CaricraftConfig {
         public boolean upgrades = true;
         /** Fusiones de objetos (p. ej. Ultra Balls → Master Ball con probabilidad). */
         public boolean fusions = true;
+        /** Aviso al dúo con brújula cuando aparece un Pokémon variocolor cerca de uno de los dos. */
+        public boolean shinyAlerts = true;
+        /** Minutos que dura el aviso de variocolor (si nadie lo captura antes). */
+        public int shinyAlertMinutes = 5;
+        /** Centro Pokémon de bolsillo: curar el equipo desde el móvil pagando y con espera. */
+        public boolean pocketHeal = true;
+        /** Precio en CobbleDollars de curar el equipo desde el móvil. */
+        public long pocketHealPrice = 1500;
+        /** Minutos de espera entre curas desde el móvil. */
+        public int pocketHealCooldownMinutes = 15;
+        /** Caza del día: tres objetivos de captura con premio y bonus de dúo. */
+        public boolean dailyHunt = true;
+        /** Capturas que tiene que aportar cada uno del dúo para el bonus de dúo de la caza. */
+        public int huntDuoMinEach = 3;
+        /** Cazas completas (en dúo) en la semana para el premio semanal. */
+        public int huntWeeklyClears = 4;
+        /** Multiplica los premios de la caza del día. */
+        public double huntRewardMultiplier = 1.0;
+        /** Expediciones: mandar un Pokémon unas horas a buscar cosas (ingreso pasivo modesto). */
+        public boolean expeditions = true;
+        /** Expediciones que puede empezar cada jugador al día. */
+        public int expeditionsPerDay = 3;
+        /** Multiplica el dinero de las expediciones. */
+        public double expeditionRewardMultiplier = 1.0;
+        /** Pokédex del dúo: variocolores, capturas raras y metas compartidas. */
+        public boolean duoDex = true;
+        /**
+         * Opcional y desactivado: apariciones según el level cap de los entrenadores (RCT). Si se activa, los salvajes
+         * no salen por encima del cap del jugador cercano con el cap más bajo. Por defecto los niveles quedan como en
+         * Cobbleverse (Cobblemon los acerca al Pokémon de más nivel del equipo). Sin RCT instalado no hace nada.
+         */
+        public boolean levelCapSpawns = false;
+        /** Niveles por encima del cap que se corrigen bajando al cap; si se pasa más, esa aparición se cancela. */
+        public int levelCapMargin = 5;
+        /** Level cap a partir del cual pueden aparecer legendarios, singulares y ultraentes salvajes. */
+        public int legendaryMinLevelCap = 60;
 
         CobbleverseConfig validate() {
             maxSalesPerDay = clamp(maxSalesPerDay, 0, 100);
             wonderTradesPerDay = clamp(wonderTradesPerDay, 0, 50);
             giftsPerDay = clamp(giftsPerDay, 0, 20);
+            shinyAlertMinutes = clamp(shinyAlertMinutes, 1, 60);
+            levelCapMargin = clamp(levelCapMargin, 0, 100);
+            legendaryMinLevelCap = clamp(legendaryMinLevelCap, 1, 100);
+            pocketHealPrice = Math.max(0, Math.min(10_000_000, pocketHealPrice));
+            pocketHealCooldownMinutes = clamp(pocketHealCooldownMinutes, 0, 24 * 60);
+            huntDuoMinEach = clamp(huntDuoMinEach, 0, 100);
+            huntWeeklyClears = clamp(huntWeeklyClears, 1, 7);
+            if (!(huntRewardMultiplier >= 0) || huntRewardMultiplier > 100) {
+                huntRewardMultiplier = 1.0;
+            }
+            expeditionsPerDay = clamp(expeditionsPerDay, 0, 24);
+            if (!(expeditionRewardMultiplier >= 0) || expeditionRewardMultiplier > 100) {
+                expeditionRewardMultiplier = 1.0;
+            }
             wonderPoolSize = clamp(wonderPoolSize, 1, 1000);
             if (!(wonderShinyChance >= 0) || wonderShinyChance > 1) {
                 wonderShinyChance = 0.02;

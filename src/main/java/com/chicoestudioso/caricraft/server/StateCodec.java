@@ -188,6 +188,7 @@ public final class StateCodec {
         CompoundTag market = new CompoundTag();
         party.marketPurchases().forEach(market::putInt);
         tag.put("market", market);
+        tag.put("duoPokemon", writeDuoPokemon(party.pokemon()));
 
         if (party.camp() != null) {
             CompoundTag camp = new CompoundTag();
@@ -279,6 +280,9 @@ public final class StateCodec {
                     c.getInt("nightKills"), c.getLong("nightCarins"));
             party.challenge().restoreXp(c.getLong("xp"), !c.contains("xp"));
         }
+        if (tag.contains("duoPokemon", Tag.TAG_COMPOUND)) {
+            readDuoPokemon(tag.getCompound("duoPokemon"), party.pokemon());
+        }
         CompoundTag market = tag.getCompound("market");
         for (String key : market.getAllKeys()) {
             party.marketPurchases().put(key, market.getInt(key));
@@ -306,6 +310,92 @@ public final class StateCodec {
         return party;
     }
 
+    private static CompoundTag writeDuoPokemon(com.chicoestudioso.caricraft.core.cobbleverse.DuoPokemonState s) {
+        CompoundTag tag = new CompoundTag();
+        int n = com.chicoestudioso.caricraft.core.cobbleverse.HuntService.TARGETS;
+        tag.putLong("huntDay", s.huntDay());
+        int[] progress = new int[n];
+        byte[] paid = new byte[n];
+        for (int i = 0; i < n; i++) {
+            progress[i] = s.huntProgress(i);
+            paid[i] = (byte) (s.huntPaid(i) ? 1 : 0);
+        }
+        tag.putIntArray("huntProgress", progress);
+        tag.putByteArray("huntPaid", paid);
+        tag.putBoolean("huntCleared", s.huntCleared());
+        tag.putBoolean("huntDuo", s.huntDuoBonus());
+        CompoundTag contrib = new CompoundTag();
+        s.huntContrib().forEach((uuid, count) -> contrib.putInt(uuid.toString(), count));
+        tag.put("huntContrib", contrib);
+        tag.putLong("huntWeek", s.huntWeek());
+        tag.putInt("weekClears", s.weekClears());
+        tag.putBoolean("weekPaid", s.weekPaid());
+        tag.put("shinies", dexEntries(s.shinies()));
+        tag.put("rares", dexEntries(s.rares()));
+        tag.put("legends", dexEntries(s.legends()));
+        tag.put("species", strings(s.species()));
+        CompoundTag types = new CompoundTag();
+        s.typeCounts().forEach(types::putInt);
+        tag.put("types", types);
+        tag.putLong("captures", s.captures());
+        tag.put("goals", strings(s.goalsDone()));
+        return tag;
+    }
+
+    private static ListTag dexEntries(List<com.chicoestudioso.caricraft.core.cobbleverse.DuoPokemonState.DexEntry> entries) {
+        ListTag list = new ListTag();
+        for (var entry : entries) {
+            CompoundTag e = new CompoundTag();
+            e.putString("species", entry.species());
+            e.putString("player", entry.player());
+            e.putInt("level", entry.level());
+            e.putBoolean("shiny", entry.shiny());
+            e.putInt("catchRate", entry.catchRate());
+            e.putLong("t", entry.time());
+            list.add(e);
+        }
+        return list;
+    }
+
+    private static List<com.chicoestudioso.caricraft.core.cobbleverse.DuoPokemonState.DexEntry> readDexEntries(ListTag list) {
+        List<com.chicoestudioso.caricraft.core.cobbleverse.DuoPokemonState.DexEntry> entries = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            CompoundTag e = list.getCompound(i);
+            entries.add(new com.chicoestudioso.caricraft.core.cobbleverse.DuoPokemonState.DexEntry(e.getString("species"),
+                    e.getString("player"), e.getInt("level"), e.getBoolean("shiny"), e.getInt("catchRate"), e.getLong("t")));
+        }
+        return entries;
+    }
+
+    private static void readDuoPokemon(CompoundTag tag, com.chicoestudioso.caricraft.core.cobbleverse.DuoPokemonState s) {
+        byte[] paidBytes = tag.getByteArray("huntPaid");
+        boolean[] paid = new boolean[paidBytes.length];
+        for (int i = 0; i < paidBytes.length; i++) {
+            paid[i] = paidBytes[i] != 0;
+        }
+        java.util.Map<UUID, Integer> contrib = new java.util.LinkedHashMap<>();
+        CompoundTag c = tag.getCompound("huntContrib");
+        for (String key : c.getAllKeys()) {
+            try {
+                contrib.put(UUID.fromString(key), c.getInt(key));
+            } catch (IllegalArgumentException ignored) {
+                // entrada corrupta: se ignora
+            }
+        }
+        s.restoreHunt(tag.contains("huntDay") ? tag.getLong("huntDay") : -1, tag.getIntArray("huntProgress"), paid,
+                tag.getBoolean("huntCleared"), tag.getBoolean("huntDuo"), contrib,
+                tag.contains("huntWeek") ? tag.getLong("huntWeek") : -1, tag.getInt("weekClears"), tag.getBoolean("weekPaid"));
+        java.util.Map<String, Integer> types = new java.util.LinkedHashMap<>();
+        CompoundTag t = tag.getCompound("types");
+        for (String key : t.getAllKeys()) {
+            types.put(key, t.getInt(key));
+        }
+        s.restoreDex(readDexEntries(tag.getList("shinies", Tag.TAG_COMPOUND)), readDexEntries(tag.getList("rares", Tag.TAG_COMPOUND)),
+                readDexEntries(tag.getList("legends", Tag.TAG_COMPOUND)),
+                new java.util.LinkedHashSet<>(readStrings(tag.getList("species", Tag.TAG_STRING))), types, tag.getLong("captures"),
+                new java.util.LinkedHashSet<>(readStrings(tag.getList("goals", Tag.TAG_STRING))));
+    }
+
     private static CompoundTag writeProfile(PlayerProfile profile) {
         CompoundTag tag = new CompoundTag();
         tag.putUUID("uuid", profile.uuid());
@@ -327,6 +417,9 @@ public final class StateCodec {
         CompoundTag bought = new CompoundTag();
         profile.boughtToday().forEach(bought::putInt);
         tag.put("cvBought", bought);
+        tag.putLong("cvHealAt", profile.lastHealAt());
+        tag.putLong("cvPending", profile.pendingDollars());
+        tag.putBoolean("cvShinyCompass", profile.shinyCompass());
         return tag;
     }
 
@@ -350,6 +443,9 @@ public final class StateCodec {
         for (String key : bought.getAllKeys()) {
             profile.boughtToday().put(key, bought.getInt(key));
         }
+        profile.setLastHealAt(tag.getLong("cvHealAt"));
+        profile.setPendingDollars(tag.getLong("cvPending"));
+        profile.setShinyCompass(!tag.contains("cvShinyCompass") || tag.getBoolean("cvShinyCompass"));
         return profile;
     }
 

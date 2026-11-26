@@ -1,6 +1,14 @@
 # Changelog
 
 ## Unreleased
+- **Bloque Cobbleverse del dúo** (ver `docs/COBBLEVERSE.md`, «Para el dúo»). Pestañas nuevas del CobbleCentro: Caza del día, Pokédex dúo y Expediciones. Protocolo de red 10.
+  - **Aviso de variocolor con brújula:** si aparece un variocolor salvaje cerca de uno de los dos, ambos reciben un aviso y una flecha en la barra de acción que lleva hasta él (no choca con CobbleNav). Se apaga en Ajustes.
+  - **Centro Pokémon de bolsillo:** cura todo el equipo por ₽1.500, cada 15 minutos.
+  - **Caza del día:** tres objetivos de captura al día para el dúo. El **bonus de dúo** solo llega si cada uno aporta al menos 3 capturas, y hay **premio semanal** por 4 cazas en dúo. ₽ para cada uno y Carins al monedero.
+  - **Pokédex del dúo:** vitrina variocolor con modelos 3D, legendarios, capturas más raras y 18 metas compartidas con premio. No sustituye a la Pokédex de Cobblemon.
+  - **Expediciones:** un Pokémon se va 1, 4 u 8 horas reales y vuelve con algo de ₽ y objetos. Ingreso pasivo pequeño a propósito y 3 al día.
+  - Opción `levelCapSpawns` (**desactivada**: por defecto los niveles de los salvajes quedan como en Cobbleverse). Si se activa, las apariciones respetan el level cap de RCT y los legendarios esperan a cap 60. El CobbleCentro muestra tu level cap.
+  - Comandos de administración para probarlo: `/caricraft cobbleverse variocolor|expediciones|captura|herir|cap`.
 - **Cofres del desafío por el mundo** (ver `docs/CHALLENGE.md`): de vez en cuando, de día o de noche, aparece cerca del dúo un cofre en un sitio que no pisa estructuras ni construcciones (columna de luz morada, aviso y brújula en la app). Se gana con una **emboscada** de mobs por oleadas según el nivel, o, con Cobblemon, venciendo o capturando a un **Pokémon guardián**. Botín con **equipo encantado**, objetos de Cobblemon, a veces un Pokémon, Carins y experiencia. Si nadie lo gana, se desvanece. `/caricraft desafio cofre [emboscada|guardian]`.
 - **Nivel del desafío por experiencia:** las kills (más las élite), los escuadrones, los cofres y las noches superadas dan experiencia; cuantas más kills en una noche, antes sube. Barra de experiencia en la app y aviso al subir. Los dúos existentes conservan su nivel.
 - **Limpieza total al amanecer:** al acabar la noche desaparecen todos los mobs del desafío (también los lejanos o en zonas sin cargar), sin contar como kill ni soltar nada, y cada 10 s se retiran los que sobren. Ya no ocupan el límite de entidades de Cobblemon.

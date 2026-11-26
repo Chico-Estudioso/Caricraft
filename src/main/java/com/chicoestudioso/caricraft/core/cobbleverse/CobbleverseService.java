@@ -144,6 +144,53 @@ public final class CobbleverseService {
         return null;
     }
 
+    // ------------------------------------------------------------------ Centro Pokémon de bolsillo
+
+    public boolean pocketHealEnabled() {
+        return enabled() && config.cobbleverse.pocketHeal;
+    }
+
+    public long healPrice() {
+        return config.cobbleverse.pocketHealPrice;
+    }
+
+    /** Cuándo se puede volver a curar (epoch ms). */
+    public long healReadyAt(PlayerProfile profile) {
+        return profile.lastHealAt() <= 0 ? 0 : profile.lastHealAt() + config.cobbleverse.pocketHealCooldownMinutes * 60_000L;
+    }
+
+    /**
+     * @param needed  algún Pokémon del equipo está herido, debilitado o sin PP
+     * @param balance saldo de CobbleDollars
+     */
+    public ActionResult canHeal(PlayerProfile profile, boolean needed, boolean inBattle, long balance) {
+        if (!pocketHealEnabled()) {
+            return ActionResult.fail("cv_disabled");
+        }
+        if (inBattle) {
+            return ActionResult.fail("cv_heal_battle");
+        }
+        if (!needed) {
+            return ActionResult.fail("cv_heal_not_needed");
+        }
+        long wait = healReadyAt(profile) - clock.now();
+        if (wait > 0) {
+            return ActionResult.fail("cv_heal_wait", Math.max(1, (wait + 59_999) / 60_000));
+        }
+        if (balance < healPrice()) {
+            return ActionResult.fail("cv_insufficient", healPrice() - balance);
+        }
+        return ActionResult.ok("ok");
+    }
+
+    public void recordHeal(PlayerProfile profile) {
+        profile.setLastHealAt(clock.now());
+    }
+
+    public long now() {
+        return clock.now();
+    }
+
     // ------------------------------------------------------------------ intercambio prodigioso
 
     public int wondersLeft(PlayerProfile profile, long day) {

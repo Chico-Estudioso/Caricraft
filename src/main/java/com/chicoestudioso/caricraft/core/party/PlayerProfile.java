@@ -24,6 +24,12 @@ public final class PlayerProfile {
     private long giftDay = -1;
     /** Regalos abiertos el día {@link #giftDay} (los guardados antes de contar valen como 1). */
     private int giftsToday;
+    /** Última cura desde el Centro Pokémon de bolsillo (epoch ms). */
+    private long lastHealAt;
+    /** CobbleDollars ganados estando desconectado (caza del día): se pagan al volver. */
+    private long pendingDollars;
+    /** Brújula del aviso de variocolor en la barra de acción. */
+    private boolean shinyCompass = true;
     /** Día al que se refieren los contadores de la tienda Cobbleverse. */
     private long cobbleverseDay = -1;
     private int salesToday;
@@ -101,6 +107,30 @@ public final class PlayerProfile {
 
     public void setTipsEnabled(boolean tipsEnabled) {
         this.tipsEnabled = tipsEnabled;
+    }
+
+    public long lastHealAt() {
+        return lastHealAt;
+    }
+
+    public void setLastHealAt(long lastHealAt) {
+        this.lastHealAt = lastHealAt;
+    }
+
+    public long pendingDollars() {
+        return pendingDollars;
+    }
+
+    public void setPendingDollars(long pendingDollars) {
+        this.pendingDollars = Math.max(0, pendingDollars);
+    }
+
+    public boolean shinyCompass() {
+        return shinyCompass;
+    }
+
+    public void setShinyCompass(boolean shinyCompass) {
+        this.shinyCompass = shinyCompass;
     }
 
     public int giftsToday() {

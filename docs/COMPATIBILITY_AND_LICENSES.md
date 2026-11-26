@@ -15,6 +15,7 @@ Solo se declara "probado" lo que aparece en `docs/QA_REPORT.md`.
 ## Licencias
 - Cobblemon: MPL-2.0. Se compila contra su API publicada; no se incluye en el JAR.
 - Fabric API: Apache-2.0.
+- Radical Cobblemon Trainers (RCT, gimnasios de COBBLEVERSE): LGPL-3.0. Solo se lee el level cap por reflexión (`RctBridge`); no se compila contra él ni se incluye nada suyo. Sin RCT, esa parte no hace nada.
 - COBBLEVERSE: todos los derechos reservados. No se copia ni redistribuye nada del modpack.
 - Caricraft Mod: privado, todos los derechos reservados salvo que el autor decida otra licencia.
 - Iconos de apps: se dibujan con ítems vanilla renderizados por el propio juego; textura del CariPhone propia.

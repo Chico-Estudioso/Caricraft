@@ -26,7 +26,8 @@ import java.util.function.Consumer;
 
 /**
  * Suscripciones a eventos públicos de Cobblemon 1.8.4 (ver docs/COBBLEMON_API_AUDIT.md).
- * Solo traduce eventos a progreso del núcleo; no modifica nada de Cobblemon.
+ * Traduce eventos a progreso del núcleo. Lo único que cambia es el nivel de los salvajes que aparecen (o cancela
+ * la aparición) cuando están activas las apariciones según el level cap de RCT.
  */
 final class CobblemonHooks {
     static final String STAT_SHINY = "shiny_caught";
@@ -41,6 +42,111 @@ final class CobblemonHooks {
                 (Consumer<EvolutionCompleteEvent>) CobblemonHooks::onEvolution);
         CobblemonEvents.BATTLE_VICTORY.subscribe(Priority.NORMAL,
                 (Consumer<BattleVictoryEvent>) CobblemonHooks::onVictory);
+        // Apariciones según el level cap: antes que nadie, para que el resto vea ya el nivel final.
+        CobblemonEvents.POKEMON_ENTITY_SPAWN.subscribe(Priority.HIGH,
+                (kotlin.jvm.functions.Function1<com.cobblemon.mod.common.api.events.entity.SpawnEvent<
+                        com.cobblemon.mod.common.entity.pokemon.PokemonEntity>, kotlin.Unit>) event -> {
+                    onLevelCap(event);
+                    return kotlin.Unit.INSTANCE;
+                });
+        // Variocolor salvaje recién aparecido: aviso con brújula al dúo.
+        CobblemonEvents.POKEMON_ENTITY_SPAWN.subscribe(Priority.LOWEST,
+                (kotlin.jvm.functions.Function1<com.cobblemon.mod.common.api.events.entity.SpawnEvent<
+                        com.cobblemon.mod.common.entity.pokemon.PokemonEntity>, kotlin.Unit>) event -> {
+                    if (!event.isCanceled()) {
+                        onWildSpawn(event.getEntity());
+                    }
+                    return kotlin.Unit.INSTANCE;
+                });
+    }
+
+    /** Distancia horizontal a la que un jugador cuenta para el level cap de una aparición. */
+    private static final double LEVEL_CAP_RANGE = 96;
+
+    private static void onLevelCap(com.cobblemon.mod.common.api.events.entity.SpawnEvent<com.cobblemon.mod.common.entity.pokemon.PokemonEntity> event) {
+        try {
+            CaricraftServer mod = CaricraftServer.get();
+            if (mod == null || event.isCanceled()) {
+                return;
+            }
+            var config = mod.core().config().cobbleverse;
+            if (!config.enabled || !config.levelCapSpawns || !com.chicoestudioso.caricraft.integration.rct.RctBridge.available()) {
+                return;
+            }
+            com.cobblemon.mod.common.entity.pokemon.PokemonEntity entity = event.getEntity();
+            Pokemon pokemon = entity.getPokemon();
+            if (pokemon.getOwnerUUID() != null || !(entity.level() instanceof net.minecraft.server.level.ServerLevel level)) {
+                return;
+            }
+            int cap = lowestCapNear(level, entity.getX(), entity.getZ());
+            boolean legendary = pokemon.isLegendary() || pokemon.isMythical() || pokemon.isUltraBeast();
+            com.chicoestudioso.caricraft.core.cobbleverse.LevelCapRule.Decision decision = com.chicoestudioso.caricraft.core.cobbleverse
+                    .LevelCapRule.decide(pokemon.getLevel(), legendary, cap, config.levelCapMargin, config.legendaryMinLevelCap);
+            if (cap <= 0) {
+                return;
+            }
+            if (!decision.spawn()) {
+                event.cancel(); // Cobblemon prueba otra aparición en la siguiente pasada
+                com.chicoestudioso.caricraft.server.cobbleverse.LevelCapStats.CANCELLED.incrementAndGet();
+                if (legendary) {
+                    com.chicoestudioso.caricraft.server.cobbleverse.LevelCapStats.LEGENDS_BLOCKED.incrementAndGet();
+                }
+            } else if (decision.level() != pokemon.getLevel()) {
+                pokemon.setLevel(decision.level());
+                com.chicoestudioso.caricraft.server.cobbleverse.LevelCapStats.CLAMPED.incrementAndGet();
+            } else {
+                com.chicoestudioso.caricraft.server.cobbleverse.LevelCapStats.KEPT.incrementAndGet();
+            }
+        } catch (RuntimeException e) {
+            CaricraftMod.LOGGER.warn("No se pudo aplicar el level cap a una aparición", e);
+        }
+    }
+
+    /** El level cap más bajo de los jugadores (no espectadores) cerca de ese punto, o 0 si no hay ninguno con cap. */
+    static int lowestCapNear(net.minecraft.server.level.ServerLevel level, double x, double z) {
+        int lowest = 0;
+        for (ServerPlayer player : level.players()) {
+            if (player.isSpectator()) {
+                continue;
+            }
+            double dx = player.getX() - x;
+            double dz = player.getZ() - z;
+            if (dx * dx + dz * dz > LEVEL_CAP_RANGE * LEVEL_CAP_RANGE) {
+                continue;
+            }
+            var cap = com.chicoestudioso.caricraft.integration.rct.RctBridge.levelCap(player);
+            if (cap.isPresent() && (lowest == 0 || cap.getAsInt() < lowest)) {
+                lowest = cap.getAsInt();
+            }
+        }
+        return lowest;
+    }
+
+    private static void onWildSpawn(com.cobblemon.mod.common.entity.pokemon.PokemonEntity entity) {
+        try {
+            Pokemon pokemon = entity.getPokemon();
+            if (!pokemon.getShiny() || pokemon.getOwnerUUID() != null || !(entity.level() instanceof net.minecraft.server.level.ServerLevel level)) {
+                return;
+            }
+            String species = pokemon.getSpecies().getResourceIdentifier().toString();
+            int pokemonLevel = pokemon.getLevel();
+            // Se mira en el siguiente tick, cuando la entidad ya está en el mundo (otro mod podría cancelar la aparición).
+            level.getServer().execute(() -> {
+                CaricraftServer mod = CaricraftServer.get();
+                if (mod != null && entity.isAlive() && level.getEntity(entity.getUUID()) != null) {
+                    com.chicoestudioso.caricraft.server.cobbleverse.ShinyAlerts.onShinySpawn(mod, level, entity, species, pokemonLevel);
+                }
+            });
+        } catch (RuntimeException e) {
+            CaricraftMod.LOGGER.warn("No se pudo procesar la aparición de un variocolor", e);
+        }
+    }
+
+    /** La captura en términos del núcleo de Caricraft. */
+    static com.chicoestudioso.caricraft.core.cobbleverse.CaptureInfo capture(Pokemon pokemon) {
+        return new com.chicoestudioso.caricraft.core.cobbleverse.CaptureInfo(pokemon.getSpecies().getResourceIdentifier().toString(),
+                CobblemonBackend.types(pokemon), pokemon.getLevel(), pokemon.getShiny(),
+                pokemon.isLegendary() || pokemon.isMythical() || pokemon.isUltraBeast(), pokemon.getSpecies().getCatchRate());
     }
 
     /** Ejecuta en el hilo del servidor (los eventos de combate pueden llegar desde otro hilo). */
@@ -99,6 +205,7 @@ final class CobblemonHooks {
         if (pokemon.isLegendary()) {
             mod.core().recordChronicle(player.getUUID(), ChronicleEntry.LEGENDARY_CATCH, species);
         }
+        com.chicoestudioso.caricraft.server.cobbleverse.DuoPokemonManager.onCapture(mod, player, capture(pokemon));
         mod.markDirty();
     }
 

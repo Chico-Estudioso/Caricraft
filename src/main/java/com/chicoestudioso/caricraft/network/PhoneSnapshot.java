@@ -179,7 +179,54 @@ public record PhoneSnapshot(
                                   long nextDayAt, boolean shopEnabled, List<CvOfferView> offers, boolean sellEnabled,
                                   List<SellView> party, int salesToday, int maxSales, boolean wonderEnabled, int wondersLeft,
                                   int wondersPerDay, int wonderPool, WonderView lastWonder, LuckView luck, int giftsLeft,
-                                  int giftsPerDay) {
+                                  int giftsPerDay, HealView heal, HuntView hunt, ExpeditionView expedition, DexView dex,
+                                  List<ShinyAlertView> shinyAlerts, boolean shinyCompass, int levelCap, boolean levelCapSpawns,
+                                  int legendaryMinLevelCap) {
+    }
+
+    /** Centro Pokémon de bolsillo ({@code null} si está desactivado). {@code readyAt}: hora del servidor. */
+    public record HealView(long price, long readyAt, boolean needed, boolean inBattle) {
+    }
+
+    /**
+     * Caza del día ({@code null} si está desactivada).
+     *
+     * @param contrib capturas que ha aportado hoy cada miembro (por nombre)
+     */
+    public record HuntView(List<HuntTargetView> targets, Map<String, Integer> contrib, int duoMinEach, boolean duo, boolean cleared,
+                           boolean duoBonus, int weekClears, int weeklyClears, boolean weekPaid, long clearDollars, long clearCarins,
+                           long duoDollars, long duoCarins, long weeklyDollars, long weeklyCarins) {
+    }
+
+    /** Objetivo de la caza: {@code kind} SPECIES (value = especie), TYPE (value = tipo) o ANY. */
+    public record HuntTargetView(String kind, String value, int count, int progress, boolean done, long dollars, long carins) {
+    }
+
+    /** Expediciones ({@code null} si están desactivadas). {@code away}: la que está en marcha, o {@code null}. */
+    public record ExpeditionView(List<DestinationView> destinations, List<Integer> hours, int perDay, int startedToday, AwayView away) {
+    }
+
+    public record DestinationView(String id, String icon, List<String> types, List<String> loot) {
+    }
+
+    /** {@code endsAt}: hora del servidor a la que vuelve. */
+    public record AwayView(String species, List<String> aspects, boolean shiny, int level, String destination, int hours, long endsAt,
+                           boolean ready) {
+    }
+
+    /** Pokédex del dúo ({@code null} si está desactivada). */
+    public record DexView(int species, long captures, int shinies, int legends, List<DexEntryView> shinyList, List<DexEntryView> rares,
+                          List<DexEntryView> legendList, List<GoalView> goals, Map<String, Integer> types) {
+    }
+
+    public record DexEntryView(String species, String player, int level, boolean shiny, int catchRate, long time) {
+    }
+
+    public record GoalView(String id, String kind, String type, int count, int progress, boolean done, long carins, long dollars) {
+    }
+
+    /** Variocolor salvaje cerca del dúo. {@code near}: junto a quién apareció. */
+    public record ShinyAlertView(String species, int level, String dimension, double x, double y, double z, long expiresAt, String near) {
     }
 
     /** Cajas, tragaperras, mejoras y fusiones del CobbleCentro. Las partes desactivadas llegan vacías o {@code null}. */
