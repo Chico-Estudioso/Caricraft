@@ -212,8 +212,9 @@ Sin probar en partida: vencer al guardián en un combate de Cobblemon de verdad 
 | `/caricraft cobbleverse expediciones` y recoger | Vuelve al equipo con ₽380, 2 carbón, 3 hierro en bruto y 2 fragmentos de amatista (≈ ₽95 por hora: pasivo y pequeño) |
 | `/caricraft cobbleverse variocolor gible` | Aviso «¡Gible variocolor salvaje! A 40 bloques al Oeste de Dev1» y brújula «✦ Gible variocolor · 40 m →» en la barra de acción (mirando al sur, el oeste queda a la derecha); tarjeta en Inicio con distancia, flecha y minutos |
 | Ir hasta él | «¡Gible variocolor está aquí!» |
+| Expedición con los textos nuevos (segunda pasada) | Destinos «Bosque», «Cueva» y «Costa» con los tipos en varias líneas; Geodude vuelve con ₽409 y objetos |
 | Que desaparezca | El aviso se quita solo |
-| Opción `levelCapSpawns` encendida, con RCT | LEVEL_CAP_RESULT |
+| Opción `levelCapSpawns` encendida, con RCT y su datapack de COBBLEVERSE | Level cap 25 al empezar (serie de Kanto). Con un Charizard Nv. 70 en el equipo y un minuto de apariciones: 109 sin cambios, 8 bajadas al cap y 16 canceladas; el CobbleCentro muestra «Level cap 25» |
 
 Por defecto `levelCapSpawns` está desactivado y los niveles de los salvajes son los de Cobbleverse; la regla tiene tests (`LevelCapRuleTest`).
 

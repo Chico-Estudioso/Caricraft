@@ -148,10 +148,14 @@ Cada día salen **6 ofertas** de un catálogo de 24. Son las mismas para todos y
 Todo lo decide el servidor: qué captura cuenta, cuánto se paga y cuándo vuelve un Pokémon. Los CobbleDollars (₽) van a **cada miembro** (a quien esté desconectado se le guardan para cuando entre) y los Carins al **monedero del dúo**.
 
 ### Aviso de variocolor con brújula
+![Brújula de variocolor en la barra de acción](img/variocolor_brujula.png)
+
 - Cuando aparece un **variocolor salvaje** a menos de 160 bloques de alguien del dúo, a los dos les llega un aviso («¡Gible variocolor salvaje! A 120 bloques al Noreste de Alice») con un sonido.
 - Mientras siga ahí (como mucho `shinyAlertMinutes`, 5 min), una **brújula en la barra de acción** («✦ Gible variocolor · 84 m ↗») señala hacia dónde está respecto a donde miras. Al llegar a 6 bloques dice «¡Está aquí!» y se calla.
 - El aviso desaparece si alguien lo captura, lo debilita o se va.
-- Inicio del CobbleCentro muestra los avisos activos con distancia, flecha y tiempo restante.
+- Inicio del CobbleCentro muestra los avisos activos con distancia, flecha y tiempo restante, junto al Centro Pokémon de bolsillo.
+
+  ![Aviso de variocolor y Centro Pokémon de bolsillo en Inicio](img/cobblecentro_variocolor.png)
 - La brújula se puede apagar en **Ajustes → Brújula de variocolores** (es personal).
 - No choca con CobbleNav: CobbleNav es un radar personal con su flecha arriba de la pantalla; la nuestra va en la barra de acción, solo para variocolores y para los dos del dúo. Solo lee la aparición; no toca al Pokémon.
 
@@ -160,6 +164,8 @@ Todo lo decide el servidor: qué captura cuenta, cuánto se paga y cuándo vuelv
 - Luego hay que esperar `pocketHealCooldownMinutes` (15 min). No funciona en combate ni si el equipo ya está sano (no se cobra).
 
 ### Caza del día
+![Caza del día](img/cobblecentro_caza.png)
+
 - **Tres objetivos al día** para el dúo, los mismos para los dos y deterministas por día: una especie concreta (1 captura), un tipo (3–5 capturas) y Pokémon cualesquiera (6–10). Cambian a las 00:00 (`timeZone`).
 - Cuenta cualquier captura de cualquiera de los dos.
 - Premios: especie ₽1.200 + 15 C, tipo ₽1.000 + 12 C, cualesquiera ₽800 + 10 C, caza completa ₽1.500 + 20 C.
@@ -168,6 +174,8 @@ Todo lo decide el servidor: qué captura cuenta, cuánto se paga y cuándo vuelv
 - Quien juega solo también puede hacerla, pero sin bonus de dúo.
 
 ### Pokédex del dúo
+![Pokédex del dúo](img/cobblecentro_dex.png)
+
 No sustituye a la Pokédex de Cobblemon. Guarda lo especial de los dos:
 - **Vitrina variocolor** (con modelos 3D y quién lo capturó), **legendarios** (también singulares y ultraentes) y **capturas más raras** (ratio de captura 45 o menos).
 - Cifras: especies distintas, capturas y variocolores entre los dos.
@@ -175,6 +183,8 @@ No sustituye a la Pokédex de Cobblemon. Guarda lo especial de los dos:
 - Al formar un dúo se juntan las dos Pokédex del dúo; al separarse, cada uno se queda una copia.
 
 ### Expediciones
+![Expediciones](img/cobblecentro_expediciones.png)
+
 - Un Pokémon del equipo se va **1, 4 u 8 horas reales** al Bosque, la Cueva o la Costa y vuelve con algo de ₽ y objetos del destino (bayas, Poké Balls, caramelos de experiencia, carbón, hierro, piedras evolutivas, alguna vez un diamante…).
 - Es un ingreso **pasivo y pequeño** a propósito: menos de ₽600 por hora en el mejor caso, y las largas rinden menos por hora (1 h → 1 tirada, 4 h → 3, 8 h → 5). Más nivel (hasta ×1,5) y un tipo afín al destino (×1,25) dan un poco más.
 - Mientras está fuera **no está en tu equipo** (se guarda en `data/caricraft_expeditions.dat`). Una a la vez por jugador y `expeditionsPerDay` (3) al día.
