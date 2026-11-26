@@ -998,5 +998,8 @@
   "caricraft.stat.challenge_bosses": "Jefes derrotados",
   "caricraft.stat.weekly_events": "Eventos semanales completados",
   "caricraft.stat.pocket_heals": "Curas de bolsillo",
-  "caricraft.stat.expeditions": "Expediciones"
+  "caricraft.stat.expeditions": "Expediciones",
+  "caricraft.phone.streak.title_one": "Racha: %s día",
+  "caricraft.phone.weekly.half": "mitad: %s C",
+  "caricraft.phone.weekly.full": "meta: %s C"
 }

@@ -64,7 +64,8 @@ final class RoutinePages {
         int h = 6 + 10 + 9 + 2 + ui.wrappedHeight(status, textW) + (duo == null ? 0 : ui.wrappedHeight(duo, textW) + 1) + 5;
         ui.round(x, y, x + w, y + h, PhoneTheme.mix(FLAME, t.card(), st.doneToday() ? 0.78f : 0.62f));
         ui.item("minecraft:campfire", x + 4, y + 3);
-        Component title = Component.translatable("caricraft.phone.streak.title", st.days()).copy().withStyle(ChatFormatting.BOLD);
+        Component title = Component.translatable(st.days() == 1 ? "caricraft.phone.streak.title_one" : "caricraft.phone.streak.title",
+                st.days()).copy().withStyle(ChatFormatting.BOLD);
         ui.textClipped(title, x + 23, y + 7, w - 60, t.text());
         ui.textRight(Component.translatable("caricraft.phone.streak.best", st.best()), x + w - 5, y + 7, t.textDim());
         // Semana de racha: 7 puntos
@@ -91,13 +92,15 @@ final class RoutinePages {
         Component effect = Component.translatable("caricraft.weekly." + wk.id() + ".bonus",
                 String.format(java.util.Locale.ROOT, "%.1f", wk.bonus()).replace('.', ','));
         int textW = w - 12;
-        int h = 6 + 10 + 2 + ui.wrappedHeight(effect, textW) + 3 + 6 + 3 + 9 + 5;
+        int h = 6 + 10 + 2 + ui.wrappedHeight(effect, textW) + 3 + 6 + 3 + 10 + 10 + 4;
         int accent = t.accent();
         ui.round(x, y, x + w, y + h, PhoneTheme.mix(accent, t.card(), 0.78f));
         ui.item(wk.icon(), x + 4, y + 3);
+        Component left = PhoneText.remaining(wk.endsAt() - snap.serverTime());
+        int leftW = ui.font.width(left);
         ui.textClipped(Component.translatable("caricraft.weekly." + wk.id()).copy().withStyle(ChatFormatting.BOLD), x + 23, y + 7,
-                w - 70, t.text());
-        ui.textRight(PhoneText.remaining(wk.endsAt() - snap.serverTime()), x + w - 5, y + 7, t.textDim());
+                w - 32 - leftW, t.text());
+        ui.textRight(left, x + w - 5, y + 7, t.textDim());
         int ty = y + 20;
         ty += ui.wrapped(effect, x + 6, ty, textW, t.textDim()) + 3;
         long progress = Math.min(wk.progress(), wk.goal());
@@ -107,10 +110,13 @@ final class RoutinePages {
         ui.g.fill(half, ty - 1, half + 1, ty + 5, (wk.paid() & 1) != 0 ? t.good() : t.text());
         ty += 9;
         String goal = PhoneText.number(progress) + "/" + PhoneText.number(wk.goal());
-        ui.text(Component.translatable("caricraft.weekly.stat." + wk.stat(), goal), x + 6, ty, t.text());
-        Component rewards = Component.literal(((wk.paid() & 1) != 0 ? "✔ " : "") + "½ " + wk.halfReward() + " C · "
-                + ((wk.paid() & 2) != 0 ? "✔ " : "") + wk.fullReward() + " C");
-        ui.textRight(rewards, x + w - 5, ty, (wk.paid() & 2) != 0 ? t.good() : t.textDim());
+        ui.textClipped(Component.translatable("caricraft.weekly.stat." + wk.stat(), goal), x + 6, ty, textW, t.text());
+        ty += 10;
+        Component halfText = Component.translatable("caricraft.phone.weekly.half", wk.halfReward());
+        Component fullText = Component.translatable("caricraft.phone.weekly.full", wk.fullReward());
+        ui.text(Component.literal((wk.paid() & 1) != 0 ? "✔ " : "").append(halfText), x + 6, ty, (wk.paid() & 1) != 0 ? t.good() : t.textDim());
+        ui.textRight(Component.literal((wk.paid() & 2) != 0 ? "✔ " : "").append(fullText), x + w - 5, ty,
+                (wk.paid() & 2) != 0 ? t.good() : t.textDim());
         return h;
     }
 
@@ -132,6 +138,24 @@ final class RoutinePages {
         ui.text(Component.translatable("caricraft.phone.showcase.count", got, total, r.trophies().size()), x + 23, y + 15, t.textDim());
         y += 30;
 
+        // Trofeos de jefes
+        ui.text(Component.translatable("caricraft.phone.showcase.trophies").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+        y += 12;
+        if (r.trophies().isEmpty()) {
+            y += ui.wrapped(Component.translatable("caricraft.phone.showcase.no_trophies"), x, y, w, t.textDim()) + 4;
+        } else {
+            for (PhoneSnapshot.BossRecordView b : r.trophies()) {
+                ui.round(x, y, x + w, y + 26, PhoneTheme.mix(BOSS, t.card(), 0.75f));
+                ui.item("caricraft:challenge_trophy", x + 4, y + 5);
+                ui.textClipped(Component.translatable("caricraft.boss." + b.boss()).copy().withStyle(ChatFormatting.BOLD), x + 23, y + 4,
+                        w - 60, t.text());
+                ui.textRight(Component.translatable("caricraft.phone.showcase.level", b.level()), x + w - 5, y + 4, t.textDim());
+                ui.textClipped(Component.literal(b.players() + " · " + java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                        .format(java.time.Instant.ofEpochMilli(b.time()).atZone(java.time.ZoneId.systemDefault()))), x + 23, y + 15, w - 28, t.textDim());
+                y += 29;
+            }
+        }
+        y += 4;
         // Medallas
         int columns = w >= 170 ? 3 : 2;
         int cell = (w - (columns - 1) * 4) / columns;
@@ -158,23 +182,6 @@ final class RoutinePages {
         y += ((medals.size() + columns - 1) / columns) * (cellH + 4) + 4;
         y += ui.wrapped(Component.translatable("caricraft.phone.showcase.help"), x, y, w, t.textDim()) + 6;
 
-        // Trofeos de jefes
-        ui.text(Component.translatable("caricraft.phone.showcase.trophies").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
-        y += 12;
-        if (r.trophies().isEmpty()) {
-            y += ui.wrapped(Component.translatable("caricraft.phone.showcase.no_trophies"), x, y, w, t.textDim()) + 4;
-        } else {
-            for (PhoneSnapshot.BossRecordView b : r.trophies()) {
-                ui.round(x, y, x + w, y + 26, PhoneTheme.mix(BOSS, t.card(), 0.75f));
-                ui.item("caricraft:challenge_trophy", x + 4, y + 5);
-                ui.textClipped(Component.translatable("caricraft.boss." + b.boss()).copy().withStyle(ChatFormatting.BOLD), x + 23, y + 4,
-                        w - 60, t.text());
-                ui.textRight(Component.translatable("caricraft.phone.showcase.level", b.level()), x + w - 5, y + 4, t.textDim());
-                ui.textClipped(Component.literal(b.players() + " · " + java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                        .format(java.time.Instant.ofEpochMilli(b.time()).atZone(java.time.ZoneId.systemDefault()))), x + 23, y + 15, w - 28, t.textDim());
-                y += 29;
-            }
-        }
         return y - top;
     }
 

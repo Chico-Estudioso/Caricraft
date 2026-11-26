@@ -115,14 +115,14 @@ Las arañas no llevan equipo y reciben los efectos 2 niveles antes. El equipo so
 
 | Nivel | Jefe | Vida | Tamaño |
 |---|---|---|---|
-| 5 | El Rey Zombi | 120 | ×1,8 |
-| 10 | La Reina Araña | 150 | ×2,2 |
-| 15 | El Capitán Esqueleto | 170 | ×1,6 |
-| 20 | La Gran Bruja | 200 | ×1,6 |
-| 25 | El Coloso del Fin | 240 | ×1,5 |
-| 30 | El Ahogado Abisal (con tridente) | 280 | ×1,8 |
+| 5 | El Rey Zombi | 144 | ×1,8 |
+| 10 | La Reina Araña | 210 | ×2,2 |
+| 15 | El Capitán Esqueleto | 272 | ×1,6 |
+| 20 | La Gran Bruja | 360 | ×1,6 |
+| 25 | El Coloso del Fin | 480 | ×1,5 |
+| 30 | El Ahogado Abisal (con tridente) | 616 | ×1,8 |
 
-  La vida y el daño crecen con el nivel (+4 % por nivel) y, a partir del nivel 35, empieza otra vuelta un 50 % más fuerte. Llevan el equipo del desafío de su nivel + 5, brillan y no se dejan empujar fácilmente.
+  La vida y el daño crecen con el nivel (+4 % por nivel sobre su base) y, a partir del nivel 35, empieza otra vuelta un 50 % más fuerte. Llevan el equipo del desafío de su nivel + 5, brillan y no se dejan empujar fácilmente.
 - **Al derrotarlo** (el golpe final de alguien del dúo o de su Pokémon):
   - Cada miembro conectado recibe un **Trofeo del desafío** con el nombre del jefe, el nivel, el dúo y la fecha. Es decorativo y queda también en la **Vitrina** (`docs/ROUTINE.md`).
   - `bossReward` (150) + 20 Carins por nivel, `xpPerBoss` (150) de experiencia y botín en el suelo: diamantes, esmeraldas, manzanas de oro, frascos de experiencia y, desde el nivel 15, restos de netherita (desde el 25, una manzana de oro encantada).

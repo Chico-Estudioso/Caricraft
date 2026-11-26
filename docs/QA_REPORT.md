@@ -218,6 +218,18 @@ Sin probar en partida: vencer al guardián en un combate de Cobblemon de verdad 
 
 Por defecto `levelCapSpawns` está desactivado y los niveles de los salvajes son los de Cobbleverse; la regla tiene tests (`LevelCapRuleTest`).
 
+**Bloque normal con cliente y servidor de producción** (`tools/cobblemon_qa.py`, rol R, mundo plano, 2026-11-26):
+
+| Paso | Resultado |
+|---|---|
+| Inicio del CariPhone sin nada hecho | Tarjeta de racha a 0 («Reclama una misión hoy para empezar la racha: +15 C») y evento de la semana: «Semana artesana», misiones de fabricar ×1,5, meta 600 objetos |
+| Reclamar la misión diaria «Paseo» | «Racha del dúo: 1 día (+15 Carins)» además de los 25 de la misión; la tarjeta pasa a «Hoy cumplido» con el primer punto en naranja |
+| `/caricraft rutina evento 300` | «Evento «Semana artesana»: ¡a mitad de la meta! +100 Carins» |
+| Completar la meta | +300 Carins; medallas «Eventos» y «Artesano» de bronce (+25 cada una); la de «Nivel» (nivel 6 del desafío) ya había salido al entrar |
+| Vitrina | 3/48 medallas, cada una con su progreso al siguiente tramo; las de bronce en color bronce |
+| Noche de desafío a nivel 6 y `/caricraft desafio jefe` | «¡El Rey Zombi (jefe de nivel 5) ha aparecido a 20 bloques al Suroeste!», barra morada «El Rey Zombi · jefe de nivel 5» bajo la de la noche, tarjeta en la app Desafío |
+| Derrotarlo (`/damage … by @s`) | «¡El Rey Zombi derrotado (nivel 5)!»: +250 Carins, **Trofeo del desafío** en el inventario, botín en el suelo (diamantes, esmeraldas, manzana de oro y frascos de experiencia), medalla «Jefes» de bronce y el trofeo en la Vitrina |
+
 ## Errores encontrados y corregidos durante la QA
 1. **Teléfono borroso (alto):** en 1.21 `Screen.render` vuelve a pintar el fondo desenfocado encima. Corregido en `PhoneScreen`.
 2. **Pestañas de misiones cortadas (bajo):** se quitaron los contadores y se añadió un punto rojo si hay misiones para reclamar.
@@ -234,6 +246,9 @@ Por defecto `levelCapSpawns` está desactivado y los niveles de los salvajes son
 13. **Etiquetas del inicio pegadas (bajo):** con 4 columnas, «Misiones», «Cartera» y «Mercado» se tocaban. Ahora dejan margen y algunas apps usan un nombre corto.
 14. **Teléfono sin datos con Cobbleverse (alto):** `PokemonSpecies.getByName("cobblemon:pidgey")` lanza una excepción (espera el nombre sin `cobblemon:`), y eso tumbaba el snapshot entero del CariPhone. Corregido: los nombres se normalizan, y si una parte de Cobbleverse falla se oculta solo esa parte (o la pestaña), nunca el teléfono.
 15. **Textos cortados en el CobbleCentro (bajo):** la descripción de la curación, los objetivos largos de la caza, las etiquetas de la Pokédex del dúo y los tipos de los destinos. Ahora se reparten en dos líneas o se encogen.
+16. **Jefe con el doble de vida (medio):** el refuerzo de vida por nivel del equipo del desafío se sumaba a la del jefe (317 en vez de 144 el primero). Ahora la vida final es la de la tabla.
+17. **Tarjeta del evento (bajo):** el progreso y los premios se pisaban; «1 días». Corregido, y los trofeos van antes que las medallas en la Vitrina.
+18. **Jefe zombi bebé o araña con jinete (bajo):** se crean sin la aparición aleatoria de Minecraft; el equipo lo pone el desafío.
 
 ## Pendiente (priorizado)
 1. **Medio:** probar captura, evolución y combate con un cliente COBBLEVERSE completo.

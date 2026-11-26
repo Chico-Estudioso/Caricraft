@@ -26,7 +26,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -200,13 +199,21 @@ public final class ChallengeBosses {
         }
         try {
             mob.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, random.nextFloat() * 360f, 0f);
-            mob.finalizeSpawn(level, level.getCurrentDifficultyAt(pos), MobSpawnType.EVENT, null);
+            // Sin finalizeSpawn: así no sale bebé ni con jinete. El equipo lo pone el desafío.
+            if (mob instanceof net.minecraft.world.entity.monster.Zombie zombie) {
+                zombie.setBaby(false);
+            }
             int gearLevel = Math.min(mod.core().config().challenge.maxLevel, milestone + 5);
             ChallengeGear.apply(mob, gearLevel, random);
             if (mob.getType() == EntityType.DROWNED) {
                 mob.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.TRIDENT));
             }
-            base(mob, Attributes.MAX_HEALTH, boss.health());
+            // El equipo del desafío ya suma vida por nivel: la base se ajusta para que la vida final sea la del jefe.
+            AttributeInstance health = mob.getAttribute(Attributes.MAX_HEALTH);
+            if (health != null) {
+                double factor = health.getBaseValue() > 0 ? health.getValue() / health.getBaseValue() : 1;
+                health.setBaseValue(boss.health() / Math.max(1, factor));
+            }
             AttributeInstance damage = mob.getAttribute(Attributes.ATTACK_DAMAGE);
             if (damage != null) {
                 damage.setBaseValue(damage.getBaseValue() + boss.damage());

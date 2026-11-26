@@ -998,5 +998,8 @@
   "caricraft.stat.challenge_bosses": "Bosses defeated",
   "caricraft.stat.weekly_events": "Weekly events completed",
   "caricraft.stat.pocket_heals": "Pocket heals",
-  "caricraft.stat.expeditions": "Expeditions"
+  "caricraft.stat.expeditions": "Expeditions",
+  "caricraft.phone.streak.title_one": "Streak: %s day",
+  "caricraft.phone.weekly.half": "half: %s C",
+  "caricraft.phone.weekly.full": "goal: %s C"
 }
