@@ -102,10 +102,6 @@ final class CobbleDuoPages {
 
     private int healCard(CobbleverseView cv, PhoneSnapshot.HealView heal, int x, int y, int w) {
         PhoneTheme t = CobbleCentroScreen.THEME;
-        int h = 40;
-        s.ui.round(x, y, x + w, y + h, t.card());
-        s.ui.item("cobblemon:hyper_potion", x + 8, y + 12);
-        s.ui.text(Component.translatable("caricraft.cc.heal_title").copy().withStyle(ChatFormatting.BOLD), x + 30, y + 7, t.text());
         long wait = heal.readyAt() - serverNow();
         Component state;
         Style style = Style.DISABLED;
@@ -126,9 +122,14 @@ final class CobbleDuoPages {
             style = cv.cobbleDollars() >= 0 && cv.cobbleDollars() < heal.price() ? Style.DISABLED : Style.GOOD;
         }
         int bw = Math.max(70, s.ui.buttonWidth(label));
-        s.ui.textClipped(state, x + 30, y + 20, w - 44 - bw, t.textDim());
+        int textW = w - 44 - bw;
+        int h = Math.max(40, 20 + s.ui.wrappedHeight(state, textW) + 6);
+        s.ui.round(x, y, x + w, y + h, t.card());
+        s.ui.item("cobblemon:hyper_potion", x + 8, y + (h - 16) / 2);
+        s.ui.text(Component.translatable("caricraft.cc.heal_title").copy().withStyle(ChatFormatting.BOLD), x + 30, y + 7, t.text());
+        s.ui.wrapped(state, x + 30, y + 19, textW, t.textDim());
         Style finalStyle = style;
-        s.ui.button(x + w - bw - 8, y + 12, bw, 16, label, style, () -> {
+        s.ui.button(x + w - bw - 8, y + (h - 16) / 2, bw, 16, label, style, () -> {
             if (finalStyle == Style.GOOD) {
                 s.send(PhoneAction.CV_HEAL, "");
             }
@@ -195,11 +196,13 @@ final class CobbleDuoPages {
         };
         String reward = rewardText(target.dollars(), target.carins());
         int rw = Minecraft.getInstance().font.width(reward);
-        s.ui.textClipped(what.copy().withStyle(ChatFormatting.BOLD), x + 42, y + 7, w - 52 - rw, t.text());
-        s.ui.textRight(Component.literal(reward), x + w - 8, y + 7, target.done() ? t.good() : CobbleCentroScreen.GOLD);
-        s.ui.progressBar(x + 42, y + 22, w - 92, target.progress(), target.count(), target.done() ? t.good() : t.accent());
-        s.ui.textRight(Component.literal(target.done() ? "✔" : target.progress() + "/" + target.count()), x + w - 8, y + 20,
-                target.done() ? t.good() : t.textDim());
+        s.ui.textClipped(what.copy().withStyle(ChatFormatting.BOLD), x + 42, y + 7, w - 50, t.text());
+        String count = target.done() ? "✔" : target.progress() + "/" + target.count();
+        int cw = Minecraft.getInstance().font.width(count);
+        int barW = w - 42 - rw - cw - 30;
+        s.ui.progressBar(x + 42, y + 24, barW, target.progress(), target.count(), target.done() ? t.good() : t.accent());
+        s.ui.text(count, x + 42 + barW + 6, y + 22, target.done() ? t.good() : t.textDim());
+        s.ui.textRight(Component.literal(reward), x + w - 8, y + 22, target.done() ? t.good() : CobbleCentroScreen.GOLD);
         return h;
     }
 
@@ -274,9 +277,9 @@ final class CobbleDuoPages {
     private void stat(int x, int y, int w, String icon, String value, Component label) {
         PhoneTheme t = CobbleCentroScreen.THEME;
         s.ui.round(x, y, x + w, y + 34, t.card());
-        s.ui.item(icon, x + 4, y + 9);
+        s.ui.item(icon, x + 4, y + 3);
         s.ui.textClipped(Component.literal(value).withStyle(ChatFormatting.BOLD), x + 23, y + 7, w - 26, t.text());
-        s.ui.textClipped(label, x + 23, y + 19, w - 26, t.textDim());
+        s.ui.textFit(label, x + w / 2, y + 22, w - 6, t.textDim());
     }
 
     private int showcase(List<DexEntryView> list, String key, int x, int y, int w, float partialTick, Component empty) {
@@ -310,6 +313,17 @@ final class CobbleDuoPages {
 
     // ================================================================ expediciones
 
+    private static Component typesOf(PhoneSnapshot.DestinationView d) {
+        StringBuilder types = new StringBuilder();
+        for (String ty : d.types()) {
+            if (!types.isEmpty()) {
+                types.append(", ");
+            }
+            types.append(type(ty).getString());
+        }
+        return Component.literal(types.toString());
+    }
+
     int expedition(CobbleverseView cv, int x, int y, int w, float partialTick) {
         PhoneTheme t = CobbleCentroScreen.THEME;
         PhoneSnapshot.ExpeditionView exp = cv.expedition();
@@ -333,7 +347,7 @@ final class CobbleDuoPages {
             long left = Math.max(0, away.endsAt() - serverNow());
             Component sub = away.ready() ? Component.translatable("caricraft.cc.exp_ready")
                     : Component.translatable("caricraft.cc.exp_left", PhoneText.remaining(left), away.hours());
-            s.ui.textClipped(sub, x + 86, y + 34, w - 94, t.textDim());
+            s.ui.wrapped(sub, x + 86, y + 34, w - 94, t.textDim());
             if (away.ready()) {
                 Component claim = Component.translatable("caricraft.cc.exp_claim");
                 int bw = Math.max(90, s.ui.buttonWidth(claim));
@@ -362,35 +376,30 @@ final class CobbleDuoPages {
         int n = exp.destinations().size();
         int cw = (w - (n - 1) * 6) / Math.max(1, n);
         int maxH = 0;
+        for (PhoneSnapshot.DestinationView d : exp.destinations()) {
+            maxH = Math.max(maxH, 44 + s.ui.wrappedHeight(typesOf(d), cw - 10));
+        }
         for (int i = 0; i < n; i++) {
             PhoneSnapshot.DestinationView d = exp.destinations().get(i);
             int dx = x + i * (cw + 6);
-            int h = 58;
+            int h = maxH;
             boolean chosen = d.id().equals(destination);
             boolean hover = s.ui.hovered(dx, y, dx + cw, y + h);
             s.ui.round(dx, y, dx + cw, y + h, chosen ? PhoneTheme.mix(t.accent(), t.card(), 0.55f) : hover ? t.cardHover() : t.card());
             s.ui.item(d.icon(), dx + 5, y + 5);
-            s.ui.textClipped(Component.translatable("caricraft.phone.cv.exp." + d.id()).copy().withStyle(ChatFormatting.BOLD), dx + 24, y + 9,
+            s.ui.textClipped(Component.translatable("caricraft.cc.exp_name." + d.id()).copy().withStyle(ChatFormatting.BOLD), dx + 24, y + 9,
                     cw - 28, 0xFFFFFFFF);
-            StringBuilder types = new StringBuilder();
-            for (String ty : d.types()) {
-                if (!types.isEmpty()) {
-                    types.append(", ");
-                }
-                types.append(type(ty).getString());
-            }
-            s.ui.textClipped(Component.literal(types.toString()), dx + 5, y + 26, cw - 10, t.textDim());
+            int typesH = s.ui.wrapped(typesOf(d), dx + 5, y + 25, cw - 10, t.textDim());
             int ix = dx + 5;
             for (String item : d.loot()) {
                 if (ix + 16 > dx + cw - 4) {
                     break;
                 }
-                s.ui.item(item, ix, y + 38);
+                s.ui.item(item, ix, y + 27 + typesH);
                 ix += 17;
             }
             String id = d.id();
             s.ui.hit(dx, y, dx + cw, y + h, () -> destination = id);
-            maxH = Math.max(maxH, h);
         }
         y += maxH + 8;
 

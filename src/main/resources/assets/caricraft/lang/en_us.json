@@ -899,5 +899,8 @@
   "caricraft.phone.cv.goal.type_grass": "40 Grass-type Pokémon",
   "caricraft.phone.cv.goal.type_electric": "25 Electric-type Pokémon",
   "caricraft.phone.cv.goal.type_ghost": "15 Ghost-type Pokémon",
-  "caricraft.phone.cv.goal.type_dragon": "10 Dragon-type Pokémon"
+  "caricraft.phone.cv.goal.type_dragon": "10 Dragon-type Pokémon",
+  "caricraft.cc.exp_name.forest": "Forest",
+  "caricraft.cc.exp_name.cave": "Cave",
+  "caricraft.cc.exp_name.coast": "Coast"
 }

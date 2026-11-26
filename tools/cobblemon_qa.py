@@ -127,6 +127,11 @@ def prepare(server_source, work, role=""):
         for name in ("rctmod-server.toml",):
             if os.path.exists(os.path.join(server_source, "config", name)):
                 shutil.copy(os.path.join(server_source, "config", name), os.path.join(server, "config", name))
+        # Datapack de entrenadores de COBBLEVERSE (series y level cap); solo en el mundo de prueba local.
+        packs = os.path.join(server, "world", "datapacks")
+        os.makedirs(packs, exist_ok=True)
+        for pack in glob.glob(os.path.join(server_source, "datapacks", "COBBLEVERSE-RCT-DP-*.zip")):
+            shutil.copy(pack, packs)
     config_path = os.path.join(server, "config", "caricraft.json")
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
     config = json.load(open(config_path)) if os.path.exists(config_path) else {}

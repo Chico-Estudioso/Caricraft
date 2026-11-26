@@ -197,6 +197,26 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 
 Sin probar en partida: vencer al guardián en un combate de Cobblemon de verdad o capturarlo (no hay forma automática de iniciar el combate; se usa `PokemonEntity.isBattling` y se busca el Pokémon en el equipo y el PC).
 
+**Bloque Cobbleverse del dúo con Cobblemon real** (`tools/cobblemon_qa.py`, rol D, mundo plano, 2026-11-26):
+
+| Paso | Resultado |
+|---|---|
+| `/caricraft cobbleverse herir` y abrir Inicio | Tarjeta «Centro Pokémon de bolsillo» con «Curar · ₽1.500» |
+| Curar | «¡Equipo curado! (₽1.500)»: ₽50.000 → ₽48.500; la tarjeta pasa a «Recargando: 14 min» |
+| Curar otra vez | Rechazado: «Tu equipo ya está como nuevo» (sin cobrar) |
+| Caza del día | 3 objetivos: 1 × Makuhita, 3 de tipo Eléctrico, 7 cualesquiera |
+| Capturar el Makuhita (`/caricraft cobbleverse captura`) | ✔ y ₽1.200 + 15 Carins al momento |
+| Completar los otros dos | Caza completa: ₽48.500 → ₽53.000 y 57 Carins (1.200 + 1.000 + 800 + 1.500; 15 + 12 + 10 + 20). Jugando solo, sin bonus de dúo y semanal 1/4 |
+| Capturar Gible y Magikarp variocolor, Mewtwo y Dratini | Vitrina variocolor con modelos 3D y quién lo capturó; Mewtwo en Legendarios; capturas raras Mewtwo (ratio 3), Gible y Dratini (45); metas «Vuestro primer variocolor» y «Vuestro primer legendario» cumplidas: ₽53.000 → ₽62.000 |
+| Mandar a Geodude Nv. 18 a la Cueva 4 h | Sale del equipo (6 → 5), tarjeta «Vuelve en 3 h 59 min»; «Recoger» antes de tiempo rechazado |
+| `/caricraft cobbleverse expediciones` y recoger | Vuelve al equipo con ₽380, 2 carbón, 3 hierro en bruto y 2 fragmentos de amatista (≈ ₽95 por hora: pasivo y pequeño) |
+| `/caricraft cobbleverse variocolor gible` | Aviso «¡Gible variocolor salvaje! A 40 bloques al Oeste de Dev1» y brújula «✦ Gible variocolor · 40 m →» en la barra de acción (mirando al sur, el oeste queda a la derecha); tarjeta en Inicio con distancia, flecha y minutos |
+| Ir hasta él | «¡Gible variocolor está aquí!» |
+| Que desaparezca | El aviso se quita solo |
+| Opción `levelCapSpawns` encendida, con RCT | LEVEL_CAP_RESULT |
+
+Por defecto `levelCapSpawns` está desactivado y los niveles de los salvajes son los de Cobbleverse; la regla tiene tests (`LevelCapRuleTest`).
+
 ## Errores encontrados y corregidos durante la QA
 1. **Teléfono borroso (alto):** en 1.21 `Screen.render` vuelve a pintar el fondo desenfocado encima. Corregido en `PhoneScreen`.
 2. **Pestañas de misiones cortadas (bajo):** se quitaron los contadores y se añadió un punto rojo si hay misiones para reclamar.
@@ -211,6 +231,8 @@ Sin probar en partida: vencer al guardián en un combate de Cobblemon de verdad 
 11. **Cofres del desafío en mundo plano (medio):** la comprobación de «por encima del nivel del mar» descartaba todos los sitios en mundos planos. Se quitó (los líquidos ya se comprueban). El servidor registra ahora por qué no encuentra sitio.
 12. **Cofres lejanos (medio):** mirar el cofre cada segundo habría cargado su chunk aunque no hubiera nadie cerca. Ahora solo se mira si la zona ya está cargada.
 13. **Etiquetas del inicio pegadas (bajo):** con 4 columnas, «Misiones», «Cartera» y «Mercado» se tocaban. Ahora dejan margen y algunas apps usan un nombre corto.
+14. **Teléfono sin datos con Cobbleverse (alto):** `PokemonSpecies.getByName("cobblemon:pidgey")` lanza una excepción (espera el nombre sin `cobblemon:`), y eso tumbaba el snapshot entero del CariPhone. Corregido: los nombres se normalizan, y si una parte de Cobbleverse falla se oculta solo esa parte (o la pestaña), nunca el teléfono.
+15. **Textos cortados en el CobbleCentro (bajo):** la descripción de la curación, los objetivos largos de la caza, las etiquetas de la Pokédex del dúo y los tipos de los destinos. Ahora se reparten en dos líneas o se encogen.
 
 ## Pendiente (priorizado)
 1. **Medio:** probar captura, evolución y combate con un cliente COBBLEVERSE completo.
