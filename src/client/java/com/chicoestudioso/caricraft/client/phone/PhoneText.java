@@ -146,7 +146,7 @@ public final class PhoneText {
                 }
             }
         }
-        if (raw.startsWith("caricraft.") && I18n.exists(raw)) {
+        if ((raw.startsWith("caricraft.") || raw.startsWith("cobblemon.type.")) && I18n.exists(raw)) {
             return Component.translatable(raw);
         }
         if (raw.indexOf(':') > 0 && ResourceLocation.tryParse(raw) != null) {

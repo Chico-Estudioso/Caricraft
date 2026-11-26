@@ -106,10 +106,20 @@ public final class SnapshotBuilder {
                 core.parties().leavePending(state, viewer), FabricLoader.getInstance().isModLoaded("cobblemon"),
                 profile.tipsEnabled(),
                 challengeView(mod, party), marketView(core, party),
-                com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseManager.view(mod, player), campView(mod, party, player),
+                cobbleverseView(mod, player), campView(mod, party, player),
                 duoTravelView(mod, party, player), lensView(core, party),
                 new PhoneSnapshot.BoxView(core.box().hasApp(party), core.box().rows(party),
                         com.chicoestudioso.caricraft.server.box.CariBoxManager.usedSlots(mod, party)));
+    }
+
+    /** Si la parte de Cobbleverse falla, se oculta; el resto del teléfono sigue funcionando. */
+    private static PhoneSnapshot.CobbleverseView cobbleverseView(CaricraftServer mod, net.minecraft.server.level.ServerPlayer player) {
+        try {
+            return com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseManager.view(mod, player);
+        } catch (RuntimeException e) {
+            com.chicoestudioso.caricraft.CaricraftMod.LOGGER.error("No se pudo preparar la parte Cobbleverse del CariPhone", e);
+            return null;
+        }
     }
 
     private static PhoneSnapshot.LensView lensView(CaricraftCore core, Party party) {

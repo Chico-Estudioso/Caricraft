@@ -85,4 +85,10 @@ public interface PokemonBackend {
 
     /** Cura el equipo entero (vida, estado y PP), como un Centro Pokémon. */
     void healParty(ServerPlayer player);
+
+    /** Administración/QA: deja a todo el equipo a media vida. */
+    void hurtParty(ServerPlayer player);
+
+    /** La captura de un Pokémon (creado, cargado o quitado) en términos del núcleo. */
+    com.chicoestudioso.caricraft.core.cobbleverse.CaptureInfo captureInfo(Object pokemon);
 }

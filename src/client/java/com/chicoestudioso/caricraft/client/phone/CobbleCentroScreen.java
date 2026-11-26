@@ -43,6 +43,9 @@ public class CobbleCentroScreen extends Screen {
 
     enum Tab {
         HOME("home", "cobblemon:premier_ball"),
+        HUNT("hunt", "cobblemon:great_ball"),
+        DEX("dex", "cobblemon:pokedex_red"),
+        EXPEDITION("expedition", "minecraft:compass"),
         SHOP("shop", "cobblemon:poke_ball"),
         CRATES("crates", "cobblemon:gilded_chest"),
         SLOTS("slots", "cobblemon:lucky_egg"),
@@ -64,6 +67,8 @@ public class CobbleCentroScreen extends Screen {
     final PhoneUi ui = new PhoneUi();
     /** Cajas, tragaperras, mejoras y fusiones. */
     final CobbleLuckPages luck = new CobbleLuckPages(this);
+    /** Caza del día, Pokédex del dúo, expediciones, Centro Pokémon y avisos de variocolor. */
+    final CobbleDuoPages duo = new CobbleDuoPages(this);
     private final Screen parent;
     Tab tab = lastTab;
     private int scroll;
@@ -223,31 +228,42 @@ public class CobbleCentroScreen extends Screen {
         // Barra lateral
         int sideW = SIDE_W;
         ui.g.fill(x0, y0 + 24, x0 + sideW, y1, PhoneTheme.mix(t.background(), 0xFF000000, 0.35f));
-        int ty = y0 + 30;
+        int ty = y0 + 28;
+        int shown = 0;
+        for (Tab each : Tab.values()) {
+            if (visible(cv, each)) {
+                shown++;
+            }
+        }
+        // Con muchas pestañas y poca altura, las filas se estrechan (sin bajar de 18 px).
+        int rowH = Mth.clamp((y1 - ty - 4) / Math.max(1, shown), 18, 24);
+        int boxH = rowH - 2;
         for (Tab each : Tab.values()) {
             if (!visible(cv, each)) {
                 continue;
             }
             boolean active = each == tab;
-            boolean hover = ui.hovered(x0 + 4, ty, x0 + sideW - 4, ty + 22);
+            boolean hover = ui.hovered(x0 + 4, ty, x0 + sideW - 4, ty + boxH);
             if (active || hover) {
-                ui.round(x0 + 4, ty, x0 + sideW - 4, ty + 22, active ? PhoneTheme.mix(t.header(), t.background(), 0.35f) : t.cardHover());
+                ui.round(x0 + 4, ty, x0 + sideW - 4, ty + boxH, active ? PhoneTheme.mix(t.header(), t.background(), 0.35f) : t.cardHover());
             }
             if (active) {
-                ui.g.fill(x0 + 4, ty + 3, x0 + 6, ty + 19, t.accent());
+                ui.g.fill(x0 + 4, ty + 3, x0 + 6, ty + boxH - 3, t.accent());
             }
-            ui.item(each.icon, x0 + 9, ty + 3);
+            int iconY = ty + (boxH - 16) / 2;
+            ui.item(each.icon, x0 + 9, iconY);
             String badge = badge(cv, each);
             int badgeW = badge.isEmpty() ? 0 : Math.max(9, font.width(badge) + 4);
-            ui.textClipped(Component.translatable("caricraft.cc.tab." + each.key), x0 + 28, ty + 7,
+            int textY = ty + (boxH - 8) / 2;
+            ui.textClipped(Component.translatable("caricraft.cc.tab." + each.key), x0 + 28, textY,
                     sideW - 34 - (badgeW == 0 ? 0 : badgeW + 3), active ? 0xFFFFFFFF : t.textDim());
             if (badgeW > 0) {
-                ui.round(x0 + sideW - 8 - badgeW, ty + 6, x0 + sideW - 8, ty + 16, t.bad());
-                ui.text(badge, x0 + sideW - 8 - badgeW + (badgeW - font.width(badge)) / 2, ty + 7, 0xFFFFFFFF);
+                ui.round(x0 + sideW - 8 - badgeW, textY - 1, x0 + sideW - 8, textY + 9, t.bad());
+                ui.text(badge, x0 + sideW - 8 - badgeW + (badgeW - font.width(badge)) / 2, textY, 0xFFFFFFFF);
             }
             Tab target = each;
-            ui.hit(x0 + 4, ty, x0 + sideW - 4, ty + 22, () -> select(target));
-            ty += 24;
+            ui.hit(x0 + 4, ty, x0 + sideW - 4, ty + boxH, () -> select(target));
+            ty += rowH;
         }
 
         // Contenido
@@ -264,6 +280,9 @@ public class CobbleCentroScreen extends Screen {
             }
             int used = switch (tab) {
                 case HOME -> home(cv, cx, cy - scroll, cw, partialTick);
+                case HUNT -> duo.hunt(cv, cx, cy - scroll, cw, partialTick);
+                case DEX -> duo.dex(cv, cx, cy - scroll, cw, partialTick);
+                case EXPEDITION -> duo.expedition(cv, cx, cy - scroll, cw, partialTick);
                 case SHOP -> shop(cv, cx, cy - scroll, cw, partialTick);
                 case CRATES -> luck.crates(cv, cx, cy - scroll, cw);
                 case SLOTS -> luck.slots(cv, cx, cy - scroll, cw);
@@ -296,6 +315,9 @@ public class CobbleCentroScreen extends Screen {
             case CRATES -> luck != null && !luck.crates().isEmpty();
             case SLOTS -> luck != null && luck.slots() != null;
             case UPGRADES -> luck != null && (!luck.upgrades().isEmpty() || !luck.fusions().isEmpty());
+            case HUNT -> cv.hunt() != null;
+            case DEX -> cv.dex() != null;
+            case EXPEDITION -> cv.expedition() != null;
             default -> true;
         };
     }
@@ -307,6 +329,7 @@ public class CobbleCentroScreen extends Screen {
         return switch (each) {
             case HOME -> cv.giftEnabled() && cv.giftAvailable() ? String.valueOf(Math.max(1, cv.giftsLeft())) : "";
             case WONDER -> cv.wonderEnabled() && cv.wondersLeft() > 0 ? String.valueOf(cv.wondersLeft()) : "";
+            case EXPEDITION -> cv.expedition() != null && cv.expedition().away() != null && cv.expedition().away().ready() ? "!" : "";
             default -> "";
         };
     }
@@ -400,6 +423,7 @@ public class CobbleCentroScreen extends Screen {
         PhoneTheme t = THEME;
         int top = y;
         long left = cv.nextDayAt() - (ClientPhoneState.snapshot() == null ? 0 : ClientPhoneState.snapshot().serverTime());
+        y += duo.homeCards(cv, x, y, w);
         if (cv.giftEnabled()) {
             int h = 64;
             ui.round(x, y, x + w, y + h, PhoneTheme.mix(cv.giftAvailable() ? 0xFFB8860B : t.card(), t.background(), 0.25f));
@@ -422,7 +446,12 @@ public class CobbleCentroScreen extends Screen {
             y += h + 10;
         }
 
-        y += sectionTitle(Component.translatable("caricraft.cc.team"), null, x, y, w);
+        y += sectionTitle(Component.translatable("caricraft.cc.team"), cv.levelCap() > 0
+                ? Component.translatable("caricraft.cc.level_cap", cv.levelCap()) : null, x, y, w);
+        if (cv.levelCapSpawns() && cv.levelCap() > 0) {
+            y += ui.wrapped(Component.translatable(cv.levelCap() >= cv.legendaryMinLevelCap() ? "caricraft.cc.level_cap_help_legends"
+                    : "caricraft.cc.level_cap_help", cv.levelCap(), cv.legendaryMinLevelCap()), x, y, w, t.textDim()) + 4;
+        }
         List<SellView> party = cv.party();
         if (party.isEmpty()) {
             y += ui.wrapped(Component.translatable("caricraft.cc.team_empty"), x, y, w, t.textDim()) + 6;

@@ -86,6 +86,18 @@ final class CobblemonBackend implements PokemonBackend {
     }
 
     @Override
+    public void hurtParty(ServerPlayer player) {
+        for (Pokemon pokemon : store(player)) {
+            pokemon.setCurrentHealth(Math.max(1, pokemon.getMaxHealth() / 2));
+        }
+    }
+
+    @Override
+    public com.chicoestudioso.caricraft.core.cobbleverse.CaptureInfo captureInfo(Object pokemon) {
+        return CobblemonHooks.capture((Pokemon) pokemon);
+    }
+
+    @Override
     public PartyMon describe(Object pokemon) {
         return describe((Pokemon) pokemon, -1);
     }
@@ -119,7 +131,7 @@ final class CobblemonBackend implements PokemonBackend {
 
     @Override
     public Object create(String species, int level, boolean shiny, int perfectIvs, List<String> moves) {
-        Pokemon pokemon = PokemonProperties.Companion.parse("species=" + species + " level=" + level + (shiny ? " shiny=true" : ""))
+        Pokemon pokemon = PokemonProperties.Companion.parse("species=" + speciesArg(species) + " level=" + level + (shiny ? " shiny=true" : ""))
                 .create();
         pokemon.setShiny(shiny);
         List<Stats> stats = new ArrayList<>(IV_STATS);
@@ -207,7 +219,7 @@ final class CobblemonBackend implements PokemonBackend {
     public net.minecraft.world.entity.Entity spawnWild(net.minecraft.server.level.ServerLevel level, String species, int pokemonLevel,
                                                        boolean shiny, double x, double y, double z) {
         com.cobblemon.mod.common.entity.pokemon.PokemonEntity entity = PokemonProperties.Companion
-                .parse("species=" + species + " level=" + pokemonLevel + (shiny ? " shiny=true" : "")).createEntity(level);
+                .parse("species=" + speciesArg(species) + " level=" + pokemonLevel + (shiny ? " shiny=true" : "")).createEntity(level);
         entity.getPokemon().setShiny(shiny);
         entity.moveTo(x, y, z, level.getRandom().nextFloat() * 360f, 0f);
         return level.addFreshEntity(entity) ? entity : null;
@@ -230,6 +242,24 @@ final class CobblemonBackend implements PokemonBackend {
 
     @Override
     public boolean speciesExists(String species) {
-        return PokemonSpecies.getByName(species) != null;
+        try {
+            String id = speciesArg(species);
+            if (id.indexOf(':') > 0) {
+                net.minecraft.resources.ResourceLocation rl = net.minecraft.resources.ResourceLocation.tryParse(id);
+                return rl != null && PokemonSpecies.getByIdentifier(rl) != null;
+            }
+            return PokemonSpecies.getByName(id) != null;
+        } catch (RuntimeException e) {
+            return false; // nombre con caracteres no válidos
+        }
+    }
+
+    /**
+     * {@code PokemonSpecies.getByName} y la propiedad {@code species=} esperan el nombre sin el espacio de nombres de
+     * Cobblemon ({@code getByName("cobblemon:gible")} lanza una excepción); los de otros mods se dejan con el suyo.
+     */
+    static String speciesArg(String species) {
+        String s = species == null ? "" : species.trim().toLowerCase(java.util.Locale.ROOT);
+        return s.startsWith("cobblemon:") ? s.substring("cobblemon:".length()) : s;
     }
 }

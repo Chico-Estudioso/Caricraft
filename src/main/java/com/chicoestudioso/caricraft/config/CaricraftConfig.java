@@ -220,10 +220,11 @@ public final class CaricraftConfig {
         /** Pokédex del dúo: variocolores, capturas raras y metas compartidas. */
         public boolean duoDex = true;
         /**
-         * Apariciones según el level cap de los entrenadores (RCT): los salvajes no salen por encima del cap del
-         * jugador cercano con el cap más bajo. Sin RCT instalado no hace nada.
+         * Opcional y desactivado: apariciones según el level cap de los entrenadores (RCT). Si se activa, los salvajes
+         * no salen por encima del cap del jugador cercano con el cap más bajo. Por defecto los niveles quedan como en
+         * Cobbleverse (Cobblemon los acerca al Pokémon de más nivel del equipo). Sin RCT instalado no hace nada.
          */
-        public boolean levelCapSpawns = true;
+        public boolean levelCapSpawns = false;
         /** Niveles por encima del cap que se corrigen bajando al cap; si se pasa más, esa aparición se cancela. */
         public int levelCapMargin = 5;
         /** Level cap a partir del cual pueden aparecer legendarios, singulares y ultraentes salvajes. */

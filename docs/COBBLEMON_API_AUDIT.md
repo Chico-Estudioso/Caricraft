@@ -36,6 +36,17 @@ Verificada en el JAR de Cobblemon 1.8.4+1.21.1 y en un servidor COBBLEVERSE 1.8.
 | Movimientos | `Moves.getByName(id)` → `MoveTemplate.create()`; `pokemon.getMoveSet().setMove(i, move)` |
 | Especies | `PokemonSpecies.getByName(id)` |
 | Combate | `BattleRegistry.getBattleByParticipatingPlayer(ServerPlayer)` |
+| Centro Pokémon de bolsillo | `PlayerPartyStore.heal()`; para saber si hace falta: `Pokemon.isFainted()`, `getCurrentHealth()`, `getMaxHealth()`, `getStatus()`, `getMoveSet().getMoves()` → `Move.getCurrentPp()`/`getMaxPp()`. QA: `setCurrentHealth(int)` |
+| Tipos | `Pokemon.getTypes()` → `ElementalType.getName()` |
+
+## Apariciones salvajes (`CobblemonHooks`)
+Verificado en el JAR de Cobblemon 1.8.4:
+- `CobblemonEvents.POKEMON_ENTITY_SPAWN` (`TransformObservable` sobre `ENTITY_SPAWN`, que es cancelable). `SingleEntitySpawnAction` coloca la entidad, emite el evento y, si nadie lo cancela, la añade al mundo. El `SpawnEvent` lleva la entidad ya colocada: `getEntity()`, `isCanceled()`, `cancel()`.
+- **Aviso de variocolor** (prioridad `LOWEST`): solo lee la especie, el nivel y la posición; en el tick siguiente comprueba que la entidad sigue en el mundo.
+- **Opción `levelCapSpawns`** (prioridad `HIGH`, desactivada por defecto): `Pokemon.setLevel(int)` o `cancel()`. El nivel de partida lo pone `PlayerLevelRangeInfluence`: rango de la especie ∩ [nivel máximo del equipo − 5, + 5] (`TYPICAL_VARIATION` = 5; sin equipo, 1 a `minimumLevelRangeMax`), recalculado cada 5 s; si no se cruzan, el cuarto bajo o alto del rango de la especie.
+
+## Level cap de RCT (`RctBridge`)
+Radical Cobblemon Trainers 0.19.2-beta (LGPL-3), por reflexión y sin compilar contra él: `RCTMod.getInstance().getTrainerManager().getData(Player).getLevelCap()`. RCT usa el cap para dos cosas: los Pokémon en el cap o por encima no ganan experiencia (`allowOverLeveling = false` en COBBLEVERSE) y los entrenadores no combaten si llevas uno por encima. No limita apariciones ni capturas.
 
 ## Eventos disponibles pero no usados todavía
 
@@ -45,5 +56,5 @@ Verificada en el JAR de Cobblemon 1.8.4+1.21.1 y en un servidor COBBLEVERSE 1.8.
 
 - Todo el código que toca clases de Cobblemon vive en `integration/cobblemon` y solo se carga si `FabricLoader.isModLoaded("cobblemon")`.
 - Sin Mixins sobre Cobblemon.
-- Los manejadores solo traducen el evento a un `ProgressEvent` del core; no cambian el balance ni el estado de Cobblemon.
+- Los manejadores solo traducen el evento a un `ProgressEvent` del core; no cambian el balance ni el estado de Cobblemon. Única excepción, opcional y desactivada: `levelCapSpawns` ajusta o cancela apariciones salvajes.
 - Las victorias contra jugadores (PvP) no cuentan, para evitar farmeo dentro del dúo.

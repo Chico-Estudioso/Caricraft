@@ -755,6 +755,21 @@ final class PhonePages {
         ui.button(x + w - 5 - tw, y + th - BUTTON_H - 5, tw, BUTTON_H, tipsState, snap.tipsEnabled() ? Style.GOOD : Style.SECONDARY,
                 () -> s.send(PhoneAction.TOGGLE_TIPS, ""));
         y += th + 8;
+        if (snap.cobbleverse() != null) {
+            // Brújula del aviso de variocolor (personal)
+            boolean compass = snap.cobbleverse().shinyCompass();
+            ui.text(Component.translatable("caricraft.phone.settings.shiny_compass").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+            y += 12;
+            Component compassState = Component.translatable(compass ? "caricraft.phone.settings.on" : "caricraft.phone.settings.off");
+            int cw = ui.buttonWidth(compassState);
+            Component compassHelp = Component.translatable("caricraft.phone.settings.shiny_compass_help");
+            int ch = 4 + ui.wrappedHeight(compassHelp, w - 10) + 4 + BUTTON_H + 5;
+            ui.round(x, y, x + w, y + ch, t.card());
+            ui.wrapped(compassHelp, x + 5, y + 4, w - 10, t.textDim());
+            ui.button(x + w - 5 - cw, y + ch - BUTTON_H - 5, cw, BUTTON_H, compassState, compass ? Style.GOOD : Style.SECONDARY,
+                    () -> s.send(PhoneAction.TOGGLE_SHINY_COMPASS, ""));
+            y += ch + 8;
+        }
         ui.text(Component.translatable("caricraft.phone.settings.about").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
         y += 12;
         Component key = CaricraftClient.openPhoneKey().getTranslatedKeyMessage();

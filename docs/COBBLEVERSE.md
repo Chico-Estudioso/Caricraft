@@ -1,13 +1,14 @@
 # Cobbleverse: CobbleCentro y pestaña del Mercado
 
 La parte Cobbleverse aparece con `cobbleverse.enabled` (desactivado por defecto) y Cobblemon instalado. La tienda y la venta de Pokémon usan **CobbleDollars**, la moneda del modpack, no Carins. Se puede usar de dos formas:
-- **CobbleCentro:** app del CariPhone que abre una pantalla grande con los **modelos 3D de los Pokémon**, como en el PC de Cobblemon. Tiene pestañas Inicio, Tienda, Cajas, Suerte, Prodigioso, Mejoras y Vender.
+- **CobbleCentro:** app del CariPhone que abre una pantalla grande con los **modelos 3D de los Pokémon**, como en el PC de Cobblemon. Tiene pestañas Inicio, Caza del día, Pokédex dúo, Expediciones, Tienda, Cajas, Suerte, Prodigioso, Mejoras y Vender.
 - **Pestaña Cobbleverse del Mercado:** lo mismo en formato teléfono, con un botón para abrir el CobbleCentro.
 
 ## CobbleCentro
 ![CobbleCentro: inicio](img/cobblecentro_inicio.png)
 
-- **Inicio:** regalo misterioso, tu equipo con sus modelos y accesos a lo de hoy (intercambios y ventas que quedan, cuándo cambia la tienda).
+- **Inicio:** avisos de variocolor cercanos, Centro Pokémon de bolsillo, regalo misterioso, tu equipo con sus modelos (y tu level cap de RCT) y accesos a lo de hoy (intercambios y ventas que quedan, cuándo cambia la tienda).
+- **Caza del día**, **Pokédex dúo** y **Expediciones:** ver «Para el dúo», más abajo.
 - **Tienda:** las ofertas del día con el Pokémon en 3D (si es variocolor, con sus colores) o el objeto en grande. Las ofertas de «Pokémon misterioso» van rotando entre las especies posibles.
 - **Prodigioso:** intercambio prodigioso diario (ver abajo).
 - **Vender:** el equipo en tarjetas con su modelo y el precio. Hay que tocar dos veces para confirmar.
@@ -143,6 +144,48 @@ Cada día salen **6 ofertas** de un catálogo de 24. Son las mismas para todos y
   - Más de `maxSalesPerDay` (10) al día.
 - El servidor vuelve a comprobarlo todo y calcula el precio con sus propios datos. Si no se pudiera pagar, el Pokémon vuelve al equipo.
 
+## Para el dúo
+Todo lo decide el servidor: qué captura cuenta, cuánto se paga y cuándo vuelve un Pokémon. Los CobbleDollars (₽) van a **cada miembro** (a quien esté desconectado se le guardan para cuando entre) y los Carins al **monedero del dúo**.
+
+### Aviso de variocolor con brújula
+- Cuando aparece un **variocolor salvaje** a menos de 160 bloques de alguien del dúo, a los dos les llega un aviso («¡Gible variocolor salvaje! A 120 bloques al Noreste de Alice») con un sonido.
+- Mientras siga ahí (como mucho `shinyAlertMinutes`, 5 min), una **brújula en la barra de acción** («✦ Gible variocolor · 84 m ↗») señala hacia dónde está respecto a donde miras. Al llegar a 6 bloques dice «¡Está aquí!» y se calla.
+- El aviso desaparece si alguien lo captura, lo debilita o se va.
+- Inicio del CobbleCentro muestra los avisos activos con distancia, flecha y tiempo restante.
+- La brújula se puede apagar en **Ajustes → Brújula de variocolores** (es personal).
+- No choca con CobbleNav: CobbleNav es un radar personal con su flecha arriba de la pantalla; la nuestra va en la barra de acción, solo para variocolores y para los dos del dúo. Solo lee la aparición; no toca al Pokémon.
+
+### Centro Pokémon de bolsillo
+- Cura vida, estado y PP de todo el equipo desde el CobbleCentro por `pocketHealPrice` (₽1.500).
+- Luego hay que esperar `pocketHealCooldownMinutes` (15 min). No funciona en combate ni si el equipo ya está sano (no se cobra).
+
+### Caza del día
+- **Tres objetivos al día** para el dúo, los mismos para los dos y deterministas por día: una especie concreta (1 captura), un tipo (3–5 capturas) y Pokémon cualesquiera (6–10). Cambian a las 00:00 (`timeZone`).
+- Cuenta cualquier captura de cualquiera de los dos.
+- Premios: especie ₽1.200 + 15 C, tipo ₽1.000 + 12 C, cualesquiera ₽800 + 10 C, caza completa ₽1.500 + 20 C.
+- **Bonus de dúo** (₽2.500 + 30 C): solo si al terminar la caza **cada uno** ha aportado al menos `huntDuoMinEach` (3) capturas. Hay que remar los dos.
+- **Premio semanal** (₽6.000 + 80 C) al completar `huntWeeklyClears` (4) cazas en la semana (de lunes a domingo). En un dúo solo cuentan las que tienen bonus de dúo.
+- Quien juega solo también puede hacerla, pero sin bonus de dúo.
+
+### Pokédex del dúo
+No sustituye a la Pokédex de Cobblemon. Guarda lo especial de los dos:
+- **Vitrina variocolor** (con modelos 3D y quién lo capturó), **legendarios** (también singulares y ultraentes) y **capturas más raras** (ratio de captura 45 o menos).
+- Cifras: especies distintas, capturas y variocolores entre los dos.
+- **18 metas compartidas** con premio: 25/75/150/300 especies, 100/500 capturas, 1/5/15 variocolores, 1/5 legendarios, los 18 tipos y metas por tipo (Agua, Fuego, Planta, Eléctrico, Fantasma, Dragón). Pagan de ₽2.000 + 50 C a ₽30.000 + 400 C.
+- Al formar un dúo se juntan las dos Pokédex del dúo; al separarse, cada uno se queda una copia.
+
+### Expediciones
+- Un Pokémon del equipo se va **1, 4 u 8 horas reales** al Bosque, la Cueva o la Costa y vuelve con algo de ₽ y objetos del destino (bayas, Poké Balls, caramelos de experiencia, carbón, hierro, piedras evolutivas, alguna vez un diamante…).
+- Es un ingreso **pasivo y pequeño** a propósito: menos de ₽600 por hora en el mejor caso, y las largas rinden menos por hora (1 h → 1 tirada, 4 h → 3, 8 h → 5). Más nivel (hasta ×1,5) y un tipo afín al destino (×1,25) dan un poco más.
+- Mientras está fuera **no está en tu equipo** (se guarda en `data/caricraft_expeditions.dat`). Una a la vez por jugador y `expeditionsPerDay` (3) al día.
+- Al volver llega un aviso. Se recoge en el CobbleCentro y vuelve al equipo (o al PC). «Hacer volver» antes de tiempo lo trae sin botín y la expedición cuenta para el límite del día.
+- No se puede mandar al último Pokémon sano, a uno debilitado ni en combate.
+
+## Nivel de los salvajes y level cap
+- Por defecto **no se cambia nada**: los niveles son los de Cobbleverse. Cobblemon elige el nivel dentro del rango de la especie acercándolo al Pokémon de más nivel de tu equipo (±5). El level cap de los entrenadores (RCT) no frena apariciones ni capturas: frena la experiencia y los combates contra entrenadores.
+- Opción **`levelCapSpawns`** (desactivada): con RCT instalado, los salvajes que se pasan del level cap del jugador cercano con el cap más bajo bajan al cap si se pasan como mucho `levelCapMargin` (5) niveles; si se pasan más, esa aparición no ocurre (Cobblemon prueba otra). Los legendarios, singulares y ultraentes no aparecen hasta cap `legendaryMinLevelCap` (60). No afecta a guaridas, Monumentos Legendarios ni Pokémon con dueño.
+- El CobbleCentro muestra tu level cap de RCT en el equipo de Inicio.
+
 ## Configuración (`config/caricraft.json`, bloque `cobbleverse`)
 | Clave | Por defecto | Qué hace |
 |---|---|---|
@@ -157,6 +200,16 @@ Cada día salen **6 ofertas** de un catálogo de 24. Son las mismas para todos y
 | `wonderShinyChance` | 0.02 | Probabilidad de variocolor de los Pokémon de «un entrenador lejano» |
 | `wonderPoolSize` | 100 | Pokémon que caben en la bolsa de intercambios |
 | `crates` / `slots` / `upgrades` / `fusions` | `true` | Cajas, tragaperras, mejoras de Pokémon y fusiones de objetos |
+| `shinyAlerts` / `shinyAlertMinutes` | `true` / 5 | Aviso de variocolor con brújula y cuánto dura |
+| `pocketHeal` / `pocketHealPrice` / `pocketHealCooldownMinutes` | `true` / 1500 / 15 | Centro Pokémon de bolsillo |
+| `dailyHunt` | `true` | Caza del día |
+| `huntDuoMinEach` / `huntWeeklyClears` | 3 / 4 | Capturas de cada uno para el bonus de dúo; cazas para el premio semanal |
+| `huntRewardMultiplier` | 1.0 | Multiplica los premios de la caza |
+| `expeditions` / `expeditionsPerDay` | `true` / 3 | Expediciones y cuántas al día |
+| `expeditionRewardMultiplier` | 1.0 | Multiplica el botín de las expediciones |
+| `duoDex` | `true` | Pokédex del dúo y sus metas |
+| `levelCapSpawns` | `false` | Apariciones según el level cap de RCT (ver arriba) |
+| `levelCapMargin` / `legendaryMinLevelCap` | 5 / 60 | Ajustes de esa opción |
 
 - Quien ya tenía `market.includeCobblemonItems: true` pasa a tener `cobbleverse.enabled: true` (migración a la versión 3 de la configuración).
 - El catálogo (ofertas, precios, premios y pesos) se puede cambiar en `config/caricraft_cobbleverse.json`. Si no existe, se usa el del mod.
@@ -170,6 +223,13 @@ Cada día salen **6 ofertas** de un catálogo de 24. Son las mismas para todos y
 - Sumar y restar CobbleDollars.
 
 Al terminar deja todo como estaba. Conviene usarlo al actualizar el modpack.
+
+Otros comandos de administración (nivel 4) para probar:
+- `/caricraft cobbleverse variocolor [especie]`: aparece un variocolor salvaje a unos 40 bloques y salta el aviso.
+- `/caricraft cobbleverse expediciones`: las expediciones en marcha terminan ya.
+- `/caricraft cobbleverse captura <especie> [variocolor]`: como si capturases ese Pokémon (cuenta para la caza y la Pokédex del dúo).
+- `/caricraft cobbleverse herir`: deja al equipo a media vida.
+- `/caricraft cobbleverse cap`: tu level cap de RCT y cuántas apariciones ha tocado la opción `levelCapSpawns`.
 
 ## CobbleDollars
 - Licencia «All rights reserved»: **no se compila contra él ni se incluye nada suyo**.

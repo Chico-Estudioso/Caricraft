@@ -13,7 +13,8 @@ Uso:
     python3 tools/cobblemon_qa.py /ruta/servidor_cobbleverse /ruta/trabajo W
 
 El rol W recorre el Mercado (pestaña Cobbleverse) y el CobbleCentro: regalo, compra, venta, modelos 3D e
-intercambio prodigioso. Capturas en <trabajo>/client/screenshots y registros en <trabajo>/logs.
+intercambio prodigioso. El rol D prueba el bloque del dúo (Centro Pokémon de bolsillo, caza del día, Pokédex del dúo,
+expediciones, brújula de variocolor) y, con RCT, la opción de apariciones según el level cap. Capturas en <trabajo>/client/screenshots y registros en <trabajo>/logs.
 No redistribuye nada: copia los JAR del servidor que ya tienes.
 """
 import glob
@@ -29,6 +30,8 @@ import uuid
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODS = ("Cobblemon-fabric-", "fabric-api-", "fabric-language-kotlin-", "CobbleDollars-fabric-", "architectury-")
+# Mods extra por rol: el D prueba también el level cap de los entrenadores (RCT y sus dependencias).
+ROLE_MODS = {"D": ("rctmod-", "rctapi-", "ForgeConfigAPIPort-")}
 GRADLE = os.path.expanduser("~/.gradle/caches")
 MC = "1.21.1"
 PORT = 25566
@@ -41,13 +44,13 @@ def offline_uuid(name):
     return str(uuid.UUID(bytes=bytes(h)))
 
 
-def copy_mods(source, target, extra):
+def copy_mods(source, target, extra, prefixes=MODS):
     os.makedirs(target, exist_ok=True)
     for name in os.listdir(target):
         if name.endswith(".jar"):
             os.remove(os.path.join(target, name))
     for name in sorted(os.listdir(os.path.join(source, "mods"))):
-        if name.startswith(MODS):
+        if name.startswith(prefixes):
             shutil.copy(os.path.join(source, "mods", name), target)
     for path in extra:
         shutil.copy(path, target)
@@ -97,7 +100,8 @@ def client_classpath(server_source):
     return ":".join(dict.fromkeys(jars))
 
 
-def prepare(server_source, work):
+def prepare(server_source, work, role=""):
+    prefixes = MODS + ROLE_MODS.get(role, ())
     mod_jar = os.path.join(REPO, "build/libs/caricraft-0.1.0.jar")
     qa_jar = os.path.join(REPO, "build/qa/caricraft-0.1.0-qa.jar")
     for jar in (mod_jar, qa_jar):
@@ -117,16 +121,23 @@ def prepare(server_source, work):
         "spawn-monsters=false", "motd=Caricraft QA Cobblemon"]) + "\n")
     ops = [{"uuid": offline_uuid(n), "name": n, "level": 4, "bypassesPlayerLimit": False} for n in ("Dev1", "Dev2")]
     json.dump(ops, open(os.path.join(server, "ops.json"), "w"))
-    copy_mods(server_source, os.path.join(server, "mods"), [mod_jar])
+    copy_mods(server_source, os.path.join(server, "mods"), [mod_jar], prefixes)
+    if role in ROLE_MODS:
+        os.makedirs(os.path.join(server, "config"), exist_ok=True)
+        for name in ("rctmod-server.toml",):
+            if os.path.exists(os.path.join(server_source, "config", name)):
+                shutil.copy(os.path.join(server_source, "config", name), os.path.join(server, "config", name))
     config_path = os.path.join(server, "config", "caricraft.json")
     os.makedirs(os.path.dirname(config_path), exist_ok=True)
     config = json.load(open(config_path)) if os.path.exists(config_path) else {}
     config.setdefault("cobbleverse", {})["enabled"] = True
     config.setdefault("tips", {})["enabled"] = False
+    # La opción del level cap viene desactivada; el rol D la enciende para comprobar que funciona.
+    config["cobbleverse"]["levelCapSpawns"] = role == "D"
     json.dump(config, open(config_path, "w"), indent=2)
 
     client = os.path.join(work, "client")
-    copy_mods(server_source, os.path.join(client, "mods"), [mod_jar, qa_jar])
+    copy_mods(server_source, os.path.join(client, "mods"), [mod_jar, qa_jar], prefixes)
     options = os.path.join(client, "options.txt")
     lines = open(options).read().splitlines() if os.path.exists(options) else []
     lines = [line for line in lines if not line.startswith(("lang:", "onboardAccessibility:", "tutorialStep:"))]
@@ -150,7 +161,7 @@ def wait_for(path, needles, timeout):
 def run(server_source, work, role):
     server_source = os.path.abspath(server_source)
     work = os.path.abspath(work)
-    server, client = prepare(server_source, work)
+    server, client = prepare(server_source, work, role)
     logs = os.path.join(work, "logs")
     os.makedirs(logs, exist_ok=True)
     java = shutil.which("java")

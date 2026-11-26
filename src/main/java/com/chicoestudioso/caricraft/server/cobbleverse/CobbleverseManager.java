@@ -87,11 +87,27 @@ public final class CobbleverseManager {
                 config.wonderTrade, service.wondersLeft(profile, day), config.wonderTradesPerDay,
                 WonderTradeData.get(mod.server()).entries().size(), LAST_WONDER.get(player.getUUID()),
                 LuckManager.view(mod, player, profile, day), service.giftsLeft(profile, day), service.giftsPerDay(),
-                DuoPokemonManager.healView(mod, player, profile), DuoPokemonManager.huntView(mod, partyOf),
-                ExpeditionManager.view(mod, player, profile), DuoPokemonManager.dexView(mod, partyOf),
+                safe("heal", () -> DuoPokemonManager.healView(mod, player, profile)),
+                safe("hunt", () -> DuoPokemonManager.huntView(mod, partyOf)),
+                safe("expedition", () -> ExpeditionManager.view(mod, player, profile)),
+                safe("dex", () -> DuoPokemonManager.dexView(mod, partyOf)),
                 partyOf == null || !config.shinyAlerts ? List.of() : ShinyAlerts.views(partyOf), profile.shinyCompass(),
                 com.chicoestudioso.caricraft.integration.rct.RctBridge.levelCap(player).orElse(0),
                 config.levelCapSpawns && com.chicoestudioso.caricraft.integration.rct.RctBridge.available(), config.legendaryMinLevelCap);
+    }
+
+    private static final java.util.Set<String> FAILED_VIEWS = new java.util.HashSet<>();
+
+    /** Una parte que falla se oculta (y se avisa una vez en el registro) en vez de dejar al teléfono sin datos. */
+    private static <T> T safe(String what, java.util.function.Supplier<T> view) {
+        try {
+            return view.get();
+        } catch (RuntimeException e) {
+            if (FAILED_VIEWS.add(what)) {
+                CaricraftMod.LOGGER.error("No se pudo preparar la vista «{}» de Cobbleverse; se oculta.", what, e);
+            }
+            return null;
+        }
     }
 
     // ------------------------------------------------------------------ regalo misterioso

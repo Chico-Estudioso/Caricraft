@@ -82,10 +82,20 @@ final class CobblemonHooks {
             boolean legendary = pokemon.isLegendary() || pokemon.isMythical() || pokemon.isUltraBeast();
             com.chicoestudioso.caricraft.core.cobbleverse.LevelCapRule.Decision decision = com.chicoestudioso.caricraft.core.cobbleverse
                     .LevelCapRule.decide(pokemon.getLevel(), legendary, cap, config.levelCapMargin, config.legendaryMinLevelCap);
+            if (cap <= 0) {
+                return;
+            }
             if (!decision.spawn()) {
                 event.cancel(); // Cobblemon prueba otra aparición en la siguiente pasada
+                com.chicoestudioso.caricraft.server.cobbleverse.LevelCapStats.CANCELLED.incrementAndGet();
+                if (legendary) {
+                    com.chicoestudioso.caricraft.server.cobbleverse.LevelCapStats.LEGENDS_BLOCKED.incrementAndGet();
+                }
             } else if (decision.level() != pokemon.getLevel()) {
                 pokemon.setLevel(decision.level());
+                com.chicoestudioso.caricraft.server.cobbleverse.LevelCapStats.CLAMPED.incrementAndGet();
+            } else {
+                com.chicoestudioso.caricraft.server.cobbleverse.LevelCapStats.KEPT.incrementAndGet();
             }
         } catch (RuntimeException e) {
             CaricraftMod.LOGGER.warn("No se pudo aplicar el level cap a una aparición", e);
