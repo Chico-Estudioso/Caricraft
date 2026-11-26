@@ -192,7 +192,7 @@ public final class ChallengeService {
         Boss boss = boss(milestone);
         party.challenge().bosses.add(new ChallengeState.BossRecord(milestone, boss.id(), now, players));
         party.incrementStat(STAT_BOSSES, 1);
-        chronicle.add(party, ChronicleEntry.BOSS_DEFEATED, player, playerName, boss.id(), String.valueOf(milestone));
+        chronicle.add(party, ChronicleEntry.BOSS_DEFEATED, player, playerName, "caricraft.boss." + boss.id(), String.valueOf(milestone));
         gainXp(party, config.challenge.xpPerBoss);
         long reward = bossReward(milestone);
         if (reward > 0 && economy.credit(party.wallet(), reward, "challenge_boss", boss.id(),

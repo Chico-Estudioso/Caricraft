@@ -96,7 +96,8 @@ public final class RoutineManager {
             for (MedalService.Unlock unlock : core.medals().check(party)) {
                 mod.notifyParty(anyone, "caricraft.notify.medal", List.of("caricraft.medal." + unlock.medal().id(),
                         "caricraft.medal.tier." + unlock.tier(), String.valueOf(unlock.reward())));
-                core.chronicle().add(party, ChronicleEntry.MEDAL, null, "", unlock.medal().id(), String.valueOf(unlock.tier()));
+                core.chronicle().add(party, ChronicleEntry.MEDAL, null, "", "caricraft.medal." + unlock.medal().id(),
+                        "caricraft.medal.tier." + unlock.tier());
                 for (UUID member : party.members()) {
                     ServerPlayer player = server.getPlayerList().getPlayer(member);
                     if (player != null) {

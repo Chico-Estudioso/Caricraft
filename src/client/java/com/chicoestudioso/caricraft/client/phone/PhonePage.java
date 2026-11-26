@@ -19,6 +19,7 @@ public enum PhonePage {
     CARICAMP("caricamp"),
     CARILENS("carilens"),
     CARIBOX("caribox"),
+    SHOWCASE("showcase"),
     /** App que aún no se tiene o que llegará más adelante. */
     LOCKED(null);
 
