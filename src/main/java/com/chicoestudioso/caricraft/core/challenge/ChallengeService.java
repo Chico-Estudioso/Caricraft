@@ -23,6 +23,27 @@ public final class ChallengeService {
     /** Oleadas por noche (anochecer, medianoche y madrugada). */
     public static final int WAVES = 3;
     public static final String STAT_KILLS = "challenge_kills";
+    public static final String STAT_BOSSES = "challenge_bosses";
+
+    /**
+     * Un jefe del desafío (los números son los del primer ciclo; luego crecen un 50 % por vuelta).
+     *
+     * @param entity tipo de entidad vanilla
+     */
+    public record Boss(String id, String entity, double health, double damage, double armor) {
+    }
+
+    /** Uno cada {@code bossEvery} niveles, en este orden y en bucle. */
+    public static final java.util.List<Boss> BOSSES = java.util.List.of(
+            new Boss("executioner", "minecraft:vindicator", 120, 6, 6),
+            new Boss("ravager", "minecraft:ravager", 220, 4, 8),
+            new Boss("evoker", "minecraft:evoker", 160, 4, 10),
+            new Boss("skull_king", "minecraft:wither_skeleton", 260, 8, 12),
+            new Boss("brute", "minecraft:piglin_brute", 300, 8, 14),
+            new Boss("illusioner", "minecraft:illusioner", 240, 6, 12));
+
+    /** Multiplicador externo de la experiencia (eventos semanales). */
+    private java.util.function.DoubleSupplier xpMultiplier = () -> 1.0;
 
     private final CaricraftConfig config;
     private final EconomyService economy;
@@ -102,13 +123,82 @@ public final class ChallengeService {
         return party.challenge().xp;
     }
 
+    public void setXpMultiplier(java.util.function.DoubleSupplier multiplier) {
+        this.xpMultiplier = multiplier == null ? () -> 1.0 : multiplier;
+    }
+
     /** Suma experiencia (kills, escuadrones, noches, cofres). Devuelve el nivel que tenía antes. */
     public int gainXp(Party party, long amount) {
         int before = level(party);
         if (amount > 0) {
-            party.challenge().xp += amount;
+            party.challenge().xp += Math.max(1, Math.round(amount * xpMultiplier.getAsDouble()));
         }
         return before;
+    }
+
+    // ------------------------------------------------------------------ jefes
+
+    public boolean bossesEnabled() {
+        return enabled() && config.challenge.bosses;
+    }
+
+    /** Nivel del primer jefe que el grupo ya puede combatir y no ha derrotado (5, 10…), o 0 si no hay. */
+    public int pendingBossLevel(Party party) {
+        if (!bossesEnabled()) {
+            return 0;
+        }
+        int every = config.challenge.bossEvery;
+        int level = level(party);
+        for (int milestone = every; milestone <= level; milestone += every) {
+            if (!party.challenge().bossDefeated(milestone)) {
+                return milestone;
+            }
+        }
+        return 0;
+    }
+
+    /** Siguiente nivel con jefe que aún no se ha alcanzado. */
+    public int nextBossLevel(Party party) {
+        int every = config.challenge.bossEvery;
+        int level = level(party);
+        int next = (level / every + 1) * every;
+        return next <= config.challenge.maxLevel ? next : 0;
+    }
+
+    /** Jefe de ese nivel (5 → el primero…), con la fuerza del ciclo en el que está. */
+    public Boss boss(int milestone) {
+        int index = Math.max(0, milestone / config.challenge.bossEvery - 1);
+        Boss base = BOSSES.get(index % BOSSES.size());
+        double scale = 1 + 0.5 * (index / BOSSES.size()) + 0.04 * milestone;
+        return new Boss(base.id(), base.entity(), Math.round(base.health() * scale), base.damage() * scale, base.armor());
+    }
+
+    /** Carins por derrotar al jefe de ese nivel. */
+    public long bossReward(int milestone) {
+        return config.challenge.bossReward == 0 ? 0 : config.challenge.bossReward + 20L * milestone;
+    }
+
+    /**
+     * El dúo derrota al jefe de ese nivel: Carins, experiencia, estadística, crónica y registro para la vitrina.
+     *
+     * @return Carins ganados, o -1 si ese jefe ya estaba derrotado
+     */
+    public long onBossDefeated(Party party, int milestone, UUID player, String playerName, String players, long now) {
+        if (party.challenge().bossDefeated(milestone)) {
+            return -1;
+        }
+        Boss boss = boss(milestone);
+        party.challenge().bosses.add(new ChallengeState.BossRecord(milestone, boss.id(), now, players));
+        party.incrementStat(STAT_BOSSES, 1);
+        chronicle.add(party, ChronicleEntry.BOSS_DEFEATED, player, playerName, boss.id(), String.valueOf(milestone));
+        gainXp(party, config.challenge.xpPerBoss);
+        long reward = bossReward(milestone);
+        if (reward > 0 && economy.credit(party.wallet(), reward, "challenge_boss", boss.id(),
+                "boss:" + party.id() + ":" + milestone) == EconomyService.Result.OK) {
+            party.challenge().totalCarins += reward;
+            return reward;
+        }
+        return 0;
     }
 
     /** Experiencia de un mob derrotado: más cuanto más fuerte; triple si es élite. */

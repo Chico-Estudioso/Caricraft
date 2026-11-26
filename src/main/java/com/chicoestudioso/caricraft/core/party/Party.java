@@ -37,6 +37,9 @@ public final class Party {
     /** Caza del día y Pokédex del dúo (Cobbleverse). */
     private final com.chicoestudioso.caricraft.core.cobbleverse.DuoPokemonState pokemon =
             new com.chicoestudioso.caricraft.core.cobbleverse.DuoPokemonState();
+    /** Racha diaria, evento semanal y medallas. */
+    private final com.chicoestudioso.caricraft.core.routine.RoutineState routine =
+            new com.chicoestudioso.caricraft.core.routine.RoutineState();
     /** Niveles comprados de mejoras (p. ej. ampliaciones de álbum). */
     private final Map<String, Integer> upgradeLevels = new LinkedHashMap<>();
     /** Fotos de CariLens, de la más reciente a la más antigua. */
@@ -127,6 +130,10 @@ public final class Party {
 
     public ChallengeState challenge() {
         return challenge;
+    }
+
+    public com.chicoestudioso.caricraft.core.routine.RoutineState routine() {
+        return routine;
     }
 
     public com.chicoestudioso.caricraft.core.cobbleverse.DuoPokemonState pokemon() {

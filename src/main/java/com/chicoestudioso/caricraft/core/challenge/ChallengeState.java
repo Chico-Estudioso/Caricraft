@@ -21,6 +21,32 @@ public final class ChallengeState {
     long xp;
     /** Guardado antes de que existiera la experiencia: su nivel sale de las noches superadas (una sola vez). */
     boolean legacyLevel;
+    /** Jefes derrotados, del primero al último. */
+    final java.util.List<BossRecord> bosses = new java.util.ArrayList<>();
+
+    /**
+     * Un jefe del desafío derrotado.
+     *
+     * @param level   nivel del desafío del jefe (5, 10, 15…)
+     * @param boss    id del jefe
+     * @param players quién estaba en el combate
+     */
+    public record BossRecord(int level, String boss, long time, String players) {
+    }
+
+    public java.util.List<BossRecord> bosses() {
+        return bosses;
+    }
+
+    public boolean bossDefeated(int level) {
+        return bosses.stream().anyMatch(b -> b.level() == level);
+    }
+
+    /** Solo para cargar desde disco. */
+    public void restoreBosses(java.util.List<BossRecord> records) {
+        bosses.clear();
+        bosses.addAll(records);
+    }
 
     public long lastChallengeDay() {
         return lastChallengeDay;
@@ -86,5 +112,6 @@ public final class ChallengeState {
     public void copyFrom(ChallengeState other) {
         restore(other.lastChallengeDay, NONE, false, false, other.nightsCompleted, other.totalKills, other.totalCarins, 0, 0);
         this.xp = other.xp;
+        restoreBosses(other.bosses);
     }
 }

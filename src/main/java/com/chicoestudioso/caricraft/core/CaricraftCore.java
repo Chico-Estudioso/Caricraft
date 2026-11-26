@@ -50,6 +50,9 @@ public final class CaricraftCore {
     private final CampService camp;
     private final LensService lens;
     private final BoxService box;
+    private final com.chicoestudioso.caricraft.core.routine.StreakService streak;
+    private final com.chicoestudioso.caricraft.core.routine.WeeklyEventService weekly;
+    private final com.chicoestudioso.caricraft.core.routine.MedalService medals;
 
     public CaricraftCore(CaricraftState state, CaricraftConfig config, MissionCatalog missionCatalog, Clock clock) {
         this(state, config, missionCatalog, MarketCatalog.of(java.util.List.of(), source -> true, item -> true), clock);
@@ -82,6 +85,60 @@ public final class CaricraftCore {
         this.camp = new CampService(config, economy, chronicle, shop, clock);
         this.lens = new LensService(config, chronicle, shop, clock);
         this.box = new BoxService(shop);
+        this.streak = new com.chicoestudioso.caricraft.core.routine.StreakService(config, economy);
+        this.weekly = new com.chicoestudioso.caricraft.core.routine.WeeklyEventService(config, economy);
+        this.medals = new com.chicoestudioso.caricraft.core.routine.MedalService(config, economy, challenge);
+        // Ventajas del evento semanal
+        missions.setRewardBonus(def -> weekly.missionMultiplier(def, week()));
+        challenge.setXpMultiplier(() -> weekly.challengeXpMultiplier(week()));
+        hunt.setBonus(() -> weekly.huntMultiplier(week()));
+    }
+
+    public com.chicoestudioso.caricraft.core.routine.StreakService streak() {
+        return streak;
+    }
+
+    public com.chicoestudioso.caricraft.core.routine.WeeklyEventService weekly() {
+        return weekly;
+    }
+
+    public com.chicoestudioso.caricraft.core.routine.MedalService medals() {
+        return medals;
+    }
+
+    /** Qué partes opcionales hay en el servidor (p. ej. {@code "cobblemon"}), para eventos y medallas. */
+    public void setAvailableFeatures(java.util.function.Predicate<String> available) {
+        weekly.setAvailable(available);
+        medals.setAvailable(available);
+    }
+
+    /** Día de juego (cambia a las 00:00 de {@code timeZone}). */
+    public long day() {
+        return GameCalendar.of(config.timeZone).day(clock.now());
+    }
+
+    /** Semana de juego (de lunes a domingo). */
+    public long week() {
+        return GameCalendar.of(config.timeZone).week(clock.now());
+    }
+
+    /** Reclamación de una misión y lo que suma a la racha diaria. */
+    public record ClaimOutcome(ActionResult result, com.chicoestudioso.caricraft.core.routine.StreakService.Result streak) {
+    }
+
+    /** Reclama una misión y, si sale bien, cuenta el día para la racha del dúo. */
+    public ClaimOutcome claimMission(UUID player, String missionId) {
+        ActionResult result = missions.claim(state, player, missionId);
+        com.chicoestudioso.caricraft.core.routine.StreakService.Result streakResult =
+                com.chicoestudioso.caricraft.core.routine.StreakService.Result.NONE;
+        Party party = state.partyOf(player);
+        if (result.success() && party != null) {
+            streakResult = streak.onMissionClaimed(party, player, day());
+            if (streakResult.counted() && streakResult.days() > 1 && streakResult.days() % 7 == 0) {
+                chronicle.add(party, ChronicleEntry.STREAK, player, state.nameOf(player), String.valueOf(streakResult.days()));
+            }
+        }
+        return new ClaimOutcome(result, streakResult);
     }
 
     public BoxService box() {
@@ -189,11 +246,12 @@ public final class CaricraftCore {
         }
         chronicle.add(party, ChronicleEntry.BIOME_DISCOVERED, player, state.nameOf(player), biomeId);
         long reward = 0;
-        if (config.biomeDiscoveryReward > 0 && shop.hasApp(party, AppCatalog.EXPLORER)) {
-            EconomyService.Result result = economy.credit(party.wallet(), config.biomeDiscoveryReward,
+        long biomeReward = Math.round(config.biomeDiscoveryReward * weekly.biomeMultiplier(week()));
+        if (biomeReward > 0 && shop.hasApp(party, AppCatalog.EXPLORER)) {
+            EconomyService.Result result = economy.credit(party.wallet(), biomeReward,
                     "biome_discovery", biomeId, "biome:" + party.id() + ":" + biomeId);
             if (result == EconomyService.Result.OK) {
-                reward = config.biomeDiscoveryReward;
+                reward = biomeReward;
             }
         }
         completed.addAll(progress(player, ProgressEvent.of(ObjectiveType.DISCOVER_BIOME, 1, biomeId)));
