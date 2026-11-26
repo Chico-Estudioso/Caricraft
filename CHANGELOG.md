@@ -1,6 +1,13 @@
 # Changelog
 
 ## Unreleased
+- **Racha diaria, eventos semanales y Vitrina** (ver `docs/ROUTINE.md`). Protocolo de red 11.
+  - **Racha diaria:** cada día en que el dúo reclama una misión. Paga más cada día de la semana de racha (15 → 100 Carins el séptimo). Bonus de dúo del 50 % si los dos jugáis ese día, y un protector que perdona un día perdido por semana.
+  - **Eventos semanales en rotación:** minera, desafío, exploradora, Pokémon, cazadora y artesana. Cada uno da una ventaja (×1,5 en ciertas misiones, experiencia del desafío o caza del día) y tiene una meta del dúo con premio a la mitad y al completarla.
+  - **Vitrina** (app gratuita): 16 medallas con bronce, plata y oro que pagan Carins (cuenta lo que ya habíais hecho) y los trofeos de los jefes.
+  - Tarjetas de racha y de evento en el Inicio del CariPhone.
+- **Jefes del desafío** (ver `docs/CHALLENGE.md`): cada 5 niveles, un mob gigante y reforzado aparece en la siguiente noche de desafío, con barra de jefe. Al derrotarlo da el ítem nuevo **Trofeo del desafío** (con el nombre del jefe y del dúo), Carins, experiencia y botín. Si amanece, vuelve otra noche. Son mobs del desafío, así que conviven con MobsBeGone.
+- Comandos: `/caricraft desafio jefe` y `/caricraft rutina [evento|racha]`.
 - **Bloque Cobbleverse del dúo** (ver `docs/COBBLEVERSE.md`, «Para el dúo»). Pestañas nuevas del CobbleCentro: Caza del día, Pokédex dúo y Expediciones. Protocolo de red 10.
   - **Aviso de variocolor con brújula:** si aparece un variocolor salvaje cerca de uno de los dos, ambos reciben un aviso y una flecha en la barra de acción que lleva hasta él (no choca con CobbleNav). Se apaga en Ajustes.
   - **Centro Pokémon de bolsillo:** cura todo el equipo por ₽1.500, cada 15 minutos.

@@ -45,18 +45,19 @@ Con `phone.personal: false` vuelve el comportamiento anterior: un teléfono de r
 
 ### Inicio
 1. **Tarjeta de bienvenida** con el nombre y el compañero.
-2. **Avisos:** filas de color con acceso directo a la app donde se resuelven:
+2. **Racha diaria y evento semanal** (`docs/ROUTINE.md`).
+3. **Avisos:** filas de color con acceso directo a la app donde se resuelven:
    - Petición de TP Dúo recibida.
    - Invitación al dúo.
    - Desafío en curso o esta noche.
    - Misiones por cobrar.
    - Petición de viaje enviada.
-3. **Apps por secciones**, en cuadrícula de 4 columnas:
+4. **Apps por secciones**, en cuadrícula de 4 columnas:
 
 | Sección | Apps |
 |---|---|
 | Día a día | Misiones, Cartera, Mercado, Tienda |
-| Dúo | Dúo, TP Dúo, CariBox, Crónicas |
+| Dúo | Dúo, TP Dúo, CariBox, Crónicas, Vitrina |
 | Aventura | Desafío Dúo, Exploración, CariCamp, CariLens |
 | Sistema | Estadísticas, Ajustes |
 | Otras | Cualquier app nueva que no esté en la lista |
@@ -111,7 +112,8 @@ Tres secciones (apps, mejoras y temas), cada una con un contador `compradas/tota
 | Tienda | Gratis | Comprar apps y temas. |
 | Ajustes | Gratis | Elegir tema del teléfono. |
 | Mercado | Gratis | Ofertas diarias de objetos por Carins (`docs/MARKET.md`). Con Cobbleverse activado tiene una segunda pestaña: regalo misterioso, tienda y venta de Pokémon en CobbleDollars (`docs/COBBLEVERSE.md`). |
-| Desafío Dúo | Gratis | Estado de la noche de desafío, nivel, historial y botón para adelantarla (`docs/CHALLENGE.md`). |
+| Desafío Dúo | Gratis | Estado de la noche de desafío, nivel, jefes, historial y botón para adelantarla (`docs/CHALLENGE.md`). |
+| Vitrina | Gratis | Medallas del dúo (bronce, plata y oro) y trofeos de los jefes del desafío (`docs/ROUTINE.md`). |
 | Crónicas | 250 | Diario compartido y notas. |
 | Exploración | 400 | Biomas descubiertos + bonificación por bioma nuevo. |
 | Estadísticas | 200 | Distancia, capturas, victorias, misiones del dúo. |

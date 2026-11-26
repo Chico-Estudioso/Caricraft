@@ -109,6 +109,14 @@ public final class CaricraftCommands {
                         .then(Commands.literal("nivel").requires(src -> src.hasPermission(2))
                                 .then(Commands.argument("nivel", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 100))
                                         .executes(CaricraftCommands::challengeLevel))))
+                .then(Commands.literal("rutina").requires(src -> src.hasPermission(2))
+                        .executes(CaricraftCommands::routineStatus)
+                        .then(Commands.literal("evento")
+                                .then(Commands.argument("cantidad", LongArgumentType.longArg(1, 1_000_000))
+                                        .executes(CaricraftCommands::routineEvent)))
+                        .then(Commands.literal("racha")
+                                .then(Commands.argument("dias", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0, 3650))
+                                        .executes(CaricraftCommands::routineStreak))))
                 .then(Commands.literal("info").requires(src -> src.hasPermission(2))
                         .then(Commands.argument("player", EntityArgument.player()).executes(CaricraftCommands::info)))
                 .then(Commands.literal("duo")
@@ -281,6 +289,66 @@ public final class CaricraftCommands {
         backend.restore(player, pokemon);
         com.chicoestudioso.caricraft.server.cobbleverse.DuoPokemonManager.onCapture(mod, player, info);
         ctx.getSource().sendSuccess(() -> Component.literal("[Cobbleverse] Captura simulada: " + info), false);
+        return 1;
+    }
+
+    /** Racha, evento de la semana y medallas del grupo del jugador. */
+    private static int routineStatus(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        CaricraftServer mod = mod(ctx);
+        if (mod == null) {
+            return 0;
+        }
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        CaricraftCore core = mod.core();
+        Party party = core.partyOf(player.getUUID());
+        var routine = party.routine();
+        var event = core.weekly().eventOf(core.week());
+        String line = "racha " + core.streak().current(routine, core.day()) + " (récord " + routine.streakBest() + ")"
+                + " · evento " + (event == null ? "-" : event.id() + " " + core.weekly().progress(party, core.week()) + "/" + event.goal())
+                + " · medallas " + routine.medals() + " · jefes " + party.challenge().bosses().size();
+        com.chicoestudioso.caricraft.CaricraftMod.LOGGER.info("[Rutina] {}: {}", player.getGameProfile().getName(), line);
+        ctx.getSource().sendSuccess(() -> Component.literal("[Rutina] " + line), false);
+        return 1;
+    }
+
+    /** Administración/QA: suma progreso a la meta del evento de esta semana (a la estadística que mide). */
+    private static int routineEvent(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        CaricraftServer mod = mod(ctx);
+        if (mod == null) {
+            return 0;
+        }
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        CaricraftCore core = mod.core();
+        var event = core.weekly().eventOf(core.week());
+        if (event == null) {
+            ctx.getSource().sendFailure(Component.literal("[Rutina] Los eventos semanales están desactivados."));
+            return 0;
+        }
+        Party party = core.partyOf(player.getUUID());
+        core.weekly().progress(party, core.week()); // fija la estadística de partida si es la primera vez esta semana
+        long amount = LongArgumentType.getLong(ctx, "cantidad");
+        party.incrementStat(event.stat(), amount);
+        mod.markDirty();
+        ctx.getSource().sendSuccess(() -> Component.literal("[Rutina] +" + amount + " a " + event.stat()), true);
+        return 1;
+    }
+
+    /** Administración/QA: fija la racha del grupo (como si el último día cumplido fuera ayer). */
+    private static int routineStreak(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
+        CaricraftServer mod = mod(ctx);
+        if (mod == null) {
+            return 0;
+        }
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        CaricraftCore core = mod.core();
+        Party party = core.partyOf(player.getUUID());
+        int days = com.mojang.brigadier.arguments.IntegerArgumentType.getInteger(ctx, "dias");
+        var r = party.routine();
+        r.restoreStreak(days > 0 ? core.day() - 1 : -1, days, Math.max(r.streakBest(), days), r.shieldWeek(), r.duoPaidDay(),
+                new java.util.LinkedHashMap<>(r.activeDay()));
+        mod.markDirty();
+        mod.sendPartySnapshots(player.getUUID());
+        ctx.getSource().sendSuccess(() -> Component.literal("[Rutina] Racha: " + days + " días"), true);
         return 1;
     }
 

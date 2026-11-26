@@ -61,6 +61,8 @@ public final class QaAutomation implements ClientModInitializer {
             scriptPhoneItem();
         } else if ("D".equals(role)) {
             scriptDuoCobbleverse();
+        } else if ("R".equals(role)) {
+            scriptRoutine();
         } else {
             scriptB();
         }
@@ -1175,6 +1177,99 @@ public final class QaAutomation implements ClientModInitializer {
         });
         then(30, () -> cc().select(CobbleCentroScreen.Tab.HOME));
         shot("d16_level_cap");
+        then(20, () -> Minecraft.getInstance().stop());
+    }
+
+    // ------------------------------------------------------------------ bloque normal (rol R)
+
+    private static void logRoutine(String label) {
+        var r = snap().routine();
+        if (r == null) {
+            log("RUTINA " + label + ": null");
+            return;
+        }
+        log("RUTINA " + label + ": racha=" + r.streak() + " evento=" + r.weekly() + " medallas="
+                + r.medals().stream().filter(m -> m.tier() > 0).map(m -> m.id() + ":" + m.tier()).toList()
+                + " trofeos=" + r.trophies().size() + " carins=" + snap().balance());
+    }
+
+    /** Racha diaria, evento semanal, medallas, vitrina y un jefe del desafío con su trofeo. */
+    private void scriptRoutine() {
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("time set 6000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("tp @s 0 -60 0 0 10");
+            cmd("clear @s");
+            cmd("caricraft desafio nivel 6");
+        });
+        then(60, () -> {
+            logRoutine("inicio");
+            act(PhoneAction.ACCEPT_MISSION, "daily_walk");
+        });
+        travel(22);
+        then(40, () -> act(PhoneAction.CLAIM_MISSION, "daily_walk"));
+        then(40, () -> {
+            logRecentNotices(3);
+            logRoutine("tras misión");
+        });
+        page(PhonePage.HOME, 0);
+        shot("r01_inicio_racha");
+        then(5, () -> {
+            var weekly = snap().routine().weekly();
+            cmd("caricraft rutina evento " + (weekly.goal() / 2));
+        });
+        then(140, () -> {
+            logRecentNotices(3);
+            logRoutine("mitad del evento");
+        });
+        then(5, () -> cmd("caricraft rutina evento " + snap().routine().weekly().goal()));
+        then(140, () -> {
+            logRecentNotices(4);
+            logRoutine("evento completo");
+            cmd("caricraft rutina");
+        });
+        page(PhonePage.HOME, 0);
+        shot("r02_inicio_evento");
+        page(PhonePage.SHOWCASE, 0);
+        shot("r03_vitrina");
+        // Jefe del desafío
+        closePhone();
+        then(5, () -> {
+            cmd("time set 13500");
+            cmd("caricraft desafio iniciar");
+        });
+        then(60, () -> cmd("caricraft desafio jefe"));
+        then(60, () -> {
+            logRecentNotices(2);
+            var b = snap().challenge().bosses();
+            log("JEFE vista: " + b);
+        });
+        page(PhonePage.CHALLENGE, 0);
+        shot("r04_desafio_jefe");
+        closePhone();
+        then(5, () -> {
+            var fight = snap().challenge().bosses().fight();
+            if (fight != null) {
+                cmd(String.format(java.util.Locale.ROOT, "tp @s %.1f %.1f %.1f", fight.x() + 9, fight.y() + 1, fight.z() + 9));
+            }
+        });
+        then(10, () -> cmd("tp @s ~ ~ ~ facing entity @e[tag=caricraft_boss,limit=1] eyes"));
+        then(30, () -> {
+        });
+        shot("r05_jefe");
+        then(5, () -> cmd("damage @e[tag=caricraft_boss,limit=1] 5000 minecraft:player_attack by @s"));
+        then(60, () -> {
+            logRecentNotices(3);
+            log("JEFE tras derrota: " + snap().challenge().bosses() + " trofeos en inventario=" + itemCount("caricraft:challenge_trophy")
+                    + " diamantes en el suelo=" + Minecraft.getInstance().level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+                    Minecraft.getInstance().player.getBoundingBox().inflate(16)).size());
+            logRoutine("final");
+        });
+        shot("r06_jefe_derrotado");
+        page(PhonePage.SHOWCASE, 0);
+        then(10, () -> phone().mouseScrolled(0, 0, 0, -20));
+        shot("r07_vitrina_trofeo");
         then(20, () -> Minecraft.getInstance().stop());
     }
 
