@@ -75,6 +75,7 @@ public final class CaricraftServer {
         MarketCatalog market = loadMarket(configDir, config);
         com.chicoestudioso.caricraft.core.cobbleverse.CobbleverseCatalog cobbleverse = loadCobbleverse(configDir, config);
         this.core = new CaricraftCore(savedData.state(), config, catalog, market, cobbleverse, Clock.SYSTEM);
+        this.core.setAvailableFeatures(feature -> net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded(feature));
         this.rateLimiter = new ActionRateLimiter(config.actionsPerSecond, System::currentTimeMillis);
         com.chicoestudioso.caricraft.server.phone.PhoneGuard.configure(config);
     }

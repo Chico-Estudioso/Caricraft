@@ -109,7 +109,8 @@ public final class SnapshotBuilder {
                 cobbleverseView(mod, player), campView(mod, party, player),
                 duoTravelView(mod, party, player), lensView(core, party),
                 new PhoneSnapshot.BoxView(core.box().hasApp(party), core.box().rows(party),
-                        com.chicoestudioso.caricraft.server.box.CariBoxManager.usedSlots(mod, party)));
+                        com.chicoestudioso.caricraft.server.box.CariBoxManager.usedSlots(mod, party)),
+                com.chicoestudioso.caricraft.server.routine.RoutineManager.view(mod, party, viewer));
     }
 
     /** Si la parte de Cobbleverse falla, se oculta; el resto del teléfono sigue funcionando. */
@@ -206,7 +207,22 @@ public final class SnapshotBuilder {
                 com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.views(party), service.xp(party),
                 service.xpForLevel(service.level(party)),
                 service.level(party) >= config.maxLevel ? -1 : service.xpForLevel(service.level(party) + 1),
-                com.chicoestudioso.caricraft.server.challenge.ChallengeChests.views(party));
+                com.chicoestudioso.caricraft.server.challenge.ChallengeChests.views(party), bossesView(mod, party));
+    }
+
+    private static PhoneSnapshot.BossesView bossesView(CaricraftServer mod, Party party) {
+        ChallengeService service = mod.core().challenge();
+        if (!service.bossesEnabled()) {
+            return null;
+        }
+        int pending = service.pendingBossLevel(party);
+        int next = service.nextBossLevel(party);
+        List<PhoneSnapshot.BossRecordView> defeated = party.challenge().bosses().stream()
+                .map(b -> new PhoneSnapshot.BossRecordView(b.level(), b.boss(), b.time(), b.players())).toList();
+        return new PhoneSnapshot.BossesView(mod.core().config().challenge.bossEvery, pending, pending > 0 ? service.boss(pending).id() : "",
+                next, next > 0 ? service.boss(next).id() : "", defeated,
+                com.chicoestudioso.caricraft.server.challenge.ChallengeBosses.fightView(party),
+                service.bossReward(pending > 0 ? pending : Math.max(next, 1)));
     }
 
     private static String appState(CaricraftCore core, Party party, PlayerProfile profile, ShopItem item) {

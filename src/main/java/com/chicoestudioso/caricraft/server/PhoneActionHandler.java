@@ -59,7 +59,8 @@ public final class PhoneActionHandler {
                 case BUY_ITEM -> validId(payload.arg1()) ? core.shop().buy(state, uuid, payload.arg1()) : invalid();
                 case ACCEPT_MISSION -> validId(payload.arg1()) ? core.missions().accept(state, uuid, payload.arg1()) : invalid();
                 case ABANDON_MISSION -> validId(payload.arg1()) ? core.missions().abandon(state, uuid, payload.arg1()) : invalid();
-                case CLAIM_MISSION -> validId(payload.arg1()) ? core.missions().claim(state, uuid, payload.arg1()) : invalid();
+                case CLAIM_MISSION -> validId(payload.arg1())
+                        ? com.chicoestudioso.caricraft.server.routine.RoutineManager.claimMission(mod, player, payload.arg1()) : invalid();
                 case DELIVER_MISSION -> validId(payload.arg1())
                         ? core.missions().deliver(state, uuid, payload.arg1(), new ServerInventoryAccess(player)) : invalid();
                 case INVITE_PLAYER -> invite(mod, player, payload.arg1(), alsoRefresh);

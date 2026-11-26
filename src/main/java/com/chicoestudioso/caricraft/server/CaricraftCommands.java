@@ -98,6 +98,8 @@ public final class CaricraftCommands {
                                 .executes(CaricraftCommands::challengeStart))
                         .then(Commands.literal("terminar").requires(src -> src.hasPermission(2))
                                 .executes(CaricraftCommands::challengeStop))
+                        .then(Commands.literal("jefe").requires(src -> src.hasPermission(2))
+                                .executes(CaricraftCommands::challengeBoss))
                         .then(Commands.literal("cofre").requires(src -> src.hasPermission(2))
                                 .executes(ctx -> challengeChest(ctx, null))
                                 .then(Commands.literal("emboscada").executes(ctx -> challengeChest(ctx,
@@ -279,6 +281,21 @@ public final class CaricraftCommands {
         backend.restore(player, pokemon);
         com.chicoestudioso.caricraft.server.cobbleverse.DuoPokemonManager.onCapture(mod, player, info);
         ctx.getSource().sendSuccess(() -> Component.literal("[Cobbleverse] Captura simulada: " + info), false);
+        return 1;
+    }
+
+    /** Administración/QA: saca ya el jefe del desafío (con el desafío en marcha). */
+    private static int challengeBoss(CommandContext<CommandSourceStack> ctx) throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        CaricraftServer mod = CaricraftServer.get();
+        if (mod == null) {
+            return 0;
+        }
+        String result = com.chicoestudioso.caricraft.server.challenge.ChallengeBosses.spawnNow(mod, ctx.getSource().getPlayerOrException());
+        if (!"ok".equals(result)) {
+            ctx.getSource().sendFailure(Component.translatable("caricraft.command.boss_" + result));
+            return 0;
+        }
+        ctx.getSource().sendSuccess(() -> Component.translatable("caricraft.command.boss_ok"), true);
         return 1;
     }
 

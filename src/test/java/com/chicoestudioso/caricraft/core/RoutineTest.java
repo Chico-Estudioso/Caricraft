@@ -153,8 +153,8 @@ class RoutineTest {
         assertEquals(11, challenge.level(party));
         assertEquals(5, challenge.pendingBossLevel(party));
         ChallengeService.Boss first = challenge.boss(5);
-        assertEquals("executioner", first.id());
-        assertEquals("ravager", challenge.boss(10).id());
+        assertEquals("zombie_king", first.id());
+        assertEquals("spider_queen", challenge.boss(10).id());
         assertTrue(challenge.boss(35).health() > ChallengeService.BOSSES.getFirst().health() * 1.5, "en el segundo ciclo es más fuerte");
         long before = party.wallet().balance();
         long reward = challenge.onBossDefeated(party, 5, f.alice, "Alice", "Alice, Bob", f.clock.now());
@@ -178,7 +178,7 @@ class RoutineTest {
         assertEquals(f.core.day(), reloaded.routine().streakLastDay());
         assertEquals(2, reloaded.routine().medals().get("miner"));
         assertEquals(1, reloaded.challenge().bosses().size());
-        assertEquals("executioner", reloaded.challenge().bosses().getFirst().boss());
+        assertEquals("zombie_king", reloaded.challenge().bosses().getFirst().boss());
         // Al formar dúo se conservan la racha y las medallas; al separarse, cada uno se lleva una copia
         Party duo = f.formDuo();
         assertEquals(1, duo.routine().streakDays());

@@ -26,21 +26,23 @@ public final class ChallengeService {
     public static final String STAT_BOSSES = "challenge_bosses";
 
     /**
-     * Un jefe del desafío (los números son los del primer ciclo; luego crecen un 50 % por vuelta).
+     * Un jefe del desafío: una versión gigante y reforzada de un mob del desafío (los de la lista que ya se permiten
+     * en COBBLEVERSE, así MobsBeGone no los bloquea). Los números son los del primer ciclo; luego crecen.
      *
      * @param entity tipo de entidad vanilla
+     * @param scale  tamaño (atributo {@code scale})
      */
-    public record Boss(String id, String entity, double health, double damage, double armor) {
+    public record Boss(String id, String entity, double health, double damage, double armor, double scale) {
     }
 
     /** Uno cada {@code bossEvery} niveles, en este orden y en bucle. */
     public static final java.util.List<Boss> BOSSES = java.util.List.of(
-            new Boss("executioner", "minecraft:vindicator", 120, 6, 6),
-            new Boss("ravager", "minecraft:ravager", 220, 4, 8),
-            new Boss("evoker", "minecraft:evoker", 160, 4, 10),
-            new Boss("skull_king", "minecraft:wither_skeleton", 260, 8, 12),
-            new Boss("brute", "minecraft:piglin_brute", 300, 8, 14),
-            new Boss("illusioner", "minecraft:illusioner", 240, 6, 12));
+            new Boss("zombie_king", "minecraft:zombie", 120, 7, 8, 1.8),
+            new Boss("spider_queen", "minecraft:spider", 150, 7, 6, 2.2),
+            new Boss("skeleton_captain", "minecraft:skeleton", 170, 6, 10, 1.6),
+            new Boss("great_witch", "minecraft:witch", 200, 4, 8, 1.6),
+            new Boss("end_colossus", "minecraft:enderman", 240, 10, 10, 1.5),
+            new Boss("abyssal_drowned", "minecraft:drowned", 280, 9, 12, 1.8));
 
     /** Multiplicador externo de la experiencia (eventos semanales). */
     private java.util.function.DoubleSupplier xpMultiplier = () -> 1.0;
@@ -170,7 +172,7 @@ public final class ChallengeService {
         int index = Math.max(0, milestone / config.challenge.bossEvery - 1);
         Boss base = BOSSES.get(index % BOSSES.size());
         double scale = 1 + 0.5 * (index / BOSSES.size()) + 0.04 * milestone;
-        return new Boss(base.id(), base.entity(), Math.round(base.health() * scale), base.damage() * scale, base.armor());
+        return new Boss(base.id(), base.entity(), Math.round(base.health() * scale), base.damage() * scale, base.armor(), base.scale());
     }
 
     /** Carins por derrotar al jefe de ese nivel. */
