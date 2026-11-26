@@ -48,12 +48,12 @@ public final class MarketService {
     }
 
     public long day() {
-        return Math.floorDiv(clock.now(), DAY_MS);
+        return com.chicoestudioso.caricraft.core.GameCalendar.of(config.timeZone).day(clock.now());
     }
 
-    /** Momento en que cambian las ofertas. */
+    /** Momento en que cambian las ofertas (00:00 de la zona configurada). */
     public long nextRefresh() {
-        return (day() + 1) * DAY_MS;
+        return com.chicoestudioso.caricraft.core.GameCalendar.of(config.timeZone).nextDayAt(clock.now());
     }
 
     /** Ofertas del día: sorteo ponderado sin repetición, determinista por día. */

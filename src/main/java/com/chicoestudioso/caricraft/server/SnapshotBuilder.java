@@ -193,7 +193,10 @@ public final class SnapshotBuilder {
                 state.nightCarins(), config.killReward, config.nightReward, config.blockSleep,
                 ChallengeManager.blockedByModpack(), ChallengeService.wave(mod.server().overworld().getDayTime()),
                 service.effectiveLevel(party, ChallengeService.wave(mod.server().overworld().getDayTime())), config.waves,
-                com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.views(party));
+                com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.views(party), service.xp(party),
+                service.xpForLevel(service.level(party)),
+                service.level(party) >= config.maxLevel ? -1 : service.xpForLevel(service.level(party) + 1),
+                com.chicoestudioso.caricraft.server.challenge.ChallengeChests.views(party));
     }
 
     private static String appState(CaricraftCore core, Party party, PlayerProfile profile, ShopItem item) {
@@ -226,7 +229,8 @@ public final class SnapshotBuilder {
                     .sorted(Map.Entry.<UUID, Long>comparingByValue(Comparator.reverseOrder()))
                     .forEach(e -> contributions.put(state.nameOf(e.getKey()), e.getValue()));
         }
-        long expiresAt = def.category().repeatable() ? def.category().cycleEnd(now) : 0;
+        long expiresAt = def.category().repeatable()
+                ? def.category().cycleEnd(now, com.chicoestudioso.caricraft.core.GameCalendar.of(core.config().timeZone)) : 0;
         return new MissionView(def.id(), def.scope().name(), def.category().name(), status.name(),
                 core.missions().rewardOf(def), def.requireAllMembers(), objectives, contributions, expiresAt,
                 def.title(), def.description());

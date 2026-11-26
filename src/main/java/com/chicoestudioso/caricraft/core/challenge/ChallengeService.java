@@ -57,9 +57,64 @@ public final class ChallengeService {
         return config.challenge.enabled;
     }
 
-    public int level(Party party) {
+    // ------------------------------------------------------------------ nivel por experiencia
+
+    /** Experiencia para pasar del nivel {@code level} al siguiente: {@code xpPerLevel × (1 + xpGrowth × (level − 1))}. */
+    public long xpStep(int level) {
         CaricraftConfig.ChallengeConfig c = config.challenge;
-        return Math.min(c.maxLevel, 1 + party.challenge().nightsCompleted / c.nightsPerLevel);
+        return Math.max(1, Math.round(c.xpPerLevel * (1 + c.xpGrowth * (Math.max(1, level) - 1))));
+    }
+
+    /** Experiencia total necesaria para llegar a un nivel (el 1 empieza en 0). */
+    public long xpForLevel(int level) {
+        long total = 0;
+        for (int i = 1; i < Math.min(level, config.challenge.maxLevel); i++) {
+            total += xpStep(i);
+        }
+        return total;
+    }
+
+    public int levelFromXp(long xp) {
+        int level = 1;
+        while (level < config.challenge.maxLevel && xp >= xpForLevel(level + 1)) {
+            level++;
+        }
+        return level;
+    }
+
+    /** Grupos de antes de la experiencia: empiezan con la necesaria para su nivel por noches superadas. */
+    private void migrate(Party party) {
+        ChallengeState s = party.challenge();
+        if (s.legacyLevel) {
+            s.legacyLevel = false;
+            int legacy = Math.min(config.challenge.maxLevel, 1 + s.nightsCompleted / config.challenge.nightsPerLevel);
+            s.xp = Math.max(s.xp, xpForLevel(legacy));
+        }
+    }
+
+    public int level(Party party) {
+        migrate(party);
+        return levelFromXp(party.challenge().xp);
+    }
+
+    public long xp(Party party) {
+        migrate(party);
+        return party.challenge().xp;
+    }
+
+    /** Suma experiencia (kills, escuadrones, noches, cofres). Devuelve el nivel que tenía antes. */
+    public int gainXp(Party party, long amount) {
+        int before = level(party);
+        if (amount > 0) {
+            party.challenge().xp += amount;
+        }
+        return before;
+    }
+
+    /** Experiencia de un mob derrotado: más cuanto más fuerte; triple si es élite. */
+    public long killXp(int mobLevel, boolean elite) {
+        long base = config.challenge.xpPerKill + Math.max(1, mobLevel) / 5;
+        return elite ? base * 3 : base;
     }
 
     /** Nivel con el que aparecen ahora los mobs: nivel del grupo más la oleada. */
@@ -135,6 +190,7 @@ public final class ChallengeService {
 
     private ChallengeEvent end(Party party, boolean survived) {
         ChallengeState s = party.challenge();
+        int previous = level(party);
         long day = s.scheduledDay;
         int kills = s.nightKills;
         s.active = false;
@@ -153,9 +209,10 @@ public final class ChallengeService {
             }
             chronicle.add(party, ChronicleEntry.CHALLENGE_SURVIVED, null, "", String.valueOf(s.nightsCompleted),
                     String.valueOf(kills), String.valueOf(s.nightCarins));
+            gainXp(party, config.challenge.xpPerNight);
         }
         return new ChallengeEvent(survived ? ChallengeEvent.Kind.SURVIVED : ChallengeEvent.Kind.ENDED, false,
-                level(party), kills, s.nightCarins, bonus);
+                level(party), kills, s.nightCarins, bonus, previous);
     }
 
     /** El dúo adelanta el desafío a la noche actual (o a la de hoy si aún es de día). */
@@ -223,6 +280,7 @@ public final class ChallengeService {
         }
         party.incrementStat("challenge_squads", 1);
         chronicle.add(party, ChronicleEntry.SQUAD_DEFEATED, player, playerName, String.valueOf(level));
+        gainXp(party, config.challenge.xpPerSquad);
         long reward = squadReward(level);
         if (reward > 0 && economy.credit(party.wallet(), reward, "challenge_squad", "", null) == EconomyService.Result.OK) {
             s.nightCarins += reward;
@@ -250,6 +308,7 @@ public final class ChallengeService {
         s.nightKills++;
         s.totalKills++;
         party.incrementStat(STAT_KILLS, 1);
+        gainXp(party, killXp(mobLevel, elite));
         if (elite) {
             party.incrementStat("challenge_elites", 1);
         }
@@ -261,5 +320,53 @@ public final class ChallengeService {
             return reward;
         }
         return 0;
+    }
+
+    // ------------------------------------------------------------------ cofres del desafío por el mundo
+
+    /** Oleadas de la emboscada: 2 (niveles 1–9), 3 (10–19) o 4 (20 o más). */
+    public static int chestWaves(int level) {
+        return level >= 20 ? 4 : level >= 10 ? 3 : 2;
+    }
+
+    /** Mobs por oleada: 3, y uno más cada 4 niveles (máx. 8). La última oleada trae uno más (el capitán). */
+    public static int chestWaveSize(int level, int wave, int waves) {
+        int base = Math.min(8, 3 + Math.max(1, level) / 4);
+        return wave >= waves ? base + 1 : base;
+    }
+
+    /** Nivel del Pokémon guardián: 12 + 2 por nivel de desafío, entre 10 y 80. */
+    public static int guardianLevel(int level) {
+        return Math.max(10, Math.min(80, 12 + 2 * Math.max(1, level)));
+    }
+
+    /** Carins por conquistar un cofre: {@code chestReward + 5 × nivel}. */
+    public long chestReward(int level) {
+        return config.challenge.chestReward == 0 ? 0 : config.challenge.chestReward + 5L * Math.max(1, level);
+    }
+
+    /**
+     * El dúo conquista un cofre del desafío (de día o de noche): Carins, experiencia, estadística y crónica.
+     *
+     * @return Carins ganados
+     */
+    public long onChestConquered(Party party, int level, boolean guardian, UUID player, String playerName) {
+        party.incrementStat("challenge_chests", 1);
+        chronicle.add(party, guardian ? ChronicleEntry.GUARDIAN_DEFEATED : ChronicleEntry.CHEST_CONQUERED, player, playerName,
+                String.valueOf(level));
+        gainXp(party, config.challenge.xpPerChest);
+        long reward = chestReward(level);
+        if (reward > 0 && economy.credit(party.wallet(), reward, "challenge_chest", "", null) == EconomyService.Result.OK) {
+            party.challenge().totalCarins += reward;
+            return reward;
+        }
+        return 0;
+    }
+
+    /** Experiencia por un mob de la emboscada de un cofre (cuenta igual que en la noche, sin Carins). */
+    public void onAmbushKill(Party party, int mobLevel, boolean elite) {
+        party.challenge().totalKills++;
+        party.incrementStat(STAT_KILLS, 1);
+        gainXp(party, killXp(mobLevel, elite));
     }
 }

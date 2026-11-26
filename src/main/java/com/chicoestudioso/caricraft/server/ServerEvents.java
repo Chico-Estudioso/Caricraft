@@ -43,6 +43,7 @@ public final class ServerEvents {
             ChallengeManager.onServerStarted(CaricraftServer.get());
         });
         ServerLifecycleEvents.SERVER_STOPPING.register(com.chicoestudioso.caricraft.server.challenge.ChallengeSquads::clearAll);
+        ServerLifecycleEvents.SERVER_STOPPING.register(com.chicoestudioso.caricraft.server.challenge.ChallengeChests::clearAll);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             com.chicoestudioso.caricraft.server.challenge.ChallengeBossBars.clear();
             CaricraftServer.stop();
@@ -84,9 +85,11 @@ public final class ServerEvents {
         // Cofres de botín del desafío: cerrados hasta derrotar al escuadrón.
         UseBlockCallback.EVENT.register((player, level, hand, hit) ->
                 com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.blocksOpening(player, level, hit.getBlockPos())
+                        || com.chicoestudioso.caricraft.server.challenge.ChallengeChests.blocksOpening(player, level, hit.getBlockPos())
                         ? net.minecraft.world.InteractionResult.FAIL : net.minecraft.world.InteractionResult.PASS);
         PlayerBlockBreakEvents.BEFORE.register((level, player, pos, state, blockEntity) ->
-                !com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.blocksBreaking(player, level, pos));
+                !com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.blocksBreaking(player, level, pos)
+                        && !com.chicoestudioso.caricraft.server.challenge.ChallengeChests.blocksBreaking(player, level, pos));
 
         ServerEntityEvents.ENTITY_LOAD.register(ChallengeManager::onEntityLoad);
 
@@ -108,15 +111,22 @@ public final class ServerEvents {
         });
 
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
+            // El mérito es del jugador o del dueño de la mascota (p. ej. su Pokémon) que da el golpe final.
+            ServerPlayer credited = ChallengeManager.creditedPlayer(source);
             if (entity.getTags().contains(com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.SQUAD_TAG)) {
-                com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.onGuardDeath(entity,
-                        source.getEntity() instanceof ServerPlayer killer ? killer : null);
+                com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.onGuardDeath(entity, credited);
             }
-            if (source.getEntity() instanceof ServerPlayer killer && !(entity instanceof ServerPlayer)) {
+            if (credited instanceof ServerPlayer killer && !(entity instanceof ServerPlayer)) {
                 Set<String> keys = new HashSet<>(ProgressKeys.of(entity.getType().builtInRegistryHolder()));
                 if (entity.getTags().contains(ChallengeManager.TAG)) {
                     keys.add("challenge");
                     ChallengeManager.onKill(killer, entity);
+                } else if (entity.getTags().contains(com.chicoestudioso.caricraft.server.challenge.ChallengeChests.AMBUSH_TAG)) {
+                    keys.add("challenge");
+                    CaricraftServer chestMod = CaricraftServer.get();
+                    if (chestMod != null) {
+                        com.chicoestudioso.caricraft.server.challenge.ChallengeChests.onAmbusherDeath(chestMod, killer, entity);
+                    }
                 }
                 progress(killer, ObjectiveType.KILL_ENTITY, keys, 1);
             }

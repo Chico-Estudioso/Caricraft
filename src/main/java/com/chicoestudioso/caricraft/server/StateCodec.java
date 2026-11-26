@@ -182,6 +182,7 @@ public final class StateCodec {
         challenge.putLong("carins", ch.totalCarins());
         challenge.putInt("nightKills", ch.nightKills());
         challenge.putLong("nightCarins", ch.nightCarins());
+        challenge.putLong("xp", ch.xp());
         tag.put("challenge", challenge);
 
         CompoundTag market = new CompoundTag();
@@ -276,6 +277,7 @@ public final class StateCodec {
             party.challenge().restore(c.getLong("last"), c.getLong("scheduled"), c.getBoolean("forced"),
                     c.getBoolean("active"), c.getInt("nights"), c.getLong("kills"), c.getLong("carins"),
                     c.getInt("nightKills"), c.getLong("nightCarins"));
+            party.challenge().restoreXp(c.getLong("xp"), !c.contains("xp"));
         }
         CompoundTag market = tag.getCompound("market");
         for (String key : market.getAllKeys()) {
@@ -318,6 +320,7 @@ public final class StateCodec {
         tag.putInt("phoneSerial", profile.phoneSerial());
         tag.putBoolean("tips", profile.tipsEnabled());
         tag.putLong("giftDay", profile.giftDay());
+        tag.putInt("giftsToday", profile.giftsToday());
         tag.putLong("cvDay", profile.cobbleverseDay());
         tag.putInt("cvSales", profile.salesToday());
         tag.putInt("cvWonders", profile.wondersToday());
@@ -339,6 +342,7 @@ public final class StateCodec {
         profile.setPhoneSerial(tag.getInt("phoneSerial"));
         profile.setTipsEnabled(!tag.contains("tips") || tag.getBoolean("tips"));
         profile.setGiftDay(tag.contains("giftDay") ? tag.getLong("giftDay") : -1);
+        profile.setGiftsToday(tag.getInt("giftsToday"));
         profile.setCobbleverseDay(tag.contains("cvDay") ? tag.getLong("cvDay") : -1);
         profile.setSalesToday(tag.getInt("cvSales"));
         profile.setWondersToday(tag.getInt("cvWonders"));

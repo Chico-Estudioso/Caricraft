@@ -154,7 +154,19 @@ public record PhoneSnapshot(
                                 int nightsCompleted, long totalKills, long totalCarins, int nightKills,
                                 long nightCarins, long killReward, long nightReward, boolean blockSleep,
                                 List<String> blockedMobs, int wave, int effectiveLevel, boolean waves,
-                                List<CacheView> caches) {
+                                List<CacheView> caches, long xp, long xpLevelStart, long xpNextLevel, List<ChestView> chests) {
+    }
+
+    /**
+     * Cofre del desafío por el mundo.
+     *
+     * @param kind     AMBUSH (emboscada de mobs) o GUARDIAN (Pokémon guardián)
+     * @param fighting el combate ha empezado
+     * @param guardian especie del guardián ({@code cobblemon:…}) o vacío
+     * @param expiresAt cuándo se desvanece si nadie lo conquista (hora del servidor)
+     */
+    public record ChestView(String dimension, double x, double y, double z, String kind, boolean fighting, int wave, int waves,
+                            String guardian, int guardianLevel, int level, long expiresAt) {
     }
 
     /**
@@ -166,7 +178,8 @@ public record PhoneSnapshot(
     public record CobbleverseView(boolean cobbleDollarsInstalled, long cobbleDollars, boolean giftEnabled, boolean giftAvailable,
                                   long nextDayAt, boolean shopEnabled, List<CvOfferView> offers, boolean sellEnabled,
                                   List<SellView> party, int salesToday, int maxSales, boolean wonderEnabled, int wondersLeft,
-                                  int wondersPerDay, int wonderPool, WonderView lastWonder, LuckView luck) {
+                                  int wondersPerDay, int wonderPool, WonderView lastWonder, LuckView luck, int giftsLeft,
+                                  int giftsPerDay) {
     }
 
     /** Cajas, tragaperras, mejoras y fusiones del CobbleCentro. Las partes desactivadas llegan vacías o {@code null}. */

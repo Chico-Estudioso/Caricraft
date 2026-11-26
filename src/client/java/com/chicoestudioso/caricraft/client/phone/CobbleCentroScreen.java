@@ -305,7 +305,7 @@ public class CobbleCentroScreen extends Screen {
             return "";
         }
         return switch (each) {
-            case HOME -> cv.giftEnabled() && cv.giftAvailable() ? "!" : "";
+            case HOME -> cv.giftEnabled() && cv.giftAvailable() ? String.valueOf(Math.max(1, cv.giftsLeft())) : "";
             case WONDER -> cv.wonderEnabled() && cv.wondersLeft() > 0 ? String.valueOf(cv.wondersLeft()) : "";
             default -> "";
         };
@@ -410,7 +410,8 @@ public class CobbleCentroScreen extends Screen {
             ui.item("cobblemon:premier_ball", 0, 0);
             ui.g.pose().popPose();
             ui.text(Component.translatable("caricraft.phone.cv.gift").copy().withStyle(ChatFormatting.BOLD), x + 56, y + 8, 0xFFFFFFFF);
-            Component text = cv.giftAvailable() ? Component.translatable("caricraft.phone.cv.gift_ready")
+            Component text = cv.giftAvailable()
+                    ? Component.translatable("caricraft.phone.cv.gift_ready_count", cv.giftsLeft(), cv.giftsPerDay())
                     : Component.translatable("caricraft.phone.cv.gift_wait", PhoneText.remaining(left));
             ui.wrapped(text, x + 56, y + 20, w - 62 - (cv.giftAvailable() ? 86 : 0), 0xFFE8E2D0);
             if (cv.giftAvailable()) {

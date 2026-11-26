@@ -116,15 +116,26 @@ class CobbleverseServiceTest {
     }
 
     @Test
-    void mysteryGiftOncePerDayAndWeighted() {
+    void mysteryGiftTwicePerDayAndWeighted() {
         TestFixture f = TestFixture.withDefaultMissions();
         CobbleverseService service = service(f);
         PlayerProfile profile = f.state.profiles().get(f.alice);
         long day = service.day();
+        assertEquals(2, service.giftsLeft(profile, day));
         assertTrue(service.giftAvailable(profile, day));
         service.recordGift(profile, day);
+        assertEquals(1, service.giftsLeft(profile, day));
+        assertTrue(service.giftAvailable(profile, day), "el segundo del día");
+        service.recordGift(profile, day);
         assertFalse(service.giftAvailable(profile, day));
+        assertEquals(0, service.giftsLeft(profile, day));
         assertTrue(service.giftAvailable(profile, day + 1));
+        assertEquals(2, service.giftsLeft(profile, day + 1));
+
+        // Datos guardados antes de contar los regalos: el de ese día cuenta como uno.
+        PlayerProfile old = f.state.profiles().get(f.bob);
+        old.setGiftDay(day);
+        assertEquals(1, service.giftsLeft(old, day));
         f.config.cobbleverse.mysteryGift = false;
         assertFalse(service.giftAvailable(profile, day + 1));
 
@@ -167,6 +178,39 @@ class CobbleverseServiceTest {
     }
 
     @Test
+    void dailyThingsResetAtLocalMidnight() {
+        TestFixture f = TestFixture.withDefaultMissions();
+        f.config.timeZone = "Europe/Madrid";
+        CobbleverseService service = service(f);
+        PlayerProfile profile = f.state.profiles().get(f.alice);
+        // 2026-01-01 23:30 en Madrid (22:30 UTC): todavía es día 1 en España.
+        f.clock.advance(22 * 3_600_000L + 30 * 60_000L);
+        long day = service.day();
+        assertEquals(java.time.LocalDate.of(2026, 1, 1).toEpochDay(), day);
+        service.recordGift(profile, day);
+        service.recordGift(profile, day);
+        assertFalse(service.giftAvailable(profile, service.day()));
+        assertEquals(TestFixture.START + 23 * 3_600_000L, service.nextDayAt(), "00:00 en Madrid = 23:00 UTC en invierno");
+        f.clock.advance(31 * 60_000L); // 00:01 en Madrid
+        assertEquals(day + 1, service.day());
+        assertTrue(service.giftAvailable(profile, service.day()));
+        assertEquals(2, service.giftsLeft(profile, service.day()));
+    }
+
+    @Test
+    void calendarFollowsSummerTimeAndWeeksStartOnMonday() {
+        var madrid = com.chicoestudioso.caricraft.core.GameCalendar.of("Europe/Madrid");
+        long summer = java.time.ZonedDateTime.of(2026, 7, 15, 23, 59, 0, 0, java.time.ZoneId.of("Europe/Madrid")).toInstant().toEpochMilli();
+        assertEquals(java.time.LocalDate.of(2026, 7, 15).toEpochDay(), madrid.day(summer));
+        assertEquals(summer + 60_000L, madrid.nextDayAt(summer), "en verano, 00:00 en Madrid = 22:00 UTC");
+        long thursday = java.time.ZonedDateTime.of(2026, 7, 16, 12, 0, 0, 0, java.time.ZoneId.of("Europe/Madrid")).toInstant().toEpochMilli();
+        long monday = java.time.ZonedDateTime.of(2026, 7, 20, 0, 0, 0, 0, java.time.ZoneId.of("Europe/Madrid")).toInstant().toEpochMilli();
+        assertEquals(monday, madrid.nextWeekAt(thursday));
+        assertEquals(madrid.week(thursday) + 1, madrid.week(monday));
+        assertEquals(com.chicoestudioso.caricraft.core.GameCalendar.UTC, com.chicoestudioso.caricraft.core.GameCalendar.of("No/Existe"));
+    }
+
+    @Test
     void profileCountersSurviveSaving() {
         TestFixture f = TestFixture.withDefaultMissions();
         CobbleverseService service = service(f);
@@ -178,6 +222,7 @@ class CobbleverseServiceTest {
         var loaded = com.chicoestudioso.caricraft.server.StateCodec.read(com.chicoestudioso.caricraft.server.StateCodec.write(f.state));
         PlayerProfile copy = loaded.profiles().get(f.alice);
         assertEquals(day, copy.giftDay());
+        assertEquals(1, copy.giftsToday());
         assertEquals(1, service.salesToday(copy, day));
         assertEquals(1, service.boughtToday(copy, "master_ball", day));
         assertEquals(-1, loaded.profiles().get(f.bob).giftDay());

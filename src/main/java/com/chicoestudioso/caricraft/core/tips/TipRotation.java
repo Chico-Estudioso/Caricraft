@@ -51,6 +51,7 @@ public final class TipRotation {
             Tip.always("themes"),
             new Tip("challenge", TipContext::challengeEnabled),
             new Tip("challenge_forward", TipContext::challengeEnabled),
+            new Tip("challenge_chests", TipContext::challengeEnabled),
             Tip.always("navigation"),
             Tip.always("notices"),
             Tip.always("phone_personal"),

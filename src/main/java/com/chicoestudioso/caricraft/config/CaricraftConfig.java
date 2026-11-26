@@ -31,6 +31,12 @@ public final class CaricraftConfig {
     /** Versión con la que se escribió el archivo (0 = anterior a las migraciones). */
     public int configVersion = CURRENT_VERSION;
 
+    /**
+     * Zona horaria de los reinicios diarios (regalo misterioso, ofertas, misiones diarias y semanales): cambian a las
+     * 00:00 de esta zona. Identificador IANA, p. ej. "Europe/Madrid", "America/Mexico_City" o "UTC".
+     */
+    public String timeZone = "Europe/Madrid";
+
     /** Entregar un CariPhone la primera vez que un jugador entra al servidor (solo si {@code phone.personal} es falso). */
     public boolean giveStarterPhone = true;
     /** CariPhone personal: uno por jugador (ver docs/PHONE_AND_APPS.md). */
@@ -169,6 +175,8 @@ public final class CaricraftConfig {
         public double sellPriceMultiplier = 1.0;
         /** Permite vender legendarios, singulares y ultraentes (por defecto no, para evitar sustos). */
         public boolean sellLegendaries = false;
+        /** Regalos misteriosos por jugador y día (se reinician a las 00:00 de {@code timeZone}). */
+        public int giftsPerDay = 2;
         /** Intercambio prodigioso: un Pokémon del equipo por otro al azar (de otro jugador o generado). */
         public boolean wonderTrade = true;
         /** Intercambios prodigiosos por jugador y día. */
@@ -189,6 +197,7 @@ public final class CaricraftConfig {
         CobbleverseConfig validate() {
             maxSalesPerDay = clamp(maxSalesPerDay, 0, 100);
             wonderTradesPerDay = clamp(wonderTradesPerDay, 0, 50);
+            giftsPerDay = clamp(giftsPerDay, 0, 20);
             wonderPoolSize = clamp(wonderPoolSize, 1, 1000);
             if (!(wonderShinyChance >= 0) || wonderShinyChance > 1) {
                 wonderShinyChance = 0.02;
@@ -231,8 +240,35 @@ public final class CaricraftConfig {
         public long nightReward = 50;
         /** Nivel máximo de desafío (equipamiento y fuerza de los mobs). */
         public int maxLevel = 30;
-        /** Noches superadas necesarias para subir un nivel. */
+        /** Solo para grupos de versiones anteriores: su nivel inicial era 1 + noches superadas / este valor. */
         public int nightsPerLevel = 1;
+        /** Experiencia para pasar del nivel 1 al 2; cada nivel siguiente pide {@code xpGrowth} más. */
+        public long xpPerLevel = 150;
+        /** Cuánto crece la experiencia necesaria por nivel (0.10 = un 10 % más cada nivel). */
+        public double xpGrowth = 0.10;
+        /** Experiencia por mob del desafío derrotado (más nivel/5; triple si es élite). */
+        public long xpPerKill = 3;
+        /** Experiencia por escuadrón derrotado. */
+        public long xpPerSquad = 25;
+        /** Experiencia por noche de desafío superada. */
+        public long xpPerNight = 60;
+        /** Experiencia por cofre del desafío conquistado. */
+        public long xpPerChest = 40;
+        /**
+         * Cofres del desafío por el mundo (de día y de noche): aparecen cerca del dúo, lejos de estructuras y
+         * construcciones, y se abren tras una emboscada de mobs o venciendo a un Pokémon guardián.
+         */
+        public boolean worldChests = true;
+        /** Cada cuántos minutos se intenta sacar un cofre del desafío para cada grupo conectado. */
+        public int chestIntervalMinutes = 20;
+        /** Probabilidad de que salga en cada intento. */
+        public double chestChance = 0.75;
+        /** Minutos que espera un cofre sin conquistar antes de desvanecerse. */
+        public int chestLifetimeMinutes = 30;
+        /** Con Cobblemon: probabilidad de que lo guarde un Pokémon salvaje fuerte en vez de una emboscada. */
+        public double chestGuardianChance = 0.4;
+        /** Carins por conquistar un cofre, más 5 por nivel. */
+        public long chestReward = 30;
         /** Tres oleadas por noche: la segunda y la tercera suman +1 y +2 niveles. */
         public boolean waves = true;
         /** Mobs élite (con nombre, brillan, +3 niveles de equipo y triple recompensa). */
@@ -260,6 +296,23 @@ public final class CaricraftConfig {
             nightReward = Math.max(0, Math.min(100_000, nightReward));
             maxLevel = clamp(maxLevel, 1, 100);
             nightsPerLevel = clamp(nightsPerLevel, 1, 50);
+            xpPerLevel = Math.max(1, Math.min(1_000_000, xpPerLevel));
+            if (!(xpGrowth >= 0) || xpGrowth > 10) {
+                xpGrowth = 0.10;
+            }
+            xpPerKill = Math.max(0, Math.min(100_000, xpPerKill));
+            xpPerSquad = Math.max(0, Math.min(100_000, xpPerSquad));
+            xpPerNight = Math.max(0, Math.min(100_000, xpPerNight));
+            xpPerChest = Math.max(0, Math.min(100_000, xpPerChest));
+            chestIntervalMinutes = clamp(chestIntervalMinutes, 1, 24 * 60);
+            chestLifetimeMinutes = clamp(chestLifetimeMinutes, 2, 24 * 60);
+            if (!(chestChance >= 0) || chestChance > 1) {
+                chestChance = 0.75;
+            }
+            if (!(chestGuardianChance >= 0) || chestGuardianChance > 1) {
+                chestGuardianChance = 0.4;
+            }
+            chestReward = Math.max(0, Math.min(100_000, chestReward));
             radius = clamp(radius, 32, 256);
             maxSquadsPerNight = clamp(maxSquadsPerNight, 0, 6);
             squadReward = Math.max(0, Math.min(100_000, squadReward));
