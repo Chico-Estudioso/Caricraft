@@ -167,8 +167,15 @@ public final class MissionService {
         return ActionResult.ok("mission_claimed", def.id(), reward);
     }
 
+    /** Multiplicador externo por misión (eventos semanales). */
+    private java.util.function.ToDoubleFunction<MissionDefinition> rewardBonus = def -> 1.0;
+
+    public void setRewardBonus(java.util.function.ToDoubleFunction<MissionDefinition> bonus) {
+        this.rewardBonus = bonus == null ? def -> 1.0 : bonus;
+    }
+
     public long rewardOf(MissionDefinition def) {
-        return Math.max(0, Math.round(def.reward() * config.missionRewardMultiplier));
+        return Math.max(0, Math.round(def.reward() * config.missionRewardMultiplier * rewardBonus.applyAsDouble(def)));
     }
 
     /**

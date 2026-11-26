@@ -70,6 +70,7 @@ final class PhonePages {
             case CARICAMP -> hasApp(snap, "caricamp") ? caricamp(s, snap, x, y, w) : locked(s, snap, x, y, w, "caricamp");
             case CARILENS -> hasApp(snap, "carilens") ? carilens(s, snap, x, y, w) : locked(s, snap, x, y, w, "carilens");
             case CARIBOX -> hasApp(snap, "caribox") ? caribox(s, snap, x, y, w) : locked(s, snap, x, y, w, "caribox");
+            case SHOWCASE -> RoutinePages.showcase(s, snap, x, y, w);
             case LOCKED -> locked(s, snap, x, y, w, s.lockedAppId);
         };
     }
@@ -82,7 +83,7 @@ final class PhonePages {
 
     private static final List<HomeSection> HOME_SECTIONS = List.of(
             new HomeSection("daily", List.of("missions", "wallet", "market", "shop", "cobblecentro")),
-            new HomeSection("duo", List.of("duo", "tpduo", "caribox", "chronicles")),
+            new HomeSection("duo", List.of("duo", "tpduo", "caribox", "chronicles", "showcase")),
             new HomeSection("adventure", List.of("challenge", "explorer", "caricamp", "carilens")),
             new HomeSection("system", List.of("stats", "settings")));
     private static final int HOME_COLUMNS = 4;
@@ -112,6 +113,9 @@ final class PhonePages {
         ui.text(hello.copy().withStyle(ChatFormatting.BOLD), x + 6, y + 5, t.headerText());
         ui.wrapped(duoLine, x + 6, y + 5 + ui.font.lineHeight + 2, textWidth, PhoneTheme.mix(t.headerText(), t.header(), 0.2f));
         y += cardHeight + 5;
+
+        // Racha diaria y evento semanal
+        y += RoutinePages.homeCards(s, snap, x, y, w);
 
         // Avisos: lo que espera respuesta, con acceso directo a su app
         for (Notice notice : notices(snap)) {
@@ -1665,6 +1669,9 @@ final class PhonePages {
             y += ui.wrapped(wave, x, y, w, CHALLENGE_RED) + 2;
         }
         y += 3;
+
+        // Jefes del desafío
+        y += RoutinePages.bosses(s, c, x, y, w);
 
         // Botines de los escuadrones de esta noche
         if (c.caches() != null && !c.caches().isEmpty()) {

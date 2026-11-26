@@ -35,7 +35,8 @@ public record PhoneSnapshot(
         CampView camp,
         DuoTravelView tpduo,
         LensView lens,
-        BoxView box) {
+        BoxView box,
+        RoutineView routine) {
 
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
@@ -154,7 +155,47 @@ public record PhoneSnapshot(
                                 int nightsCompleted, long totalKills, long totalCarins, int nightKills,
                                 long nightCarins, long killReward, long nightReward, boolean blockSleep,
                                 List<String> blockedMobs, int wave, int effectiveLevel, boolean waves,
-                                List<CacheView> caches, long xp, long xpLevelStart, long xpNextLevel, List<ChestView> chests) {
+                                List<CacheView> caches, long xp, long xpLevelStart, long xpNextLevel, List<ChestView> chests,
+                                BossesView bosses) {
+    }
+
+    /**
+     * Jefes del desafío ({@code null} si están desactivados).
+     *
+     * @param pendingLevel nivel del jefe que saldrá en la próxima noche de desafío (0 si ninguno)
+     * @param nextLevel    siguiente nivel con jefe aún no alcanzado (0 si ninguno)
+     */
+    public record BossesView(int every, int pendingLevel, String pendingBoss, int nextLevel, String nextBoss,
+                             List<BossRecordView> defeated, BossFightView fight, long reward) {
+    }
+
+    public record BossRecordView(int level, String boss, long time, String players) {
+    }
+
+    /** Jefe en combate ahora mismo. */
+    public record BossFightView(String boss, int level, float health, float maxHealth, double x, double y, double z) {
+    }
+
+    /** Racha diaria, evento semanal y vitrina de medallas. */
+    public record RoutineView(StreakView streak, WeeklyView weekly, List<MedalView> medals, List<BossRecordView> trophies) {
+    }
+
+    /**
+     * @param cycleDay   día de la semana de racha que toca hoy o mañana (1–7)
+     * @param partnerActive el compañero ya ha jugado hoy
+     */
+    public record StreakView(int days, int best, boolean doneToday, boolean alive, boolean shieldAvailable, boolean duo,
+                             boolean partnerActive, boolean duoPaid, long reward, long duoBonus, int cycleDay, List<Long> rewards,
+                             long nextDayAt) {
+    }
+
+    /** @param paid tramos cobrados (bit 0 mitad, bit 1 completo) */
+    public record WeeklyView(String id, String icon, String stat, long goal, long progress, int paid, long halfReward,
+                             long fullReward, long endsAt, double bonus, String effect) {
+    }
+
+    /** @param tier 0 sin conseguir, 1 bronce, 2 plata, 3 oro */
+    public record MedalView(String id, String icon, int tier, long value, List<Long> tiers, List<Long> rewards) {
     }
 
     /**

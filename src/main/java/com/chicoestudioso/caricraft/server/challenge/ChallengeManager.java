@@ -190,6 +190,7 @@ public final class ChallengeManager {
         ChallengeSquads.tick(mod, online, server.overworld().getDayTime(), day);
         ChallengeChests.tick(mod, online);
         ChallengeBossBars.update(mod, online, server.overworld().getDayTime(), day);
+        ChallengeBosses.tick(mod, online, server.overworld().getDayTime(), day);
     }
 
     private static void announce(CaricraftServer mod, Party party, ChallengeEvent event) {
@@ -315,7 +316,7 @@ public final class ChallengeManager {
 
     /** Lo llama el mixin de {@code ServerLevel.addFreshEntity}. Devuelve falso para impedir la aparición. */
     public static boolean onAddFreshEntity(ServerLevel level, Entity entity) {
-        if (ChallengeSquads.spawning() || ChallengeChests.spawning()) {
+        if (ChallengeSquads.spawning() || ChallengeChests.spawning() || ChallengeBosses.spawning()) {
             return true;
         }
         try {

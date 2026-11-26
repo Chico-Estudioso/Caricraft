@@ -81,6 +81,36 @@ public final class CaricraftConfig {
     public CobbleverseConfig cobbleverse = new CobbleverseConfig();
     /** Desafío Dúo: noches con mobs vanilla equipados (ver docs/CHALLENGE.md). */
     public ChallengeConfig challenge = new ChallengeConfig();
+    /** Racha diaria, eventos semanales y vitrina de medallas. */
+    public RoutineConfig routine = new RoutineConfig();
+
+    public static final class RoutineConfig {
+        /** Racha diaria: cada día en que el dúo reclama una misión. */
+        public boolean streak = true;
+        public double streakRewardMultiplier = 1.0;
+        /** Eventos semanales con ventaja y meta del dúo. */
+        public boolean weeklyEvents = true;
+        public double weeklyRewardMultiplier = 1.0;
+        /** Multiplicador de la ventaja del evento (Carins de misiones, experiencia del desafío, caza del día). */
+        public double weeklyBonus = 1.5;
+        /** Vitrina de medallas. */
+        public boolean medals = true;
+        public double medalRewardMultiplier = 1.0;
+
+        RoutineConfig validate() {
+            streakRewardMultiplier = multiplier(streakRewardMultiplier);
+            weeklyRewardMultiplier = multiplier(weeklyRewardMultiplier);
+            medalRewardMultiplier = multiplier(medalRewardMultiplier);
+            if (!(weeklyBonus >= 1) || weeklyBonus > 5) {
+                weeklyBonus = 1.5;
+            }
+            return this;
+        }
+
+        private static double multiplier(double value) {
+            return value >= 0 && value <= 100 ? value : 1.0;
+        }
+    }
 
     /** Ajustes del CariPhone personal. */
     public static final class PhoneConfig {
@@ -339,6 +369,13 @@ public final class CaricraftConfig {
         public int maxSquadsPerNight = 3;
         /** Carins por derrotar un escuadrón, más 5 por nivel. */
         public long squadReward = 40;
+        /** Jefes del desafío: uno cada {@code bossEvery} niveles, en la siguiente noche de desafío, con trofeo. */
+        public boolean bosses = true;
+        public int bossEvery = 5;
+        /** Carins por derrotar un jefe, más 20 por nivel. */
+        public long bossReward = 150;
+        /** Experiencia por derrotar un jefe. */
+        public long xpPerBoss = 150;
 
         ChallengeConfig validate() {
             intervalNights = clamp(intervalNights, 1, 30);
@@ -365,6 +402,9 @@ public final class CaricraftConfig {
             chestReward = Math.max(0, Math.min(100_000, chestReward));
             radius = clamp(radius, 32, 256);
             maxSquadsPerNight = clamp(maxSquadsPerNight, 0, 6);
+            bossEvery = clamp(bossEvery, 1, 50);
+            bossReward = Math.max(0, Math.min(100_000, bossReward));
+            xpPerBoss = Math.max(0, Math.min(100_000, xpPerBoss));
             squadReward = Math.max(0, Math.min(100_000, squadReward));
             if (mobs == null) {
                 mobs = new ArrayList<>();
@@ -480,6 +520,10 @@ public final class CaricraftConfig {
             challenge = new ChallengeConfig();
         }
         challenge.validate();
+        if (routine == null) {
+            routine = new RoutineConfig();
+        }
+        routine.validate();
         return this;
     }
 

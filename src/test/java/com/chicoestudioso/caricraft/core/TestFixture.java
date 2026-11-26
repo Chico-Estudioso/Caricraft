@@ -19,9 +19,13 @@ public final class TestFixture {
     public final MutableClock clock = new MutableClock(START);
     public final CaricraftConfig config = utc(new CaricraftConfig().validated());
 
-    /** Los tests cuentan los días en UTC (los de zona horaria lo cambian a propósito). */
+    /**
+     * Los tests cuentan los días en UTC (los de zona horaria lo cambian a propósito). Los eventos semanales se apagan
+     * para que sus ventajas no muevan las cuentas de otros tests; los suyos los encienden.
+     */
     private static CaricraftConfig utc(CaricraftConfig config) {
         config.timeZone = "UTC";
+        config.routine.weeklyEvents = false;
         return config;
     }
     public final CaricraftState state = new CaricraftState();

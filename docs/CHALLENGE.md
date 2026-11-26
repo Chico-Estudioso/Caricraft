@@ -109,6 +109,31 @@ Las arañas no llevan equipo y reciben los efectos 2 niveles antes. El equipo so
 
 **Servidores que ya tenían `config/caricraft.json`:** se migran solos a la versión 2. Si seguían con los valores antiguos (máx. 5 y un nivel cada 2 noches) pasan a 30 y 1; si el administrador los había cambiado, se respetan.
 
+## Jefes del desafío
+![El Rey Zombi con su barra de jefe](img/desafio_jefe.png)
+
+- **Cada 5 niveles** (`bossEvery`) hay un jefe: al llegar al nivel 5, en la siguiente noche de desafío aparece cerca del dúo (a unos 20–30 bloques, unos 100 s después de anochecer). Avisa con distancia y dirección, sonido y barra de jefe morada para quien esté a menos de 64 bloques.
+- Son **versiones gigantes y reforzadas de los mobs del desafío**, así que funcionan con MobsBeGone en COBBLEVERSE igual que el resto (los vindicadores, devastadores o esqueletos wither los bloquea el modpack):
+
+| Nivel | Jefe | Vida | Tamaño |
+|---|---|---|---|
+| 5 | El Rey Zombi | 144 | ×1,8 |
+| 10 | La Reina Araña | 210 | ×2,2 |
+| 15 | El Capitán Esqueleto | 272 | ×1,6 |
+| 20 | La Gran Bruja | 360 | ×1,6 |
+| 25 | El Coloso del Fin | 480 | ×1,5 |
+| 30 | El Ahogado Abisal (con tridente) | 616 | ×1,8 |
+
+  La vida y el daño crecen con el nivel (+4 % por nivel sobre su base) y, a partir del nivel 35, empieza otra vuelta un 50 % más fuerte. Llevan el equipo del desafío de su nivel + 5, brillan y no se dejan empujar fácilmente.
+- **Al derrotarlo** (el golpe final de alguien del dúo o de su Pokémon):
+  - Cada miembro conectado recibe un **Trofeo del desafío** con el nombre del jefe, el nivel, el dúo y la fecha. Es decorativo y queda también en la **Vitrina** (`docs/ROUTINE.md`).
+  - `bossReward` (150) + 20 Carins por nivel, `xpPerBoss` (150) de experiencia y botín en el suelo: diamantes, esmeraldas, manzanas de oro, frascos de experiencia y, desde el nivel 15, restos de netherita (desde el 25, una manzana de oro encantada).
+  - Queda en las Crónicas.
+  ![Jefe derrotado: aviso y trofeo en la barra](img/desafio_jefe_trofeo.png)
+- Si sale el sol antes de derrotarlo, se retira con el resto del desafío y **vuelve en la siguiente noche de desafío**. Cada jefe solo se puede derrotar una vez.
+- La app Desafío muestra el jefe pendiente o el próximo, la vida del que está en combate y cuántos trofeos lleváis.
+- `/caricraft desafio jefe` (nivel 2, con la noche de desafío en marcha) lo saca ya para probar.
+
 ## Misiones de caza
 `first_challenge`, `night_hunter`, `duo_survivors`, `duo_trophies`, `elite_hunters`, `daily_hunt`, `weekly_hunt`, `milestone_hunter` y `milestone_nights` (ver `default_missions.json`). Usan:
 - `KILL_ENTITY` con el objetivo `challenge` (solo cuentan los mobs del desafío).

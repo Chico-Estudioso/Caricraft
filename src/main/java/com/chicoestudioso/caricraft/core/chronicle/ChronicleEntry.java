@@ -21,6 +21,9 @@ public record ChronicleEntry(long time, String type, UUID actor, String actorNam
     public static final String SQUAD_DEFEATED = "squad_defeated";
     public static final String CHEST_CONQUERED = "chest_conquered";
     public static final String GUARDIAN_DEFEATED = "guardian_defeated";
+    public static final String BOSS_DEFEATED = "boss_defeated";
+    public static final String MEDAL = "medal";
+    public static final String STREAK = "streak";
     public static final String WELCOME = "welcome";
     public static final String CHALLENGE_SURVIVED = "challenge_survived";
     public static final String CAMP_SET = "camp_set";

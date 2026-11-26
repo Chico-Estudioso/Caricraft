@@ -30,6 +30,7 @@ public final class AppCatalog {
     public static final String CARIBOX_ROWS = "caribox_rows";
     public static final String MARKET = "market";
     public static final String COBBLECENTRO = "cobblecentro";
+    public static final String SHOWCASE = "showcase";
 
     private final Map<String, ShopItem> items = new LinkedHashMap<>();
 
@@ -49,6 +50,9 @@ public final class AppCatalog {
         }
         if (config.challenge.enabled) {
             catalog.register(builtin(CHALLENGE, "minecraft:skeleton_skull", 0xFF9D0208));
+        }
+        if (config.routine.medals) {
+            catalog.register(builtin(SHOWCASE, "caricraft:challenge_trophy", 0xFFE9C46A));
         }
         catalog.register(app(CHRONICLES, 250, "minecraft:book", 0xFF8E5A3C));
         catalog.register(app(EXPLORER, 400, "minecraft:compass", 0xFF3A86FF));

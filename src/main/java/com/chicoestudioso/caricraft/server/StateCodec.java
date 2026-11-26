@@ -183,7 +183,18 @@ public final class StateCodec {
         challenge.putInt("nightKills", ch.nightKills());
         challenge.putLong("nightCarins", ch.nightCarins());
         challenge.putLong("xp", ch.xp());
+        ListTag bosses = new ListTag();
+        for (com.chicoestudioso.caricraft.core.challenge.ChallengeState.BossRecord b : ch.bosses()) {
+            CompoundTag e = new CompoundTag();
+            e.putInt("level", b.level());
+            e.putString("boss", b.boss());
+            e.putLong("time", b.time());
+            e.putString("players", b.players());
+            bosses.add(e);
+        }
+        challenge.put("bosses", bosses);
         tag.put("challenge", challenge);
+        tag.put("routine", writeRoutine(party.routine()));
 
         CompoundTag market = new CompoundTag();
         party.marketPurchases().forEach(market::putInt);
@@ -279,6 +290,17 @@ public final class StateCodec {
                     c.getBoolean("active"), c.getInt("nights"), c.getLong("kills"), c.getLong("carins"),
                     c.getInt("nightKills"), c.getLong("nightCarins"));
             party.challenge().restoreXp(c.getLong("xp"), !c.contains("xp"));
+            ListTag bosses = c.getList("bosses", Tag.TAG_COMPOUND);
+            List<com.chicoestudioso.caricraft.core.challenge.ChallengeState.BossRecord> records = new ArrayList<>();
+            for (int i = 0; i < bosses.size(); i++) {
+                CompoundTag e = bosses.getCompound(i);
+                records.add(new com.chicoestudioso.caricraft.core.challenge.ChallengeState.BossRecord(e.getInt("level"),
+                        e.getString("boss"), e.getLong("time"), e.getString("players")));
+            }
+            party.challenge().restoreBosses(records);
+        }
+        if (tag.contains("routine", Tag.TAG_COMPOUND)) {
+            readRoutine(tag.getCompound("routine"), party.routine());
         }
         if (tag.contains("duoPokemon", Tag.TAG_COMPOUND)) {
             readDuoPokemon(tag.getCompound("duoPokemon"), party.pokemon());
@@ -308,6 +330,49 @@ public final class StateCodec {
             }
         }
         return party;
+    }
+
+    private static CompoundTag writeRoutine(com.chicoestudioso.caricraft.core.routine.RoutineState r) {
+        CompoundTag tag = new CompoundTag();
+        tag.putLong("streakLast", r.streakLastDay());
+        tag.putInt("streakDays", r.streakDays());
+        tag.putInt("streakBest", r.streakBest());
+        tag.putLong("shieldWeek", r.shieldWeek());
+        tag.putLong("duoPaid", r.duoPaidDay());
+        ListTag active = new ListTag();
+        r.activeDay().forEach((member, day) -> {
+            CompoundTag e = new CompoundTag();
+            e.putUUID("m", member);
+            e.putLong("d", day);
+            active.add(e);
+        });
+        tag.put("active", active);
+        tag.putLong("eventWeek", r.eventWeek());
+        tag.putLong("eventBase", r.eventBaseline());
+        tag.putInt("eventPaid", r.eventPaid());
+        CompoundTag medals = new CompoundTag();
+        r.medals().forEach(medals::putInt);
+        tag.put("medals", medals);
+        return tag;
+    }
+
+    private static void readRoutine(CompoundTag tag, com.chicoestudioso.caricraft.core.routine.RoutineState r) {
+        java.util.Map<UUID, Long> active = new java.util.LinkedHashMap<>();
+        ListTag list = tag.getList("active", Tag.TAG_COMPOUND);
+        for (int i = 0; i < list.size(); i++) {
+            CompoundTag e = list.getCompound(i);
+            if (e.hasUUID("m")) {
+                active.put(e.getUUID("m"), e.getLong("d"));
+            }
+        }
+        r.restoreStreak(tag.contains("streakLast") ? tag.getLong("streakLast") : -1, tag.getInt("streakDays"), tag.getInt("streakBest"),
+                tag.contains("shieldWeek") ? tag.getLong("shieldWeek") : Long.MIN_VALUE,
+                tag.contains("duoPaid") ? tag.getLong("duoPaid") : -1, active);
+        r.restoreEvent(tag.contains("eventWeek") ? tag.getLong("eventWeek") : Long.MIN_VALUE, tag.getLong("eventBase"), tag.getInt("eventPaid"));
+        CompoundTag medals = tag.getCompound("medals");
+        for (String id : medals.getAllKeys()) {
+            r.medals().put(id, Math.max(0, Math.min(3, medals.getInt(id))));
+        }
     }
 
     private static CompoundTag writeDuoPokemon(com.chicoestudioso.caricraft.core.cobbleverse.DuoPokemonState s) {

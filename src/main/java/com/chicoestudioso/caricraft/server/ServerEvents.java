@@ -44,6 +44,7 @@ public final class ServerEvents {
         });
         ServerLifecycleEvents.SERVER_STOPPING.register(com.chicoestudioso.caricraft.server.challenge.ChallengeSquads::clearAll);
         ServerLifecycleEvents.SERVER_STOPPING.register(com.chicoestudioso.caricraft.server.challenge.ChallengeChests::clearAll);
+        ServerLifecycleEvents.SERVER_STOPPING.register(com.chicoestudioso.caricraft.server.challenge.ChallengeBosses::clearAll);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
             com.chicoestudioso.caricraft.server.challenge.ChallengeBossBars.clear();
             com.chicoestudioso.caricraft.server.cobbleverse.ShinyAlerts.clear();
@@ -78,6 +79,7 @@ public final class ServerEvents {
                 com.chicoestudioso.caricraft.server.tips.TipManager.tick(server, mod);
                 com.chicoestudioso.caricraft.server.cobbleverse.ShinyAlerts.tick(server, mod);
                 com.chicoestudioso.caricraft.server.cobbleverse.ExpeditionManager.tick(server, mod);
+                com.chicoestudioso.caricraft.server.routine.RoutineManager.tick(server, mod);
             }
         });
 
@@ -119,6 +121,9 @@ public final class ServerEvents {
             ServerPlayer credited = ChallengeManager.creditedPlayer(source);
             if (entity.getTags().contains(com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.SQUAD_TAG)) {
                 com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.onGuardDeath(entity, credited);
+            }
+            if (entity.getTags().contains(com.chicoestudioso.caricraft.server.challenge.ChallengeBosses.BOSS_TAG)) {
+                com.chicoestudioso.caricraft.server.challenge.ChallengeBosses.onBossDeath(entity, credited);
             }
             if (credited instanceof ServerPlayer killer && !(entity instanceof ServerPlayer)) {
                 Set<String> keys = new HashSet<>(ProgressKeys.of(entity.getType().builtInRegistryHolder()));

@@ -98,8 +98,15 @@ public final class HuntService {
         };
     }
 
+    /** Multiplicador externo (eventos semanales). */
+    private java.util.function.DoubleSupplier bonus = () -> 1.0;
+
+    public void setBonus(java.util.function.DoubleSupplier bonus) {
+        this.bonus = bonus == null ? () -> 1.0 : bonus;
+    }
+
     public Payout scaled(Payout payout) {
-        return payout.times(config.cobbleverse.huntRewardMultiplier);
+        return payout.times(config.cobbleverse.huntRewardMultiplier * bonus.getAsDouble());
     }
 
     static long week(long day) {
