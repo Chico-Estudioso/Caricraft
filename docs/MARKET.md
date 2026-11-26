@@ -3,7 +3,7 @@
 App de serie del CariPhone (cofre morado). Su función es dar uso continuo a los Carins.
 
 ## Funcionamiento
-- Cada día (UTC) salen `market.offersPerDay` ofertas (por defecto **8**), sorteadas por peso de entre todas las posibles. Son iguales para todo el servidor y cambian a medianoche UTC.
+- Cada día salen `market.offersPerDay` ofertas (por defecto **8**), sorteadas por peso de entre todas las posibles. Son iguales para todo el servidor y cambian a las 00:00 de la zona horaria del servidor (`timeZone`, por defecto Europe/Madrid).
 - Cada oferta tiene un **stock diario por dúo** (1–3 compras).
 - El servidor cobra, entrega el objeto (si no cabe, cae a los pies) y lo anota en la Cartera. Si la entrega falla, devuelve los Carins.
 

@@ -113,11 +113,8 @@ class ChallengeServiceTest {
         assertEquals(4 + f.config.challenge.nightReward, f.balance(f.alice));
         assertEquals(ChronicleEntry.CHALLENGE_SURVIVED, party.chronicle().getFirst().type());
 
-        // Cada noche superada sube un nivel: más fuertes y mejor pagados.
-        assertEquals(2, service.level(party));
-        service.bringForward(party, 1, true);
-        service.update(party, 1, true);
-        service.update(party, 2, false);
+        // El nivel sube con la experiencia (kills y noches): más fuertes y mejor pagados.
+        party.challenge().restoreXp(service.xpForLevel(3), false);
         assertEquals(3, service.level(party));
         service.bringForward(party, 2, true);
         service.update(party, 2, true);
@@ -148,12 +145,93 @@ class ChallengeServiceTest {
         TestFixture f = TestFixture.withDefaultMissions();
         ChallengeService service = f.core.challenge();
         Party party = f.state.partyOf(f.alice);
-        for (long d = 0; d < 12; d++) {
+        for (long d = 0; d < 400; d++) {
             service.bringForward(party, d, true);
             service.update(party, d, true);
+            for (int k = 0; k < 60; k++) {
+                service.onKill(party, service.level(party), k % 10 == 0);
+            }
             service.update(party, d + 1, false);
         }
-        assertEquals(13, service.level(party), "un nivel por noche superada");
+        assertEquals(f.config.challenge.maxLevel, service.level(party), "con muchas noches y kills se llega al máximo");
+    }
+
+    @Test
+    void levelGrowsWithExperienceFromKillsSquadsAndNights() {
+        TestFixture f = TestFixture.withDefaultMissions();
+        ChallengeService service = f.core.challenge();
+        Party party = f.state.partyOf(f.alice);
+        var c = f.config.challenge;
+        assertEquals(0, service.xpForLevel(1));
+        assertEquals(c.xpPerLevel, service.xpForLevel(2));
+        assertEquals(c.xpPerLevel + Math.round(c.xpPerLevel * (1 + c.xpGrowth)), service.xpForLevel(3), "cada nivel pide algo más");
+        assertEquals(1, service.levelFromXp(service.xpForLevel(2) - 1));
+        assertEquals(2, service.levelFromXp(service.xpForLevel(2)));
+
+        service.bringForward(party, 0, true);
+        service.update(party, 0, true);
+        assertEquals(0, service.xp(party));
+        service.onKill(party, 1, false);
+        assertEquals(c.xpPerKill, service.xp(party));
+        service.onKill(party, 10, true);
+        assertEquals(c.xpPerKill + (c.xpPerKill + 2) * 3, service.xp(party), "los fuertes y los élite dan más");
+        long before = service.xp(party);
+        service.onSquadDefeated(party, 1, f.alice, "Alice");
+        assertEquals(before + c.xpPerSquad, service.xp(party));
+        // Una noche con muchas kills sube de nivel; sin kills, la noche sola no llega.
+        for (int k = 0; k < 20; k++) {
+            service.onKill(party, 1, false);
+        }
+        assertEquals(1, service.level(party), "aún no llega");
+        ChallengeEvent end = service.update(party, 1, false);
+        assertEquals(1, end.previousLevel());
+        assertTrue(end.leveledUp(), "60 xp de la noche + kills");
+
+        TestFixture g = TestFixture.withDefaultMissions();
+        Party lazy = g.state.partyOf(g.alice);
+        g.core.challenge().bringForward(lazy, 0, true);
+        g.core.challenge().update(lazy, 0, true);
+        ChallengeEvent quiet = g.core.challenge().update(lazy, 1, false);
+        assertFalse(quiet.leveledUp(), "sobrevivir sin luchar no basta para subir");
+        assertEquals(g.config.challenge.xpPerNight, g.core.challenge().xp(lazy));
+    }
+
+    @Test
+    void challengeChestsScaleWithLevelAndPayOnce() {
+        TestFixture f = TestFixture.withDefaultMissions();
+        ChallengeService service = f.core.challenge();
+        Party party = f.state.partyOf(f.alice);
+        assertEquals(2, ChallengeService.chestWaves(1));
+        assertEquals(3, ChallengeService.chestWaves(12));
+        assertEquals(4, ChallengeService.chestWaves(25));
+        assertEquals(3, ChallengeService.chestWaveSize(1, 1, 2));
+        assertEquals(4, ChallengeService.chestWaveSize(1, 2, 2), "la última oleada trae al capitán");
+        assertEquals(8, ChallengeService.chestWaveSize(40, 1, 4), "con un tope");
+        assertEquals(14, ChallengeService.guardianLevel(1));
+        assertEquals(80, ChallengeService.guardianLevel(60));
+
+        long carins = service.onChestConquered(party, 4, false, f.alice, "Alice");
+        assertEquals(f.config.challenge.chestReward + 20, carins);
+        assertEquals(carins, f.balance(f.alice));
+        assertEquals(f.config.challenge.xpPerChest, service.xp(party), "también da experiencia (de día, sin desafío activo)");
+        assertEquals(ChronicleEntry.CHEST_CONQUERED, party.chronicle().getFirst().type());
+        service.onChestConquered(party, 4, true, f.alice, "Alice");
+        assertEquals(ChronicleEntry.GUARDIAN_DEFEATED, party.chronicle().getFirst().type());
+        long xp = service.xp(party);
+        service.onAmbushKill(party, 5, false);
+        assertEquals(xp + service.killXp(5, false), service.xp(party));
+    }
+
+    @Test
+    void oldPartiesKeepTheirLevel() {
+        TestFixture f = TestFixture.withDefaultMissions();
+        Party party = f.state.partyOf(f.alice);
+        party.challenge().restore(0, ChallengeState.NONE, false, false, 7, 0, 0, 0, 0);
+        party.challenge().restoreXp(0, true);
+        assertEquals(8, f.core.challenge().level(party), "1 + 7 noches, como antes");
+        assertEquals(f.core.challenge().xpForLevel(8), f.core.challenge().xp(party));
+        var copy = com.chicoestudioso.caricraft.server.StateCodec.read(com.chicoestudioso.caricraft.server.StateCodec.write(f.state));
+        assertEquals(f.core.challenge().xpForLevel(8), copy.partyOf(f.alice).challenge().xp(), "la experiencia se guarda");
     }
 
     @Test
@@ -161,6 +239,7 @@ class ChallengeServiceTest {
         TestFixture f = TestFixture.withDefaultMissions();
         Party party = f.state.partyOf(f.alice);
         party.challenge().restore(0, ChallengeState.NONE, false, false, 99, 0, 0, 0, 0);
+        party.challenge().restoreXp(0, true);
         assertEquals(f.config.challenge.maxLevel, f.core.challenge().level(party));
     }
 

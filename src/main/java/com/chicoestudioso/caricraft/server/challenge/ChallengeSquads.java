@@ -86,6 +86,19 @@ public final class ChallengeSquads {
     private ChallengeSquads() {
     }
 
+    /** ¿Es guardia de un escuadrón que sigue cerrado? (Esos no se retiran en el barrido.) */
+    static boolean isLiveGuard(Entity entity) {
+        if (!entity.getTags().contains(SQUAD_TAG)) {
+            return false;
+        }
+        for (Squad squad : SQUADS.values()) {
+            if (!squad.open && entity.getTags().contains(squad.tag())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Mientras el propio escuadrón aparece, el filtro del desafío no lo toca. */
     public static boolean spawning() {
         return spawning;
@@ -340,7 +353,9 @@ public final class ChallengeSquads {
         ServerPlayer actor = player != null && party.members().contains(player.getUUID()) ? player : null;
         UUID actorId = actor != null ? actor.getUUID() : party.members().iterator().next();
         String actorName = actor != null ? actor.getGameProfile().getName() : mod.core().state().nameOf(actorId);
+        int before = mod.core().challenge().level(party);
         long reward = mod.core().challenge().onSquadDefeated(party, squad.challengeLevel, actorId, actorName);
+        ChallengeManager.checkLevelUp(mod, party, before);
         double x = squad.chest.getX() + 0.5;
         double z = squad.chest.getZ() + 0.5;
         squad.level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, x, squad.chest.getY() + 1, z, 40, 0.4, 0.6, 0.4, 0.3);

@@ -39,12 +39,17 @@ public final class CobbleverseService {
         return config.cobbleverse.enabled;
     }
 
+    private com.chicoestudioso.caricraft.core.GameCalendar calendar() {
+        return com.chicoestudioso.caricraft.core.GameCalendar.of(config.timeZone);
+    }
+
+    /** Día en la zona horaria configurada: todo lo diario cambia a las 00:00 locales. */
     public long day() {
-        return Math.floorDiv(clock.now(), DAY_MS);
+        return calendar().day(clock.now());
     }
 
     public long nextDayAt() {
-        return (day() + 1) * DAY_MS;
+        return calendar().nextDayAt(clock.now());
     }
 
     /** Ofertas de hoy: las mismas para todos, distintas cada día. */
@@ -192,7 +197,17 @@ public final class CobbleverseService {
     // ------------------------------------------------------------------ regalo misterioso
 
     public boolean giftAvailable(PlayerProfile profile, long day) {
-        return config.cobbleverse.mysteryGift && !catalog.gifts().isEmpty() && profile.giftDay() != day;
+        return config.cobbleverse.mysteryGift && !catalog.gifts().isEmpty() && giftsLeft(profile, day) > 0;
+    }
+
+    /** Regalos que quedan hoy ({@code giftsPerDay} al día). */
+    public int giftsLeft(PlayerProfile profile, long day) {
+        int opened = profile.giftDay() == day ? Math.max(1, profile.giftsToday()) : 0;
+        return Math.max(0, config.cobbleverse.giftsPerDay - opened);
+    }
+
+    public int giftsPerDay() {
+        return config.cobbleverse.giftsPerDay;
     }
 
     /** Premio al azar según los pesos del catálogo. */
@@ -209,6 +224,10 @@ public final class CobbleverseService {
     }
 
     public void recordGift(PlayerProfile profile, long day) {
-        profile.setGiftDay(day);
+        if (profile.giftDay() != day) {
+            profile.setGiftDay(day);
+            profile.setGiftsToday(0);
+        }
+        profile.setGiftsToday(profile.giftsToday() + 1);
     }
 }

@@ -35,6 +35,9 @@ Guion B: recibir y aceptar la invitación y viajar.
   - `<servidor_cobbleverse>` es el que prepara `tools/cobbleverse_server_test.py`; de ahí se copian Cobblemon, CobbleDollars, Fabric API, Kotlin y Architectury.
   - Monta un servidor mínimo (mundo plano, puerto 25566) y un cliente de producción en español con el JAR de QA (`remapQaJar`, nunca se publica), y juega el rol W: pestaña Cobbleverse del Mercado, regalo, compra, venta, las cuatro pestañas del CobbleCentro y un intercambio prodigioso.
   - Imprime el registro `[QA]` y deja las capturas en `<carpeta_de_trabajo>/client/screenshots`. Sin pantalla usa `xvfb-run`.
+  - Otros roles con el mismo comando:
+    - `L`: cajas, tragaperras, mejoras de Pokémon y fusiones del CobbleCentro.
+    - `G`: cofres del desafío (emboscada por oleadas, conquista y botín; Pokémon guardián que reaparece y se retira si te vas), limpieza de los mobs del desafío al amanecer (también en zonas descargadas), barra de experiencia y los dos regalos diarios.
 - `./gradlew runQaChallenge -DqaRole=S` (con `runServer`): escuadrón con botín. Comprueba la aparición, el aviso y la app, el cofre bloqueado, la derrota (Carins y botín) y que al amanecer el cofre abierto se queda y el no ganado desaparece.
 - `./gradlew runQaChallenge -DqaRole=T` (con `runServer`): consejo en el chat, notificación con el teléfono cerrado, barra amarilla antes de la noche y roja durante el desafío, interruptor de consejos y aviso al amanecer.
 - `./gradlew runQaChallenge -DqaRole=P` (con `runServer`): CariPhone personal. Comprueba que:

@@ -1410,7 +1410,8 @@ final class PhonePages {
 
         // Regalo misterioso
         if (cv.giftEnabled()) {
-            Component text = cv.giftAvailable() ? Component.translatable("caricraft.phone.cv.gift_ready")
+            Component text = cv.giftAvailable()
+                    ? Component.translatable("caricraft.phone.cv.gift_ready_count", cv.giftsLeft(), cv.giftsPerDay())
                     : Component.translatable("caricraft.phone.cv.gift_wait", PhoneText.remaining(left));
             int th = ui.wrappedHeight(text, w - 32);
             int h = Math.max(th + 18, 34) + (cv.giftAvailable() ? BUTTON_H + 4 : 0);
@@ -1625,13 +1626,25 @@ final class PhonePages {
         ui.wrapped(subtitle, x + 6, y + 5 + titleHeight + 2, textWidth, 0xFFFFE3E3);
         y += cardHeight + 6;
 
-        // Nivel (sin techo bajo: sube con cada noche superada)
+        // Nivel: sube con la experiencia (kills, escuadrones, cofres y noches superadas)
         Component level = Component.translatable("caricraft.phone.challenge.level", c.level(), c.maxLevel())
                 .withStyle(ChatFormatting.BOLD);
         ui.text(level, x, y + 1, t.text());
+        if (c.xpNextLevel() > 0) {
+            ui.textRight(Component.translatable("caricraft.phone.challenge.xp", PhoneText.number(c.xp() - c.xpLevelStart()),
+                    PhoneText.number(c.xpNextLevel() - c.xpLevelStart())), x + w, y + 1, t.textDim());
+        } else {
+            ui.textRight(Component.translatable("caricraft.phone.challenge.xp_max"), x + w, y + 1, t.textDim());
+        }
         y += 11;
-        ui.progressBar(x, y, w, c.level(), Math.max(1, c.maxLevel()), CHALLENGE_RED);
+        if (c.xpNextLevel() > 0) {
+            ui.progressBar(x, y, w, (int) Math.max(0, c.xp() - c.xpLevelStart()),
+                    (int) Math.max(1, c.xpNextLevel() - c.xpLevelStart()), CHALLENGE_RED);
+        } else {
+            ui.progressBar(x, y, w, 1, 1, CHALLENGE_RED);
+        }
         y += 7;
+        y += ui.wrapped(Component.translatable("caricraft.phone.challenge.xp_help"), x, y, w, t.textDim()) + 2;
         if (c.active()) {
             Component wave = Component.translatable("caricraft.phone.challenge.wave", c.wave() + 1, c.effectiveLevel());
             y += ui.wrapped(wave, x, y, w, CHALLENGE_RED) + 2;
@@ -1641,6 +1654,11 @@ final class PhonePages {
         // Botines de los escuadrones de esta noche
         if (c.caches() != null && !c.caches().isEmpty()) {
             y += squadCaches(s, c, x, y, w);
+        }
+
+        // Cofres del desafío por el mundo
+        if (c.chests() != null && !c.chests().isEmpty()) {
+            y += worldChests(s, snap, c, x, y, w);
         }
 
         // Botón
@@ -1711,6 +1729,44 @@ final class PhonePages {
             y += h + 4;
         }
         y += 2;
+        return y - top;
+    }
+
+    private static int worldChests(PhoneScreen s, PhoneSnapshot snap, PhoneSnapshot.ChallengeView c, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        net.minecraft.client.player.LocalPlayer me = net.minecraft.client.Minecraft.getInstance().player;
+        if (me == null) {
+            return 0;
+        }
+        int top = y;
+        int purple = 0xFF9B5DE5;
+        String myDimension = me.level().dimension().location().toString();
+        ui.text(Component.translatable("caricraft.phone.challenge.chests").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+        y += 12;
+        for (PhoneSnapshot.ChestView chest : c.chests()) {
+            int h = 44;
+            ui.round(x, y, x + w, y + h, PhoneTheme.mix(purple, t.card(), chest.fighting() ? 0.7f : 0.85f));
+            PhoneSnapshot.PositionView position = new PhoneSnapshot.PositionView("", "", chest.dimension(), "", chest.x(), chest.y(), chest.z());
+            compass(s, me, myDimension, position, x + 22, y + 22, purple);
+            boolean guardian = "GUARDIAN".equals(chest.kind());
+            Component title = guardian
+                    ? Component.translatable("caricraft.phone.challenge.chest_guardian", PhoneText.idName(chest.guardian()), chest.guardianLevel())
+                    : Component.translatable("caricraft.phone.challenge.chest_ambush", chest.waves());
+            ui.textFit(title.copy().withStyle(ChatFormatting.BOLD), x + 44 + (w - 48) / 2, y + 7, w - 48, purple);
+            locationText(s, me, myDimension, position, x + 44, y + 19, w - 48);
+            Component detail;
+            if (chest.fighting()) {
+                detail = guardian ? Component.translatable("caricraft.phone.challenge.chest_guardian_fighting")
+                        : Component.translatable("caricraft.phone.challenge.chest_fighting", Math.max(1, chest.wave()), chest.waves());
+            } else {
+                detail = Component.translatable("caricraft.phone.challenge.chest_expires", chest.level(),
+                        PhoneText.remaining(chest.expiresAt() - snap.serverTime()));
+            }
+            ui.textClipped(detail, x + 44, y + 31, w - 48, chest.fighting() ? t.bad() : t.textDim());
+            y += h + 4;
+        }
+        y += ui.wrapped(Component.translatable("caricraft.phone.challenge.chests_help"), x, y, w, t.textDim()) + 6;
         return y - top;
     }
 

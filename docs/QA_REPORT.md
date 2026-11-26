@@ -181,6 +181,22 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 | Fusión 8 Ultra → Master Ball (10 %) | Falló: se gastan 8 Ultra Balls y ₽20.000 |
 | Fusión sin ingredientes | Rechazada: «Te faltan 3 × Cápsula habilidad en el inventario» |
 
+**Cofres del desafío, limpieza al amanecer y regalos con Cobblemon real** (`tools/cobblemon_qa.py`, rol G, mundo plano):
+
+| Paso | Resultado |
+|---|---|
+| `/caricraft desafio cofre emboscada` (nivel 6) | Cofre a 110–129 bloques, aviso con distancia y dirección, columna de luz y tarjeta con brújula en la app |
+| Acercarse a menos de 10 bloques | Emboscada: oleada 1/2 con barra morada; mobs con casco y su equipo de nivel (p. ej. esqueleto con espada de diamante) a pleno día sin quemarse |
+| Matar las oleadas | Sale la oleada 2/2 tras la pausa; al acabarla, «¡Cofre del desafío conquistado!» (+60 Carins) |
+| Abrir el cofre | Peto o casco de hierro **encantado**, diamantes, esmeraldas, oro, manzana de oro, frascos de experiencia y, de Cobblemon, caramelos M y piedras trueno/fuego |
+| `/caricraft desafio cofre guardian` | Golbat o Pupitar Nv. 24 que brilla junto al cofre al acercarse a 16 bloques, con barra «Guardián: …»; el cofre dice que hay que vencerlo o capturarlo |
+| Matarlo sin combate | Vuelve a salir (no cuenta como vencido) |
+| Noche de desafío con 7 mobs; irse a 850 bloques, amanecer y volver | **0 mobs** del desafío: los de la zona descargada se retiran al cargarla, sin kill ni botín |
+| Regalo misterioso tres veces | Dos regalos y el tercero «ya abierto»; la tarjeta dice «quedan 0/2» |
+| `/caricraft cobbleverse prueba` | Todo OK, también crear un Pokémon guardián salvaje, leer que no combate y que no tiene dueño |
+
+Sin probar en partida: vencer al guardián en un combate de Cobblemon de verdad o capturarlo (no hay forma automática de iniciar el combate; se usa `PokemonEntity.isBattling` y se busca el Pokémon en el equipo y el PC).
+
 ## Errores encontrados y corregidos durante la QA
 1. **Teléfono borroso (alto):** en 1.21 `Screen.render` vuelve a pintar el fondo desenfocado encima. Corregido en `PhoneScreen`.
 2. **Pestañas de misiones cortadas (bajo):** se quitaron los contadores y se añadió un punto rojo si hay misiones para reclamar.
@@ -192,7 +208,9 @@ Tests automáticos: **81** (63 + 18 nuevos: desafío, mercado, campamento, álbu
 8. **Cliente de QA en inglés (bajo):** el índice de recursos de Loom se llama `1.21.1-17`; con `17` no se cargaba ningún idioma salvo el inglés del JAR. Corregido en `tools/cobblemon_qa.py`.
 9. **Suerte (bajo):** porcentajes como «7,0 %», cantidades sin separador de miles en los avisos («₽1000») y botón «¡Genial!» también al fallar. Corregido («7 %», «₽1.000», «Vale»).
 10. **Capas de animación (bajo):** con la animación encima se podía pulsar lo de debajo. Ahora la capa absorbe los clics salvo su botón.
-11. **Etiquetas del inicio pegadas (bajo):** con 4 columnas, «Misiones», «Cartera» y «Mercado» se tocaban. Ahora dejan margen y algunas apps usan un nombre corto.
+11. **Cofres del desafío en mundo plano (medio):** la comprobación de «por encima del nivel del mar» descartaba todos los sitios en mundos planos. Se quitó (los líquidos ya se comprueban). El servidor registra ahora por qué no encuentra sitio.
+12. **Cofres lejanos (medio):** mirar el cofre cada segundo habría cargado su chunk aunque no hubiera nadie cerca. Ahora solo se mira si la zona ya está cargada.
+13. **Etiquetas del inicio pegadas (bajo):** con 4 columnas, «Misiones», «Cartera» y «Mercado» se tocaban. Ahora dejan margen y algunas apps usan un nombre corto.
 
 ## Pendiente (priorizado)
 1. **Medio:** probar captura, evolución y combate con un cliente COBBLEVERSE completo.

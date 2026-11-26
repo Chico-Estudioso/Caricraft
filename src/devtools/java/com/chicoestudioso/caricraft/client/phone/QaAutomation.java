@@ -54,6 +54,8 @@ public final class QaAutomation implements ClientModInitializer {
             scriptCobblemonReal();
         } else if ("L".equals(role)) {
             scriptLuck();
+        } else if ("G".equals(role)) {
+            scriptChests();
         } else if ("I".equals(role)) {
             scriptPhoneItem();
         } else {
@@ -829,6 +831,162 @@ public final class QaAutomation implements ClientModInitializer {
         then(30, () -> logLuck("fusión sin ingredientes"));
         then(5, () -> cc().mouseScrolled(0, 0, 0, -20));
         shot("l13_fusiones_lista");
+        then(20, () -> Minecraft.getInstance().stop());
+    }
+
+    // ------------------------------------------------------------------ cofres del desafío (rol C, con Cobblemon real)
+
+    private static java.util.List<PhoneSnapshot.ChestView> chests() {
+        var c = snap() == null ? null : snap().challenge();
+        return c == null || c.chests() == null ? java.util.List.of() : c.chests();
+    }
+
+    private static int nearby(String typeId, double radius) {
+        var mc = Minecraft.getInstance();
+        int count = 0;
+        for (var entity : mc.level.entitiesForRendering()) {
+            if (net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).toString().equals(typeId)
+                    && entity.distanceTo(mc.player) <= radius) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static String mobsNear() {
+        return "zombis=" + nearby("minecraft:zombie", 48) + " husks=" + nearby("minecraft:husk", 48)
+                + " esqueletos=" + nearby("minecraft:skeleton", 48) + " strays=" + nearby("minecraft:stray", 48)
+                + " arañas=" + nearby("minecraft:spider", 48) + " pokémon=" + nearby("cobblemon:pokemon", 48);
+    }
+
+    private static double[] chestPos;
+
+    private void scriptChests() {
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("time set 6000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("tp @s 0 -60 0 0 10");
+            cmd("clear @s");
+            cmd("caricraft desafio nivel 6");
+        });
+        then(60, () -> cmd("caricraft desafio cofre emboscada"));
+        then(40, () -> {
+            log("COFRES tras crear: " + chests().stream().map(c -> c.kind() + "@" + (int) c.x() + "," + (int) c.y() + "," + (int) c.z()
+                    + " oleadas=" + c.waves() + " nivel=" + c.level()).toList());
+            logNotices();
+        });
+        page(PhonePage.CHALLENGE, 0);
+        then(20, () -> phone().mouseScrolled(0, 0, 0, -6));
+        shot("c01_app_cofre");
+        closePhone();
+        then(5, () -> {
+            var chest = chests().getFirst();
+            chestPos = new double[]{chest.x(), chest.y(), chest.z()};
+            cmd(String.format(java.util.Locale.ROOT, "tp @s %.1f %.1f %.1f 135 15", chest.x() + 5, chest.y(), chest.z() + 5));
+        });
+        then(80, () -> {
+            log("COFRE emboscada empezada: " + chests().stream().map(c -> "combate=" + c.fighting() + " oleada=" + c.wave()).toList()
+                    + " · " + mobsNear());
+            logNotices();
+        });
+        shot("c02_emboscada");
+        for (int i = 1; i <= 4; i++) {
+            int n = i;
+            then(20, () -> cmd("kill @e[tag=caricraft_ambush]"));
+            then(100, () -> {
+                log("COFRE tras matar " + n + ": " + chests().stream().map(c -> "oleada=" + c.wave() + "/" + c.waves()).toList()
+                        + " · " + mobsNear());
+                logNotices();
+            });
+        }
+        then(10, () -> {
+            cmd(String.format(java.util.Locale.ROOT, "tp @s %.1f %.1f %.1f -135 30", chestPos[0] + 1.5, chestPos[1], chestPos[2] + 1.5));
+        });
+        then(30, () -> {
+            var mc = Minecraft.getInstance();
+            var pos = net.minecraft.core.BlockPos.containing(chestPos[0], chestPos[1], chestPos[2]);
+            mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                    new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false));
+        });
+        then(30, () -> {
+            var menu = Minecraft.getInstance().player.containerMenu;
+            java.util.List<String> items = new java.util.ArrayList<>();
+            for (int i = 0; i < Math.min(27, menu.slots.size()); i++) {
+                var stack = menu.slots.get(i).getItem();
+                if (!stack.isEmpty()) {
+                    items.add(stack.getCount() + "x" + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem())
+                            + (stack.isEnchanted() ? "(encantado)" : ""));
+                }
+            }
+            log("COFRE botín: " + items);
+        });
+        shot("c03_botin");
+        then(5, () -> Minecraft.getInstance().setScreen(null));
+
+        // Guardián
+        then(20, () -> cmd("tp @s 0 -60 0 0 10"));
+        then(40, () -> cmd("caricraft desafio cofre guardian"));
+        then(40, () -> {
+            logNotices();
+            var chest = chests().stream().filter(c -> c.kind().equals("GUARDIAN")).findFirst().orElse(null);
+            log("COFRE guardián: " + (chest == null ? "-" : chest.guardian() + " nv." + chest.guardianLevel()));
+            if (chest != null) {
+                chestPos = new double[]{chest.x(), chest.y(), chest.z()};
+                cmd(String.format(java.util.Locale.ROOT, "tp @s %.1f %.1f %.1f -90 15", chest.x() - 7, chest.y(), chest.z()));
+            }
+        });
+        then(80, () -> {
+            log("COFRE guardián cerca: " + mobsNear() + " · " + chests().stream().map(c -> "combate=" + c.fighting()).toList());
+            logNotices();
+        });
+        shot("c04_guardian");
+        then(5, () -> cmd("kill @e[tag=caricraft_ambush]"));
+        then(60, () -> log("COFRE guardián tras matarlo sin combate (debe volver): " + mobsNear()));
+        then(5, () -> cmd(String.format(java.util.Locale.ROOT, "tp @s %.1f %.1f %.1f", chestPos[0] + 150, chestPos[1], chestPos[2])));
+        then(520, () -> cmd(String.format(java.util.Locale.ROOT, "tp @s %.1f %.1f %.1f -90 15", chestPos[0] - 7, chestPos[1], chestPos[2])));
+        then(20, () -> log("COFRE guardián al volver (se había retirado; está esperando): " + mobsNear() + " · "
+                + chests().stream().map(c -> "combate=" + c.fighting()).toList()));
+        then(60, () -> log("COFRE guardián otra vez: " + mobsNear()));
+        page(PhonePage.CHALLENGE, 0);
+        then(20, () -> phone().mouseScrolled(0, 0, 0, -6));
+        shot("c05_app_guardian");
+        closePhone();
+
+        // Limpieza al amanecer
+        then(5, () -> {
+            cmd("tp @s 0 -60 0 0 10");
+            cmd("time set 14000");
+        });
+        then(40, () -> cmd("caricraft desafio iniciar"));
+        then(40, () -> {
+            for (int i = 0; i < 3; i++) {
+                cmd("summon zombie ~" + (i * 2 + 3) + " ~ ~3");
+            }
+        });
+        then(40, () -> log("AMANECER zombis del desafío de noche: " + mobsNear()));
+        then(5, () -> cmd("tp @s 600 -60 600"));
+        then(40, () -> cmd("time set 23500"));
+        then(300, () -> cmd("tp @s 0 -60 0 0 10"));
+        then(80, () -> {
+            log("AMANECER al volver de día (deben ser 0): " + mobsNear());
+            logNotices();
+        });
+        page(PhonePage.CHALLENGE, 0);
+        shot("c06_app_nivel");
+        closePhone();
+
+        // Regalo misterioso: dos al día
+        then(5, () -> act(PhoneAction.CV_GIFT, ""));
+        then(30, QaAutomation::logNotices);
+        then(5, () -> act(PhoneAction.CV_GIFT, ""));
+        then(30, QaAutomation::logNotices);
+        then(5, () -> act(PhoneAction.CV_GIFT, ""));
+        then(30, () -> {
+            logNotices();
+            var cv = snap().cobbleverse();
+            log("REGALOS quedan " + cv.giftsLeft() + "/" + cv.giftsPerDay());
+        });
         then(20, () -> Minecraft.getInstance().stop());
     }
 

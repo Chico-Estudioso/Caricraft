@@ -17,6 +17,10 @@ public final class ChallengeState {
     long totalCarins;
     int nightKills;
     long nightCarins;
+    /** Experiencia de desafío acumulada: decide el nivel. */
+    long xp;
+    /** Guardado antes de que existiera la experiencia: su nivel sale de las noches superadas (una sola vez). */
+    boolean legacyLevel;
 
     public long lastChallengeDay() {
         return lastChallengeDay;
@@ -54,6 +58,16 @@ public final class ChallengeState {
         return nightCarins;
     }
 
+    public long xp() {
+        return xp;
+    }
+
+    /** Solo para cargar desde disco. {@code legacy}: datos de antes de la experiencia. */
+    public void restoreXp(long xp, boolean legacy) {
+        this.xp = Math.max(0, xp);
+        this.legacyLevel = legacy;
+    }
+
     /** Solo para cargar desde disco. */
     public void restore(long lastChallengeDay, long scheduledDay, boolean forced, boolean active, int nightsCompleted,
                         long totalKills, long totalCarins, int nightKills, long nightCarins) {
@@ -71,5 +85,6 @@ public final class ChallengeState {
     /** Copia los contadores al separar un dúo. */
     public void copyFrom(ChallengeState other) {
         restore(other.lastChallengeDay, NONE, false, false, other.nightsCompleted, other.totalKills, other.totalCarins, 0, 0);
+        this.xp = other.xp;
     }
 }

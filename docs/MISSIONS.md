@@ -5,7 +5,7 @@
 - **Cooperativa:** progreso compartido; requiere un dúo completo. Puede exigir que **ambos** contribuyan (`requireAllMembers`).
 - **De grupo (`PARTY`):** progreso compartido aunque el grupo tenga un solo miembro (se usa en los hitos).
 - **Hito:** se activa sola y se reclama al completarse.
-- **Diaria / semanal:** se reinicia al cambiar el día o la semana (UTC).
+- **Diaria / semanal:** se reinicia a las 00:00 (la semanal, el lunes) de la zona horaria del servidor (`timeZone`, por defecto Europe/Madrid).
 
 ## Ciclo
 `BLOQUEADA → DISPONIBLE → ACEPTADA → COMPLETADA → RECLAMADA`, más `ABANDONADA` (vuelve a estar disponible) y `CADUCADA` (diarias/semanales fuera de su ciclo).

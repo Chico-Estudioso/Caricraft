@@ -62,4 +62,21 @@ public interface PokemonBackend {
      * @return {@code false} si el Pokémon ya no está en el equipo
      */
     boolean improve(ServerPlayer player, UUID uuid, String kind, int value);
+
+    /**
+     * Crea un Pokémon salvaje en el mundo (p. ej. el guardián de un cofre del desafío).
+     *
+     * @return la entidad ya añadida al mundo, o {@code null} si no se pudo
+     */
+    net.minecraft.world.entity.Entity spawnWild(net.minecraft.server.level.ServerLevel level, String species, int pokemonLevel,
+                                                boolean shiny, double x, double y, double z);
+
+    /** ¿Está esa entidad (un Pokémon) en mitad de un combate? */
+    boolean isBattling(net.minecraft.world.entity.Entity entity);
+
+    /** Identificador del Pokémon (no de la entidad), o {@code null} si no es un Pokémon. */
+    UUID pokemonId(net.minecraft.world.entity.Entity entity);
+
+    /** ¿Tiene el jugador ese Pokémon en su equipo o en su PC? (p. ej. porque lo acaba de capturar) */
+    boolean owns(ServerPlayer player, UUID pokemonId);
 }

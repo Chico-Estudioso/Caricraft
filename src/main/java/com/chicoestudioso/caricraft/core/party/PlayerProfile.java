@@ -22,6 +22,8 @@ public final class PlayerProfile {
     private boolean tipsEnabled = true;
     /** Día (índice) del último regalo misterioso abierto; -1 si nunca. */
     private long giftDay = -1;
+    /** Regalos abiertos el día {@link #giftDay} (los guardados antes de contar valen como 1). */
+    private int giftsToday;
     /** Día al que se refieren los contadores de la tienda Cobbleverse. */
     private long cobbleverseDay = -1;
     private int salesToday;
@@ -99,6 +101,14 @@ public final class PlayerProfile {
 
     public void setTipsEnabled(boolean tipsEnabled) {
         this.tipsEnabled = tipsEnabled;
+    }
+
+    public int giftsToday() {
+        return giftsToday;
+    }
+
+    public void setGiftsToday(int giftsToday) {
+        this.giftsToday = Math.max(0, giftsToday);
     }
 
     public long giftDay() {

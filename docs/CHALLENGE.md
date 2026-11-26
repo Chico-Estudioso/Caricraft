@@ -14,8 +14,39 @@ Noches de desafío con mobs vanilla equipados. Es una app de serie del CariPhone
   - Los viajes de CariCamp y TP Dúo están bloqueados.
 - **Al amanecer**:
   - Si el dúo sigue conectado, gana `nightReward` (por defecto 50) y la noche cuenta como superada.
-  - Los mobs del desafío desaparecen.
+  - **Desaparecen todos los mobs del desafío**, estén donde estén: también los que se quedaron lejos o en zonas sin cargar (se retiran en cuanto esa zona se carga). Se van con una nube de humo: **no cuentan como kill**, no dan Carins ni experiencia y no sueltan nada.
+  - Además, cada 10 s se retiran los que sobren (de día, o lejos de cualquier dúo en desafío). Así no ocupan el límite de entidades que comparten con los Pokémon de Cobblemon.
+- **Las kills de tus Pokémon cuentan como tuyas:** si un Pokémon sacado (o cualquier mascota con dueño, como un lobo) da el golpe final, la kill, los Carins y la experiencia son para su entrenador.
 - Fuera del desafío **no aparecen** esos mobs: el mundo queda como siempre en COBBLEVERSE.
+
+## Cofres del desafío por el mundo
+Para que el equipo bueno (armaduras y espadas encantadas) tenga sentido también fuera de la noche de desafío.
+
+| Emboscada | Pokémon guardián |
+|---|---|
+| ![Emboscada](img/desafio_cofre_emboscada.png) | ![Guardián](img/desafio_cofre_guardian.png) |
+
+![Tarjeta del cofre en la app](img/desafio_cofre_app.png)
+
+- **Cuándo:** cada `chestIntervalMinutes` (20) minutos, con probabilidad `chestChance` (75 %), aparece un cofre cerca de un miembro del dúo conectado. El primero tras entrar, a los 5 minutos. Sale de día o de noche, pero no durante la noche de desafío (ahí ya están los escuadrones). Uno a la vez por dúo.
+- **Dónde:** en la superficie, a 60–140 bloques del jugador, en un sitio que **no estorba**:
+  - Sin ninguna estructura a menos de 32 bloques (aldeas, templos, estructuras de Cobbleverse…).
+  - Sin bloques con datos de jugador cerca (cofres, hornos, carteles, camas…: huele a construcción). Las colmenas naturales no cuentan.
+  - A cielo abierto, sobre suelo firme, sin agua ni lava y lejos de otros cofres del desafío.
+- **Aviso:** notificación con distancia y dirección, una **columna de luz morada** sobre el cofre y una tarjeta con brújula en la app Desafío (con el tiempo que le queda).
+- **Cómo se gana:**
+  - **Emboscada:** al acercarte a 10 bloques salen oleadas de mobs alrededor del cofre: 2 oleadas (niveles 1–9), 3 (10–19) o 4 (20 o más), de 3 mobs más uno cada 4 niveles (máx. 8). La última trae un **capitán** élite. A partir del nivel 8 también hay vindicadores, saqueadores y brujas. Llevan el equipo de su nivel, **casco y resistencia al fuego** (de día el sol no los quema). Barra morada con la oleada y los que quedan.
+  - **Pokémon guardián** (con Cobblemon, `chestGuardianChance` = 40 %): un Pokémon salvaje fuerte que brilla junto al cofre. Nivel `12 + 2 × nivel de desafío` (máx. 80); especie según el nivel (Machoke, Haunter, Pupitar… → Machamp, Gengar, Lucario… → Tyranitar, Garchomp, Metagross…). Hay que **derrotarlo en combate o capturarlo** (y te lo quedas). Si desaparece sin combate, vuelve a salir.
+  - Si el dúo se aleja más de 40 bloques durante 20 s, los atacantes (o el guardián) se retiran y se puede volver a intentar.
+- **Premio:**
+  - Botín de las tablas `data/caricraft/loot_table/challenge/world_chest_1..3.json` (cambiables con datapack), siempre con una pieza de **equipo encantado**: hierro (encantamiento de nivel 10–20), diamante (20–30) o diamante y netherita (30–39), además de diamantes, esmeraldas, manzanas de oro, tótems, libros (con Reparación en la tabla 3), chatarra o lingote de netherita…
+  - Con Cobblemon, 2–3 objetos de Cobblemon más (Super/Ultra Balls, caramelos, piedras evolutivas, vitaminas, Cápsula o Parche habilidad, Huevo Suerte y, rara vez, una Master Ball).
+  - En las emboscadas, a veces (10/20/30 % según la tabla) **un Pokémon** para quien lo conquista.
+  - `chestReward + 5 × nivel` Carins (por defecto 30 + 5 por nivel), `xpPerChest` (40) de experiencia de desafío y una crónica.
+
+  ![Botín de un cofre de nivel 6](img/desafio_cofre_botin.png)
+- **Si nadie lo gana** en `chestLifetimeMinutes` (30) minutos, se desvanece. Cerrado no se abre ni se rompe; al parar el servidor no queda ninguno.
+- Admin: `/caricraft desafio cofre [emboscada|guardian]` saca uno ya cerca del jugador (nivel 2).
 
 ## Escuadrones con botín
 Además de los mobs normales del desafío, de vez en cuando aparece cerca del dúo un **escuadrón protegiendo un cofre de botín** (`challenge.squads`).
@@ -51,7 +82,13 @@ Barra de jefe del dúo (`challenge.bossBar`, activada). La ven los miembros cone
 
 ![Nivel 1 frente a nivel 20](img/desafio_niveles.png)
 
-- **Un nivel más por cada noche superada** (`nightsPerLevel` = 1), hasta `maxLevel` (por defecto **30**, configurable hasta 100).
+- **El nivel sube con la experiencia**, hasta `maxLevel` (por defecto **30**, configurable hasta 100). Suman experiencia:
+  - Cada mob derrotado: `xpPerKill` (3) + nivel del mob / 5; el triple si es élite. **Cuantas más kills en una noche, antes se sube.**
+  - Cada escuadrón: `xpPerSquad` (25). Cada cofre del desafío: `xpPerChest` (40), y sus atacantes cuentan como kills.
+  - Cada noche superada: `xpPerNight` (60).
+  - Para pasar del nivel 1 al 2 hacen falta `xpPerLevel` (150) y cada nivel pide un `xpGrowth` (10 %) más: 150, 165, 180… Una noche con unas 30 kills da para subir un nivel al principio; más adelante hacen falta más.
+  - La app Desafío muestra la barra de experiencia hasta el siguiente nivel, y al subir llega un aviso.
+  - Los dúos que ya jugaban conservan su nivel (se les da la experiencia de ese nivel).
 - **Oleadas:** dentro de cada noche, la segunda oleada (desde medianoche) suma +1 nivel y la tercera (de madrugada) +2 (`waves`).
 - **Élites:** probabilidad del 4 % + 1 % por nivel (máx. 25 %). Tienen +3 niveles de equipo, brillan, llevan el nombre "Élite: …" y dan el triple de Carins (`elites`).
 - **Hordas:** con probabilidad del 3 % por nivel (máx. 50 %), un mob aparece acompañado de otro igual (`hordes`).
@@ -95,5 +132,6 @@ Para hacerlo a mano, basta con borrar esas entradas del JSON.
 - El mixin `ServerLevelChallengeMixin` se engancha en `ServerLevel.addFreshEntity`, el mismo punto que usa MobsBeGone.
   - Si no hay un dúo en desafío a menos de `radius` bloques, impide la aparición. Esto cubre aparición natural, spawners, conversiones y comandos.
   - Si lo hay, etiqueta el mob (`caricraft_challenge`) y lo equipa.
-- Al cargar chunks se retiran los mobs etiquetados que quedaron de noches pasadas.
-- Comandos de administración: `/caricraft desafio iniciar|terminar|nivel <n>` (nivel 2).
+- Al cargar chunks se retiran los mobs etiquetados que quedaron de noches pasadas, y cada 10 s se barren los que sobran en todas las dimensiones (`ChallengeManager.sweep`). Los atacantes de los cofres (`caricraft_ambush`) se retiran igual si su cofre ya no existe.
+- `ChallengeChests` lleva los cofres del desafío (en memoria). El Pokémon guardián usa la API de Cobblemon (`PokemonProperties.createEntity`, `PokemonEntity.isBattling`, equipo y PC del jugador) a través de `PokemonBackend`.
+- Comandos de administración: `/caricraft desafio iniciar|terminar|nivel <n>|cofre [emboscada|guardian]` (nivel 2).

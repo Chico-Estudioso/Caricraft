@@ -67,6 +67,7 @@ public final class CobbleverseDiagnostics {
             }
             String random = backend.randomSpecies(new java.util.Random());
             out.add((random != null ? "OK" : "FALLO") + " Especie al azar para «un entrenador lejano»: " + random + ".");
+            guardianCheck(mod, backend, fake, out);
         } catch (RuntimeException e) {
             out.add("FALLO Crear el Pokémon: " + e);
         } finally {
@@ -92,6 +93,27 @@ public final class CobbleverseDiagnostics {
                     + " → −1000 = " + end + "; sin saldo se rechaza: " + refused + ".");
         }
         return out;
+    }
+
+    /** Cofres del desafío: crear un Pokémon guardián salvaje, leer su estado y retirarlo. */
+    private static void guardianCheck(CaricraftServer mod, PokemonBackend backend, FakePlayer fake, List<String> out) {
+        var level = mod.server().overworld();
+        var spawn = level.getSharedSpawnPos();
+        net.minecraft.world.entity.Entity guardian = backend.spawnWild(level, "machoke", 20, false, spawn.getX() + 0.5,
+                level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawn.getX(), spawn.getZ()),
+                spawn.getZ() + 0.5);
+        if (guardian == null) {
+            out.add("FALLO Pokémon guardián: no se pudo crear un Machoke salvaje.");
+            return;
+        }
+        try {
+            UUID pokemon = backend.pokemonId(guardian);
+            boolean ok = pokemon != null && !backend.isBattling(guardian) && !backend.owns(fake, pokemon) && guardian.isAlive();
+            out.add((ok ? "OK" : "FALLO") + " Pokémon guardián: salvaje creado (" + guardian.getType().getDescription().getString()
+                    + "), sin combate y sin dueño.");
+        } finally {
+            guardian.discard();
+        }
     }
 
     /** Intercambio prodigioso: el Pokémon se guarda en la bolsa (NBT) y vuelve idéntico. */

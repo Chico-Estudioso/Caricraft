@@ -160,10 +160,16 @@ public final class ChallengeManager {
         return ChallengeService.isNight(server.overworld().getDayTime());
     }
 
+    /** Cada cuántos ticks se barren los mobs del desafío que ya no deberían estar (10 s). */
+    private static final int SWEEP_TICKS = 200;
+
     /** Llamado cada tick: hordas pendientes y, una vez por segundo, el ciclo de noches. */
     public static void tick(MinecraftServer server, CaricraftServer mod) {
         spawnHordes();
-        if (++ticks % 20 != 0) {
+        if (++ticks % SWEEP_TICKS == 0) {
+            sweep(server);
+        }
+        if (ticks % 20 != 0) {
             return;
         }
         CaricraftCore core = mod.core();
@@ -182,6 +188,7 @@ public final class ChallengeManager {
             }
         }
         ChallengeSquads.tick(mod, online, server.overworld().getDayTime(), day);
+        ChallengeChests.tick(mod, online);
         ChallengeBossBars.update(mod, online, server.overworld().getDayTime(), day);
     }
 
@@ -198,7 +205,14 @@ public final class ChallengeManager {
                 }
             }
             case SURVIVED, ENDED -> {
+                if (event.leveledUp()) {
+                    announceLevelUp(mod, party, event.level());
+                }
                 ChallengeSquads.endNight(mod, party);
+                int removed = sweep(mod.server());
+                if (removed > 0) {
+                    CaricraftMod.LOGGER.debug("Fin del desafío: {} mobs retirados", removed);
+                }
                 for (ServerPlayer player : online) {
                     despawnAround(player, mod.core().config().challenge.radius);
                     if (event.kind() == ChallengeEvent.Kind.SURVIVED) {
@@ -214,6 +228,23 @@ public final class ChallengeManager {
         }
         if (!online.isEmpty()) {
             mod.sendPartySnapshots(online.getFirst().getUUID());
+        }
+    }
+
+    /** Si el grupo ha subido de nivel desde {@code before}, lo anuncia. */
+    public static void checkLevelUp(CaricraftServer mod, Party party, int before) {
+        int after = mod.core().challenge().level(party);
+        if (after > before) {
+            announceLevelUp(mod, party, after);
+        }
+    }
+
+    private static void announceLevelUp(CaricraftServer mod, Party party, int level) {
+        for (ServerPlayer player : onlineMembers(mod, party)) {
+            mod.notify(player, true, "caricraft.notify.challenge_level_up", List.of(String.valueOf(level)));
+            player.displayClientMessage(Component.translatable("caricraft.challenge.actionbar_level_up", level)
+                    .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD), true);
+            player.playNotifySound(net.minecraft.sounds.SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 0.7f, 1.0f);
         }
     }
 
@@ -284,7 +315,7 @@ public final class ChallengeManager {
 
     /** Lo llama el mixin de {@code ServerLevel.addFreshEntity}. Devuelve falso para impedir la aparición. */
     public static boolean onAddFreshEntity(ServerLevel level, Entity entity) {
-        if (ChallengeSquads.spawning()) {
+        if (ChallengeSquads.spawning() || ChallengeChests.spawning()) {
             return true;
         }
         try {
@@ -353,11 +384,77 @@ public final class ChallengeManager {
         return 1;
     }
 
-    /** Al cargar chunks: retira mobs de desafíos pasados que quedaron guardados. */
-    public static void onEntityLoad(Entity entity, ServerLevel level) {
-        if (entity.getTags().contains(TAG) && spawnLevel(level, entity) == 0) {
-            entity.discard();
+    /**
+     * ¿Sobra este mob del desafío? Sí si es de día o si no hay nadie con el desafío activo cerca. Los guardias de un
+     * escuadrón que sigue en pie se quedan.
+     */
+    static boolean stray(ServerLevel level, Entity entity) {
+        if (!(entity instanceof Mob) || !entity.getTags().contains(TAG) || ChallengeSquads.isLiveGuard(entity)) {
+            return false;
         }
+        CaricraftServer mod = CaricraftServer.get();
+        if (mod == null) {
+            return false;
+        }
+        if (!night(mod.server()) || !mod.core().config().challenge.enabled) {
+            return true;
+        }
+        double radiusSq = (double) mod.core().config().challenge.radius * mod.core().config().challenge.radius;
+        for (ServerPlayer player : level.players()) {
+            Party party = mod.core().partyOf(player.getUUID());
+            if (party != null && party.challenge().active() && player.distanceToSqr(entity) <= radiusSq) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Retira (sin muerte, sin botín y sin contar como kill) todos los mobs del desafío que sobran en cualquier
+     * dimensión: al amanecer y cada 10 s. Así no ocupan el límite de entidades que comparten con Cobblemon.
+     *
+     * @return mobs retirados
+     */
+    public static int sweep(MinecraftServer server) {
+        int removed = 0;
+        for (ServerLevel level : server.getAllLevels()) {
+            List<Entity> doomed = new ArrayList<>();
+            for (Entity entity : level.getAllEntities()) {
+                if (stray(level, entity)) {
+                    doomed.add(entity);
+                }
+            }
+            for (Entity entity : doomed) {
+                level.sendParticles(ParticleTypes.POOF, entity.getX(), entity.getY() + 0.5, entity.getZ(), 8, 0.3, 0.4, 0.3, 0.02);
+                entity.discard();
+                removed++;
+            }
+        }
+        return removed;
+    }
+
+    /** Al cargar chunks: retira mobs de desafíos pasados que quedaron guardados (p. ej. lejos al amanecer). */
+    public static void onEntityLoad(Entity entity, ServerLevel level) {
+        if (stray(level, entity)) {
+            entity.discard();
+            return;
+        }
+        ChallengeChests.onEntityLoad(entity);
+    }
+
+    /**
+     * Quién se lleva el mérito de una muerte: el jugador que la causa o el dueño de la mascota que la causa (un
+     * Pokémon sacado de Cobblemon, un lobo…). {@code null} si no fue ningún jugador.
+     */
+    public static ServerPlayer creditedPlayer(net.minecraft.world.damagesource.DamageSource source) {
+        Entity attacker = source.getEntity();
+        if (attacker instanceof ServerPlayer player) {
+            return player;
+        }
+        if (attacker instanceof net.minecraft.world.entity.OwnableEntity pet && pet.getOwner() instanceof ServerPlayer owner) {
+            return owner;
+        }
+        return null;
     }
 
     // ------------------------------------------------------------------ jugador
@@ -384,7 +481,9 @@ public final class ChallengeManager {
             return;
         }
         boolean elite = victim.getTags().contains(ELITE_TAG);
+        int before = mod.core().challenge().level(party);
         long reward = mod.core().challenge().onKill(party, levelOf(victim), elite);
+        checkLevelUp(mod, party, before);
         if (reward > 0) {
             killer.displayClientMessage(Component.translatable(elite ? "caricraft.challenge.elite_reward" : "caricraft.challenge.kill_reward", reward)
                     .withStyle(ChatFormatting.GOLD), true);

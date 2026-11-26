@@ -25,6 +25,11 @@ public final class MissionService {
     private final CaricraftConfig config;
     private final Clock clock;
 
+    /** Calendario de la zona horaria configurada (se lee cada vez: la configuración se puede recargar). */
+    private com.chicoestudioso.caricraft.core.GameCalendar calendar() {
+        return com.chicoestudioso.caricraft.core.GameCalendar.of(config.timeZone);
+    }
+
     public MissionService(MissionCatalog catalog, ShopService shop, EconomyService economy, ChronicleService chronicle,
                           CaricraftConfig config, Clock clock) {
         this.catalog = catalog;
@@ -43,7 +48,7 @@ public final class MissionService {
     public MissionState stateFor(Party party, UUID player, MissionDefinition def) {
         String key = def.stateKey(player);
         MissionState state = party.missions().get(key);
-        if (state != null && def.category().repeatable() && state.cycle() != def.category().cycle(clock.now())
+        if (state != null && def.category().repeatable() && state.cycle() != def.category().cycle(clock.now(), calendar())
                 && state.status() != MissionStatus.COMPLETED) {
             // Ciclo terminado: lo no completado caduca y vuelve a estar disponible.
             party.missions().remove(key);
@@ -108,7 +113,7 @@ public final class MissionService {
     private MissionState newState(MissionDefinition def, UUID player) {
         long now = clock.now();
         return new MissionState(def.id(), def.scope().shared() ? null : player, MissionStatus.ACCEPTED,
-                new long[def.objectives().size()], def.category().cycle(now), now);
+                new long[def.objectives().size()], def.category().cycle(now, calendar()), now);
     }
 
     public ActionResult abandon(CaricraftState state, UUID player, String missionId) {

@@ -175,6 +175,31 @@ final class CobblemonBackend implements PokemonBackend {
     }
 
     @Override
+    public net.minecraft.world.entity.Entity spawnWild(net.minecraft.server.level.ServerLevel level, String species, int pokemonLevel,
+                                                       boolean shiny, double x, double y, double z) {
+        com.cobblemon.mod.common.entity.pokemon.PokemonEntity entity = PokemonProperties.Companion
+                .parse("species=" + species + " level=" + pokemonLevel + (shiny ? " shiny=true" : "")).createEntity(level);
+        entity.getPokemon().setShiny(shiny);
+        entity.moveTo(x, y, z, level.getRandom().nextFloat() * 360f, 0f);
+        return level.addFreshEntity(entity) ? entity : null;
+    }
+
+    @Override
+    public boolean isBattling(net.minecraft.world.entity.Entity entity) {
+        return entity instanceof com.cobblemon.mod.common.entity.pokemon.PokemonEntity pokemon && pokemon.isBattling();
+    }
+
+    @Override
+    public UUID pokemonId(net.minecraft.world.entity.Entity entity) {
+        return entity instanceof com.cobblemon.mod.common.entity.pokemon.PokemonEntity pokemon ? pokemon.getPokemon().getUuid() : null;
+    }
+
+    @Override
+    public boolean owns(ServerPlayer player, UUID pokemonId) {
+        return store(player).get(pokemonId) != null || Cobblemon.INSTANCE.getStorage().getPC(player).get(pokemonId) != null;
+    }
+
+    @Override
     public boolean speciesExists(String species) {
         return PokemonSpecies.getByName(species) != null;
     }

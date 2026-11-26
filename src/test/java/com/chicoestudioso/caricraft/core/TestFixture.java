@@ -17,7 +17,13 @@ public final class TestFixture {
     public static final long START = 1_767_225_600_000L; // 2026-01-01T00:00:00Z (jueves)
 
     public final MutableClock clock = new MutableClock(START);
-    public final CaricraftConfig config = new CaricraftConfig().validated();
+    public final CaricraftConfig config = utc(new CaricraftConfig().validated());
+
+    /** Los tests cuentan los días en UTC (los de zona horaria lo cambian a propósito). */
+    private static CaricraftConfig utc(CaricraftConfig config) {
+        config.timeZone = "UTC";
+        return config;
+    }
     public final CaricraftState state = new CaricraftState();
     public CaricraftCore core;
 

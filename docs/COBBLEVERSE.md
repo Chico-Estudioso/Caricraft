@@ -87,7 +87,7 @@ Pestañas **Cajas**, **Suerte** y **Mejoras** del CobbleCentro. Todo se paga en 
 - Contenido, precios, probabilidades, apuestas, pagos y límites en `config/caricraft_cobbleverse.json` (secciones `crates`, `slots`, `upgrades` y `fusions`). Un archivo anterior que no las tenga recibe las del mod; una lista vacía a propósito se respeta.
 
 ## Regalo misterioso
-- **Uno al día por jugador.** El día cambia a las 00:00 UTC, igual que el Mercado. Se abre con «Abrir el regalo».
+- **Dos al día por jugador** (`giftsPerDay`). Se reinician a las **00:00** de la zona horaria del servidor (`timeZone` en `config/caricraft.json`, por defecto `Europe/Madrid`, con su horario de verano). Se abre con «Abrir el regalo»; la tarjeta dice cuántos quedan hoy.
 - Premios al azar con pesos, en `config/caricraft_cobbleverse.json`:
   - **Objetos:**
     - Caramelos raros y de experiencia.
@@ -151,6 +151,7 @@ Cada día salen **6 ofertas** de un catálogo de 24. Son las mismas para todos y
 | `maxSalesPerDay` | 10 | Ventas por jugador y día |
 | `sellPriceMultiplier` | 1.0 | Multiplica lo que se paga |
 | `sellLegendaries` | `false` | Permite vender (e intercambiar) legendarios |
+| `giftsPerDay` | 2 | Regalos misteriosos por jugador y día |
 | `wonderTrade` | `true` | Intercambio prodigioso |
 | `wonderTradesPerDay` | 1 | Intercambios prodigiosos por jugador y día |
 | `wonderShinyChance` | 0.02 | Probabilidad de variocolor de los Pokémon de «un entrenador lejano» |

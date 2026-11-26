@@ -85,7 +85,7 @@ public final class CobbleverseManager {
                 config.shop, offers, config.sellPokemon, party, service.salesToday(profile, day), service.maxSalesPerDay(),
                 config.wonderTrade, service.wondersLeft(profile, day), config.wonderTradesPerDay,
                 WonderTradeData.get(mod.server()).entries().size(), LAST_WONDER.get(player.getUUID()),
-                LuckManager.view(mod, player, profile, day));
+                LuckManager.view(mod, player, profile, day), service.giftsLeft(profile, day), service.giftsPerDay());
     }
 
     // ------------------------------------------------------------------ regalo misterioso

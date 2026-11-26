@@ -1,6 +1,11 @@
 # Changelog
 
 ## Unreleased
+- **Cofres del desafío por el mundo** (ver `docs/CHALLENGE.md`): de vez en cuando, de día o de noche, aparece cerca del dúo un cofre en un sitio que no pisa estructuras ni construcciones (columna de luz morada, aviso y brújula en la app). Se gana con una **emboscada** de mobs por oleadas según el nivel, o, con Cobblemon, venciendo o capturando a un **Pokémon guardián**. Botín con **equipo encantado**, objetos de Cobblemon, a veces un Pokémon, Carins y experiencia. Si nadie lo gana, se desvanece. `/caricraft desafio cofre [emboscada|guardian]`.
+- **Nivel del desafío por experiencia:** las kills (más las élite), los escuadrones, los cofres y las noches superadas dan experiencia; cuantas más kills en una noche, antes sube. Barra de experiencia en la app y aviso al subir. Los dúos existentes conservan su nivel.
+- **Limpieza total al amanecer:** al acabar la noche desaparecen todos los mobs del desafío (también los lejanos o en zonas sin cargar), sin contar como kill ni soltar nada, y cada 10 s se retiran los que sobren. Ya no ocupan el límite de entidades de Cobblemon.
+- Las kills de tus **Pokémon sacados** (y otras mascotas) cuentan como tuyas.
+- **Regalo misterioso: 2 al día**, que vuelven a las **00:00 de la zona horaria del servidor** (`timeZone`, por defecto Europe/Madrid). Esa misma medianoche rige ahora las ofertas del Mercado y de Cobbleverse y las misiones diarias y semanales. Protocolo de red 9.
 - **Suerte en el CobbleCentro** (ver `docs/COBBLEVERSE.md`), todo en CobbleDollars y decidido en el servidor:
   - **Cajas** Poké, Ultra y Maestra con premios por rareza (objetos, dinero, Pokémon, variocolor, pseudolegendarios, Master Ball), probabilidades a la vista y ruleta animada.
   - **Tragaperras** con 3 apuestas, 30 tiradas al día y premio gordo ×200. Devuelve el 91,5 % a la larga y lo dice en pantalla.
