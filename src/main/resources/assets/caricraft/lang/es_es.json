@@ -1001,5 +1001,12 @@
   "caricraft.stat.expeditions": "Expediciones",
   "caricraft.phone.streak.title_one": "Racha: %s día",
   "caricraft.phone.weekly.half": "mitad: %s C",
-  "caricraft.phone.weekly.full": "meta: %s C"
+  "caricraft.phone.weekly.full": "meta: %s C",
+  "caricraft.notify.cleaner_soon": "Limpieza del suelo en %s segundos: recoge lo que quieras guardar.",
+  "caricraft.notify.cleaner_done": "Limpieza del suelo: %s objetos retirados. La próxima, en %s minutos.",
+  "caricraft.cleaner.countdown": "Limpieza del suelo en %s s",
+  "caricraft.cleaner.done": "Suelo limpio: %s objetos retirados",
+  "caricraft.command.cleaner_off": "La limpieza del suelo está desactivada.",
+  "caricraft.command.cleaner_status": "Próxima limpieza del suelo en %s min %s s (cada %s minutos).",
+  "caricraft.command.cleaner_done": "Limpieza hecha: %s objetos, %s orbes y %s flechas (%s protegidos)."
 }

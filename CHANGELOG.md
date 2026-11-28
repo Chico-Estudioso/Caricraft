@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- **Limpieza del suelo contra el lag** (ver `docs/CLEANER.md`): cada 15 minutos (configurable: 10, 20…) se retiran los objetos tirados, los orbes de experiencia y las flechas sueltas de las zonas cargadas. Avisa un minuto antes, a los 30 s y con cuenta atrás en la barra de acción.
+  - No toca lo que suelta un jugador al morir (Lenient Death lo guarda 15 minutos), lo recién tirado, los objetos con nombre ni la lista protegida (CariPhone, trofeos, élitros, netherita, cajas de shulker…).
+  - Comandos `/caricraft limpieza [ahora]`.
 - **Racha diaria, eventos semanales y Vitrina** (ver `docs/ROUTINE.md`). Protocolo de red 11.
   - **Racha diaria:** cada día en que el dúo reclama una misión. Paga más cada día de la semana de racha (15 → 100 Carins el séptimo). Bonus de dúo del 50 % si los dos jugáis ese día, y un protector que perdona un día perdido por semana.
   - **Eventos semanales en rotación:** minera, desafío, exploradora, Pokémon, cazadora y artesana. Cada uno da una ventaja (×1,5 en ciertas misiones, experiencia del desafío o caza del día) y tiene una meta del dúo con premio a la mitad y al completarla.

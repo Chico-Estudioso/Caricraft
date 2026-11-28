@@ -109,6 +109,9 @@ public final class CaricraftCommands {
                         .then(Commands.literal("nivel").requires(src -> src.hasPermission(2))
                                 .then(Commands.argument("nivel", com.mojang.brigadier.arguments.IntegerArgumentType.integer(1, 100))
                                         .executes(CaricraftCommands::challengeLevel))))
+                .then(Commands.literal("limpieza").requires(src -> src.hasPermission(2))
+                        .executes(CaricraftCommands::cleanerStatus)
+                        .then(Commands.literal("ahora").executes(CaricraftCommands::cleanerNow)))
                 .then(Commands.literal("rutina").requires(src -> src.hasPermission(2))
                         .executes(CaricraftCommands::routineStatus)
                         .then(Commands.literal("evento")
@@ -290,6 +293,34 @@ public final class CaricraftCommands {
         com.chicoestudioso.caricraft.server.cobbleverse.DuoPokemonManager.onCapture(mod, player, info);
         ctx.getSource().sendSuccess(() -> Component.literal("[Cobbleverse] Captura simulada: " + info), false);
         return 1;
+    }
+
+    /** Cuánto falta para la próxima limpieza del suelo. */
+    private static int cleanerStatus(CommandContext<CommandSourceStack> ctx) {
+        CaricraftServer mod = mod(ctx);
+        if (mod == null) {
+            return 0;
+        }
+        long left = com.chicoestudioso.caricraft.server.cleaner.ItemCleaner.secondsLeft(mod);
+        if (left < 0) {
+            ctx.getSource().sendSuccess(() -> Component.translatable("caricraft.command.cleaner_off"), false);
+            return 0;
+        }
+        ctx.getSource().sendSuccess(() -> Component.translatable("caricraft.command.cleaner_status", left / 60, left % 60,
+                mod.core().config().cleaner.intervalMinutes), false);
+        return (int) left;
+    }
+
+    /** Limpia el suelo ya. */
+    private static int cleanerNow(CommandContext<CommandSourceStack> ctx) {
+        CaricraftServer mod = mod(ctx);
+        if (mod == null) {
+            return 0;
+        }
+        var result = com.chicoestudioso.caricraft.server.cleaner.ItemCleaner.cleanNow(mod);
+        ctx.getSource().sendSuccess(() -> Component.translatable("caricraft.command.cleaner_done", result.items(), result.orbs(),
+                result.arrows(), result.kept()), true);
+        return result.total();
     }
 
     /** Racha, evento de la semana y medallas del grupo del jugador. */

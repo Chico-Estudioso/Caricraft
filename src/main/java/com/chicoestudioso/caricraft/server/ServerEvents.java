@@ -63,6 +63,7 @@ public final class ServerEvents {
             com.chicoestudioso.caricraft.server.cobbleverse.CobbleverseManager.forget(uuid);
             com.chicoestudioso.caricraft.server.cobbleverse.LuckManager.forget(uuid);
             com.chicoestudioso.caricraft.integration.rct.RctBridge.forget(uuid);
+            com.chicoestudioso.caricraft.server.cleaner.ItemCleaner.forget(uuid);
             CaricraftServer mod = CaricraftServer.get();
             if (mod != null) {
                 mod.rateLimiter().forget(uuid);
@@ -80,6 +81,7 @@ public final class ServerEvents {
                 com.chicoestudioso.caricraft.server.cobbleverse.ShinyAlerts.tick(server, mod);
                 com.chicoestudioso.caricraft.server.cobbleverse.ExpeditionManager.tick(server, mod);
                 com.chicoestudioso.caricraft.server.routine.RoutineManager.tick(server, mod);
+                com.chicoestudioso.caricraft.server.cleaner.ItemCleaner.tick(server, mod);
             }
         });
 
@@ -117,6 +119,12 @@ public final class ServerEvents {
         });
 
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
+            if (entity instanceof ServerPlayer deadPlayer) {
+                CaricraftServer cleanerMod = CaricraftServer.get();
+                if (cleanerMod != null) {
+                    com.chicoestudioso.caricraft.server.cleaner.ItemCleaner.onPlayerDeath(cleanerMod, deadPlayer);
+                }
+            }
             // El mérito es del jugador o del dueño de la mascota (p. ej. su Pokémon) que da el golpe final.
             ServerPlayer credited = ChallengeManager.creditedPlayer(source);
             if (entity.getTags().contains(com.chicoestudioso.caricraft.server.challenge.ChallengeSquads.SQUAD_TAG)) {

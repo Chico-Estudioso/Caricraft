@@ -1001,5 +1001,12 @@
   "caricraft.stat.expeditions": "Expeditions",
   "caricraft.phone.streak.title_one": "Streak: %s day",
   "caricraft.phone.weekly.half": "half: %s C",
-  "caricraft.phone.weekly.full": "goal: %s C"
+  "caricraft.phone.weekly.full": "goal: %s C",
+  "caricraft.notify.cleaner_soon": "Ground cleanup in %s seconds: pick up anything you want to keep.",
+  "caricraft.notify.cleaner_done": "Ground cleanup: %s items removed. Next one in %s minutes.",
+  "caricraft.cleaner.countdown": "Ground cleanup in %s s",
+  "caricraft.cleaner.done": "Ground clean: %s items removed",
+  "caricraft.command.cleaner_off": "Ground cleanup is disabled.",
+  "caricraft.command.cleaner_status": "Next ground cleanup in %s min %s s (every %s minutes).",
+  "caricraft.command.cleaner_done": "Cleanup done: %s items, %s orbs and %s arrows (%s protected)."
 }
