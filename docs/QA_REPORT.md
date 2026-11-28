@@ -231,6 +231,14 @@ Por defecto `levelCapSpawns` está desactivado y los niveles de los salvajes son
 | Segunda pasada tras los arreglos | Jefe con 144/144 de vida, más grande y brillando; tarjeta del evento sin solapes («✔ mitad: 100 C · ✔ meta: 300 C»), «Racha: 1 día» y los trofeos primero en la Vitrina |
 | Derrotarlo (`/damage … by @s`) | «¡El Rey Zombi derrotado (nivel 5)!»: +250 Carins, **Trofeo del desafío** en el inventario, botín en el suelo (diamantes, esmeraldas, manzana de oro y frascos de experiencia), medalla «Jefes» de bronce y el trofeo en la Vitrina |
 
+**Limpieza del suelo con cliente y servidor de producción** (`tools/cobblemon_qa.py`, rol Z, limpieza cada minuto, 2026-11-28):
+
+| Paso | Resultado |
+|---|---|
+| Tierra, piedra, diamante con nombre, élitros, palos recién tirados, un orbe, una flecha y una vaca; `/caricraft limpieza ahora` | Se van la tierra, la piedra, el orbe y la flecha. Se quedan el diamante con nombre, los élitros, los palos (menos de 20 s) y la vaca |
+| Morir en (40, 40) y dejar hierro allí y oro a 28 bloques | Tras limpiar, el hierro junto a la muerte sigue y el oro lejano no |
+| Limpieza automática | Aviso del CariPhone y en la barra de acción a 60 y 30 s, cuenta atrás y «Limpieza del suelo: 4 objetos retirados»; en el registro del servidor, el resumen con los protegidos |
+
 ## Errores encontrados y corregidos durante la QA
 1. **Teléfono borroso (alto):** en 1.21 `Screen.render` vuelve a pintar el fondo desenfocado encima. Corregido en `PhoneScreen`.
 2. **Pestañas de misiones cortadas (bajo):** se quitaron los contadores y se añadió un punto rojo si hay misiones para reclamar.

@@ -1003,7 +1003,7 @@
   "caricraft.phone.weekly.half": "half: %s C",
   "caricraft.phone.weekly.full": "goal: %s C",
   "caricraft.notify.cleaner_soon": "Ground cleanup in %s seconds: pick up anything you want to keep.",
-  "caricraft.notify.cleaner_done": "Ground cleanup: %s items removed. Next one in %s minutes.",
+  "caricraft.notify.cleaner_done": "Ground cleanup: %s items removed. Next one in %s min.",
   "caricraft.cleaner.countdown": "Ground cleanup in %s s",
   "caricraft.cleaner.done": "Ground clean: %s items removed",
   "caricraft.command.cleaner_off": "Ground cleanup is disabled.",

@@ -1003,7 +1003,7 @@
   "caricraft.phone.weekly.half": "mitad: %s C",
   "caricraft.phone.weekly.full": "meta: %s C",
   "caricraft.notify.cleaner_soon": "Limpieza del suelo en %s segundos: recoge lo que quieras guardar.",
-  "caricraft.notify.cleaner_done": "Limpieza del suelo: %s objetos retirados. La próxima, en %s minutos.",
+  "caricraft.notify.cleaner_done": "Limpieza del suelo: %s objetos retirados. La próxima, en %s min.",
   "caricraft.cleaner.countdown": "Limpieza del suelo en %s s",
   "caricraft.cleaner.done": "Suelo limpio: %s objetos retirados",
   "caricraft.command.cleaner_off": "La limpieza del suelo está desactivada.",

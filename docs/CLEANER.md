@@ -16,6 +16,8 @@ Nunca toca mobs, Pokémon, marcos, soportes de armadura ni vehículos.
 - La lista `protectedItems`: el CariPhone, el Trofeo del desafío, estrella del Nether, élitros, tótem, huevo de dragón, faro, núcleo denso, netherita, Master Ball y cajas de shulker. Admite ids y `#etiquetas`.
 
 ## Avisos
+![Aviso de limpieza a 30 segundos](img/limpieza_aviso.png)
+
 - Un minuto antes y a los 30 s, aviso del CariPhone a todos: «Limpieza del suelo en 60 segundos: recoge lo que quieras guardar».
 - En la barra de acción, cuenta atrás a los 10 s y en los últimos 5 (con un sonido en los 3 últimos).
 - Al terminar: «Limpieza del suelo: N objetos retirados. La próxima, en 15 minutos». También queda en el registro del servidor.
