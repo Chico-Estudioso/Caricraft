@@ -195,6 +195,13 @@ public final class StateCodec {
         challenge.put("bosses", bosses);
         tag.put("challenge", challenge);
         tag.put("routine", writeRoutine(party.routine()));
+        CompoundTag savings = new CompoundTag();
+        savings.putLong("balance", party.savings().balance());
+        savings.putLong("day", party.savings().day());
+        savings.putLong("min", party.savings().minToday());
+        savings.putLong("total", party.savings().totalInterest());
+        savings.putLong("last", party.savings().lastInterest());
+        tag.put("savings", savings);
 
         CompoundTag market = new CompoundTag();
         party.marketPurchases().forEach(market::putInt);
@@ -301,6 +308,11 @@ public final class StateCodec {
         }
         if (tag.contains("routine", Tag.TAG_COMPOUND)) {
             readRoutine(tag.getCompound("routine"), party.routine());
+        }
+        if (tag.contains("savings", Tag.TAG_COMPOUND)) {
+            CompoundTag sv = tag.getCompound("savings");
+            party.savings().restore(sv.getLong("balance"), sv.contains("day") ? sv.getLong("day") : Long.MIN_VALUE, sv.getLong("min"),
+                    sv.getLong("total"), sv.getLong("last"));
         }
         if (tag.contains("duoPokemon", Tag.TAG_COMPOUND)) {
             readDuoPokemon(tag.getCompound("duoPokemon"), party.pokemon());

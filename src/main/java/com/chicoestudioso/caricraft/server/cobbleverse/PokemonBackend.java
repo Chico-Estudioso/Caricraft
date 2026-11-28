@@ -86,6 +86,14 @@ public interface PokemonBackend {
     /** Cura el equipo entero (vida, estado y PP), como un Centro Pokémon. */
     void healParty(ServerPlayer player);
 
+    /**
+     * Da la experiencia justa para subir un nivel (como un caramelo: aprende movimientos y puede evolucionar). Cobblemon
+     * avisa a los mods (RCT la bloquea en el level cap).
+     *
+     * @return nivel tras entrenar, o -1 si el Pokémon ya no está
+     */
+    int trainLevel(ServerPlayer player, UUID pokemon);
+
     /** Administración/QA: deja a todo el equipo a media vida. */
     void hurtParty(ServerPlayer player);
 

@@ -154,9 +154,19 @@ public final class CobbleverseService {
         return config.cobbleverse.pocketHealPrice;
     }
 
+    /** Espera del Centro Pokémon de bolsillo con la mejora «Centro rápido» (cada nivel quita un tercio). */
+    public long healCooldownMinutes(int upgrade) {
+        long base = config.cobbleverse.pocketHealCooldownMinutes;
+        return Math.max(1, Math.round(base * (3 - Math.max(0, Math.min(2, upgrade))) / 3.0));
+    }
+
     /** Cuándo se puede volver a curar (epoch ms). */
     public long healReadyAt(PlayerProfile profile) {
-        return profile.lastHealAt() <= 0 ? 0 : profile.lastHealAt() + config.cobbleverse.pocketHealCooldownMinutes * 60_000L;
+        return healReadyAt(profile, 0);
+    }
+
+    public long healReadyAt(PlayerProfile profile, int upgrade) {
+        return profile.lastHealAt() <= 0 ? 0 : profile.lastHealAt() + healCooldownMinutes(upgrade) * 60_000L;
     }
 
     /**
@@ -164,6 +174,10 @@ public final class CobbleverseService {
      * @param balance saldo de CobbleDollars
      */
     public ActionResult canHeal(PlayerProfile profile, boolean needed, boolean inBattle, long balance) {
+        return canHeal(profile, needed, inBattle, balance, 0);
+    }
+
+    public ActionResult canHeal(PlayerProfile profile, boolean needed, boolean inBattle, long balance, int upgrade) {
         if (!pocketHealEnabled()) {
             return ActionResult.fail("cv_disabled");
         }
@@ -173,7 +187,7 @@ public final class CobbleverseService {
         if (!needed) {
             return ActionResult.fail("cv_heal_not_needed");
         }
-        long wait = healReadyAt(profile) - clock.now();
+        long wait = healReadyAt(profile, upgrade) - clock.now();
         if (wait > 0) {
             return ActionResult.fail("cv_heal_wait", Math.max(1, (wait + 59_999) / 60_000));
         }
@@ -181,6 +195,51 @@ public final class CobbleverseService {
             return ActionResult.fail("cv_insufficient", healPrice() - balance);
         }
         return ActionResult.ok("ok");
+    }
+
+    // ------------------------------------------------------------------ entrenador personal
+
+    private static final String TRAIN_KEY = "train:levels";
+
+    public boolean trainerEnabled() {
+        return enabled() && config.cobbleverse.trainer;
+    }
+
+    /** Carins por subir un nivel desde {@code level}. */
+    public long trainerPrice(int level) {
+        return config.cobbleverse.trainerBasePrice + Math.max(1, level);
+    }
+
+    public int trainerLevelsLeft(PlayerProfile profile, long day) {
+        return Math.max(0, config.cobbleverse.trainerLevelsPerDay - counter(profile, TRAIN_KEY, day));
+    }
+
+    /**
+     * @param cap level cap del jugador (RCT), o 0 si no hay (entonces el máximo es 100)
+     */
+    public ActionResult canTrain(PlayerProfile profile, long day, int level, int cap, boolean inBattle, long carins) {
+        if (!trainerEnabled()) {
+            return ActionResult.fail("cv_disabled");
+        }
+        if (inBattle) {
+            return ActionResult.fail("cv_train_battle");
+        }
+        int max = cap > 0 ? Math.min(cap, 100) : 100;
+        if (level >= max) {
+            return ActionResult.fail(cap > 0 ? "cv_train_cap" : "cv_train_max", max);
+        }
+        if (trainerLevelsLeft(profile, day) <= 0) {
+            return ActionResult.fail("cv_train_limit", config.cobbleverse.trainerLevelsPerDay);
+        }
+        long price = trainerPrice(level);
+        if (carins < price) {
+            return ActionResult.fail("insufficient_funds", price - carins);
+        }
+        return ActionResult.ok("ok");
+    }
+
+    public void recordTrain(PlayerProfile profile, long day) {
+        count(profile, TRAIN_KEY, day);
     }
 
     public void recordHeal(PlayerProfile profile) {

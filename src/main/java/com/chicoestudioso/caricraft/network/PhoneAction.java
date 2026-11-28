@@ -81,7 +81,13 @@ public enum PhoneAction {
     /** Hacer volver antes al Pokémon (sin botín). */
     CV_EXP_CANCEL,
     /** Activa o desactiva la brújula del aviso de variocolor (personal). */
-    TOGGLE_SHINY_COMPASS;
+    TOGGLE_SHINY_COMPASS,
+    /** Meter Carins en la hucha. arg1 = cantidad o {@code all}. */
+    SAVINGS_DEPOSIT,
+    /** Sacar Carins de la hucha. arg1 = cantidad o {@code all}. */
+    SAVINGS_WITHDRAW,
+    /** Entrenador personal: un nivel para el Pokémon arg1 (UUID). */
+    CV_TRAIN;
 
     private static final PhoneAction[] VALUES = values();
 

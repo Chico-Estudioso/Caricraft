@@ -85,6 +85,27 @@ public final class CaricraftConfig {
     public RoutineConfig routine = new RoutineConfig();
     /** Limpieza periódica de objetos del suelo (contra el lag). */
     public CleanerConfig cleaner = new CleanerConfig();
+    /** Hucha del dúo (app de pago). */
+    public SavingsConfig savings = new SavingsConfig();
+
+    public static final class SavingsConfig {
+        public boolean enabled = true;
+        /** Lo que crece cada día (0.02 = un 2 % del saldo que hubo todo el día). */
+        public double dailyRate = 0.02;
+        /** Tope de intereses por día, en Carins. */
+        public long dailyCap = 40;
+        /** Lo más que cabe en la hucha. */
+        public long maxBalance = 100_000;
+
+        SavingsConfig validate() {
+            if (!(dailyRate >= 0) || dailyRate > 0.5) {
+                dailyRate = 0.02;
+            }
+            dailyCap = Math.max(0, Math.min(1_000_000, dailyCap));
+            maxBalance = Math.max(0, Math.min(1_000_000_000L, maxBalance));
+            return this;
+        }
+    }
 
     public static final class CleanerConfig {
         /** Activa la limpieza periódica. */
@@ -289,6 +310,12 @@ public final class CaricraftConfig {
         public double expeditionRewardMultiplier = 1.0;
         /** Pokédex del dúo: variocolores, capturas raras y metas compartidas. */
         public boolean duoDex = true;
+        /** Entrenador personal: Carins a cambio de subir un nivel a un Pokémon (sin pasar del level cap de RCT). */
+        public boolean trainer = true;
+        /** Precio por nivel: {@code trainerBasePrice + nivel actual} Carins. */
+        public long trainerBasePrice = 10;
+        /** Niveles que puede subir cada jugador al día con el entrenador. */
+        public int trainerLevelsPerDay = 5;
         /**
          * Opcional y desactivado: apariciones según el level cap de los entrenadores (RCT). Si se activa, los salvajes
          * no salen por encima del cap del jugador cercano con el cap más bajo. Por defecto los niveles quedan como en
@@ -306,6 +333,8 @@ public final class CaricraftConfig {
             giftsPerDay = clamp(giftsPerDay, 0, 20);
             shinyAlertMinutes = clamp(shinyAlertMinutes, 1, 60);
             levelCapMargin = clamp(levelCapMargin, 0, 100);
+            trainerBasePrice = Math.max(0, Math.min(100_000, trainerBasePrice));
+            trainerLevelsPerDay = clamp(trainerLevelsPerDay, 0, 100);
             legendaryMinLevelCap = clamp(legendaryMinLevelCap, 1, 100);
             pocketHealPrice = Math.max(0, Math.min(10_000_000, pocketHealPrice));
             pocketHealCooldownMinutes = clamp(pocketHealCooldownMinutes, 0, 24 * 60);
@@ -568,6 +597,10 @@ public final class CaricraftConfig {
             cleaner = new CleanerConfig();
         }
         cleaner.validate();
+        if (savings == null) {
+            savings = new SavingsConfig();
+        }
+        savings.validate();
         return this;
     }
 

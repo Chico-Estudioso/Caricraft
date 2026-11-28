@@ -8,7 +8,7 @@ public final class CaricraftConstants {
     public static final String MOD_NAME = "Caricraft Mod";
 
     /** Versión del protocolo de red del CariPhone. Incrementar si cambia el formato de los payloads. */
-    public static final int PROTOCOL_VERSION = 11;
+    public static final int PROTOCOL_VERSION = 12;
 
     private CaricraftConstants() {
     }

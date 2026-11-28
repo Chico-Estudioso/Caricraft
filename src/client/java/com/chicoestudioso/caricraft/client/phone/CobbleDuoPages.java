@@ -29,6 +29,9 @@ final class CobbleDuoPages {
     private int hours = 1;
     private String pick;
     private long cancelArmedAt;
+    private int cancelArmedSlot = -1;
+    /** Pokémon elegido en el Taller para el entrenador personal. */
+    private String trainPick;
 
     CobbleDuoPages(CobbleCentroScreen screen) {
         this.s = screen;
@@ -324,6 +327,42 @@ final class CobbleDuoPages {
         return Component.literal(types.toString());
     }
 
+    private int awayCard(PhoneSnapshot.AwayView away, int slot, int x, int y, int w, float partialTick) {
+        PhoneTheme t = CobbleCentroScreen.THEME;
+        int h = 84;
+        s.ui.round(x, y, x + w, y + h, away.ready() ? PhoneTheme.mix(t.good(), t.card(), 0.7f) : t.card());
+        int rowY = y;
+        s.stage(x + 4, rowY + 4, x + 80, rowY + h - 4, () -> s.model("exp:" + slot + ":" + away.species(), away.species(),
+                CobbleCentroScreen.aspects(away.aspects(), away.shiny()), x + 42, rowY + 6, 70, CobbleCentroScreen.spin(), partialTick));
+        Component title = Component.translatable(away.ready() ? "caricraft.cc.exp_back_title" : "caricraft.cc.exp_away_title",
+                CobbleCentroScreen.species(away.species()), Component.translatable("caricraft.phone.cv.exp." + away.destination()));
+        s.ui.wrapped(title.copy().withStyle(ChatFormatting.BOLD), x + 86, y + 8, w - 94, 0xFFFFFFFF);
+        long left = Math.max(0, away.endsAt() - serverNow());
+        Component sub = away.ready() ? Component.translatable("caricraft.cc.exp_ready")
+                : Component.translatable("caricraft.cc.exp_left", PhoneText.remaining(left), away.hours());
+        s.ui.wrapped(sub, x + 86, y + 34, w - 94, t.textDim());
+        String arg = String.valueOf(slot);
+        if (away.ready()) {
+            Component claim = Component.translatable("caricraft.cc.exp_claim");
+            int bw = Math.max(90, s.ui.buttonWidth(claim));
+            s.ui.button(x + w - bw - 8, y + h - 24, bw, 16, claim, Style.GOOD, () -> s.send(PhoneAction.CV_EXP_CLAIM, arg));
+        } else {
+            boolean armed = cancelArmedSlot == slot && System.currentTimeMillis() - cancelArmedAt < 4000;
+            Component cancel = Component.translatable(armed ? "caricraft.cc.exp_cancel_confirm" : "caricraft.cc.exp_cancel");
+            int bw = Math.max(90, s.ui.buttonWidth(cancel));
+            s.ui.button(x + w - bw - 8, y + h - 24, bw, 16, cancel, armed ? Style.DANGER : Style.SECONDARY, () -> {
+                if (cancelArmedSlot == slot && System.currentTimeMillis() - cancelArmedAt < 4000) {
+                    cancelArmedAt = 0;
+                    s.send(PhoneAction.CV_EXP_CANCEL, arg);
+                } else {
+                    cancelArmedSlot = slot;
+                    cancelArmedAt = System.currentTimeMillis();
+                }
+            });
+        }
+        return h;
+    }
+
     int expedition(CobbleverseView cv, int x, int y, int w, float partialTick) {
         PhoneTheme t = CobbleCentroScreen.THEME;
         PhoneSnapshot.ExpeditionView exp = cv.expedition();
@@ -334,38 +373,14 @@ final class CobbleDuoPages {
         }
         y += s.sectionTitle(Component.translatable("caricraft.cc.tab.expedition"),
                 Component.translatable("caricraft.cc.exp_today", exp.startedToday(), exp.perDay()), x, y, w);
-        PhoneSnapshot.AwayView away = exp.away();
-        if (away != null) {
-            int h = 84;
-            s.ui.round(x, y, x + w, y + h, away.ready() ? PhoneTheme.mix(t.good(), t.card(), 0.7f) : t.card());
-            int rowY = y;
-            s.stage(x + 4, rowY + 4, x + 80, rowY + h - 4, () -> s.model("exp:" + away.species(), away.species(),
-                    CobbleCentroScreen.aspects(away.aspects(), away.shiny()), x + 42, rowY + 6, 70, CobbleCentroScreen.spin(), partialTick));
-            Component title = Component.translatable(away.ready() ? "caricraft.cc.exp_back_title" : "caricraft.cc.exp_away_title",
-                    CobbleCentroScreen.species(away.species()), Component.translatable("caricraft.phone.cv.exp." + away.destination()));
-            s.ui.wrapped(title.copy().withStyle(ChatFormatting.BOLD), x + 86, y + 8, w - 94, 0xFFFFFFFF);
-            long left = Math.max(0, away.endsAt() - serverNow());
-            Component sub = away.ready() ? Component.translatable("caricraft.cc.exp_ready")
-                    : Component.translatable("caricraft.cc.exp_left", PhoneText.remaining(left), away.hours());
-            s.ui.wrapped(sub, x + 86, y + 34, w - 94, t.textDim());
-            if (away.ready()) {
-                Component claim = Component.translatable("caricraft.cc.exp_claim");
-                int bw = Math.max(90, s.ui.buttonWidth(claim));
-                s.ui.button(x + w - bw - 8, y + h - 24, bw, 16, claim, Style.GOOD, () -> s.send(PhoneAction.CV_EXP_CLAIM, ""));
-            } else {
-                boolean armed = System.currentTimeMillis() - cancelArmedAt < 4000;
-                Component cancel = Component.translatable(armed ? "caricraft.cc.exp_cancel_confirm" : "caricraft.cc.exp_cancel");
-                int bw = Math.max(90, s.ui.buttonWidth(cancel));
-                s.ui.button(x + w - bw - 8, y + h - 24, bw, 16, cancel, armed ? Style.DANGER : Style.SECONDARY, () -> {
-                    if (System.currentTimeMillis() - cancelArmedAt < 4000) {
-                        cancelArmedAt = 0;
-                        s.send(PhoneAction.CV_EXP_CANCEL, "");
-                    } else {
-                        cancelArmedAt = System.currentTimeMillis();
-                    }
-                });
-            }
-            y += h + 8;
+        List<PhoneSnapshot.AwayView> aways = exp.away() == null ? List.of() : exp.away();
+        for (int i = 0; i < aways.size(); i++) {
+            y += awayCard(aways.get(i), i, x, y, w, partialTick) + 8;
+        }
+        if (exp.slots() > 1) {
+            y += s.ui.wrapped(Component.translatable("caricraft.cc.exp_slots", aways.size(), exp.slots()), x, y, w, t.textDim()) + 4;
+        }
+        if (aways.size() >= exp.slots()) {
             y += s.ui.wrapped(Component.translatable("caricraft.cc.exp_help"), x, y, w, t.textDim()) + 4;
             return y - top;
         }
@@ -459,5 +474,120 @@ final class CobbleDuoPages {
         });
         y += 26;
         return y - top;
+    }
+
+    // ================================================================ taller: entrenador personal y mejoras
+
+    private static final List<String> UPGRADES = List.of("cc_heal", "cc_expedition", "cc_radar");
+
+    int workshop(CobbleverseView cv, int x, int y, int w, float partialTick) {
+        PhoneTheme t = CobbleCentroScreen.THEME;
+        PhoneSnapshot snap = ClientPhoneState.snapshot();
+        int top = y;
+        long carins = snap == null ? 0 : snap.balance();
+        y += s.sectionTitle(Component.translatable("caricraft.cc.trainer_title"),
+                Component.translatable("caricraft.cc.carins", PhoneText.number(carins)), x, y, w);
+        PhoneSnapshot.TrainerView trainer = cv.trainer();
+        if (trainer == null) {
+            y += s.ui.wrapped(Component.translatable("caricraft.cc.off"), x, y, w, t.textDim()) + 8;
+        } else {
+            Component help = Component.translatable(trainer.cap() > 0 ? "caricraft.cc.trainer_help_cap" : "caricraft.cc.trainer_help",
+                    trainer.basePrice(), trainer.levelsLeft(), trainer.levelsPerDay(), trainer.cap());
+            y += s.ui.wrapped(help, x, y, w, t.textDim()) + 6;
+            List<SellView> party = cv.party();
+            if (party.stream().noneMatch(m -> m.uuid().equals(trainPick))) {
+                trainPick = party.isEmpty() ? null : party.getFirst().uuid();
+            }
+            if (party.isEmpty()) {
+                y += s.ui.wrapped(Component.translatable("caricraft.cc.team_empty"), x, y, w, t.textDim()) + 6;
+            } else {
+                int cell = Math.min(60, w / Math.max(3, party.size()));
+                int sx = x + (w - cell * party.size()) / 2;
+                SellView picked = null;
+                for (int i = 0; i < party.size(); i++) {
+                    SellView mon = party.get(i);
+                    int px = sx + i * cell;
+                    boolean chosen = mon.uuid().equals(trainPick);
+                    if (chosen) {
+                        picked = mon;
+                    }
+                    boolean hover = s.ui.hovered(px + 2, y, px + cell - 2, y + cell + 20);
+                    s.ui.round(px + 2, y, px + cell - 2, y + cell + 20, chosen ? PhoneTheme.mix(t.accent(), t.card(), 0.55f) : hover ? t.cardHover() : t.card());
+                    int rowY = y;
+                    s.stage(px + 2, rowY, px + cell - 2, rowY + cell, () -> s.model("train:" + mon.uuid(), mon.species(),
+                            CobbleCentroScreen.aspects(mon.aspects(), mon.shiny()), px + cell / 2, rowY + 2, cell - 8,
+                            hover || chosen ? CobbleCentroScreen.spin() : 35f, partialTick));
+                    Component name = mon.nickname() == null || mon.nickname().isEmpty() ? CobbleCentroScreen.species(mon.species())
+                            : Component.literal(mon.nickname());
+                    s.ui.textFit(name, px + cell / 2, y + cell, cell - 6, t.text());
+                    boolean atCap = trainer.cap() > 0 && mon.level() >= trainer.cap();
+                    s.ui.textFit(Component.translatable("caricraft.phone.cv.level", mon.level()), px + cell / 2, y + cell + 10, cell - 6,
+                            atCap ? t.bad() : t.textDim());
+                    String uuid = mon.uuid();
+                    s.ui.hit(px + 2, y, px + cell - 2, y + cell + 20, () -> trainPick = uuid);
+                }
+                y += cell + 26;
+                if (picked != null) {
+                    long price = trainer.basePrice() + Math.max(1, picked.level());
+                    int max = trainer.cap() > 0 ? Math.min(100, trainer.cap()) : 100;
+                    boolean capped = picked.level() >= max;
+                    boolean ready = !capped && trainer.levelsLeft() > 0 && carins >= price;
+                    Component label = capped ? Component.translatable(trainer.cap() > 0 ? "caricraft.cc.trainer_at_cap" : "caricraft.cc.trainer_at_max", max)
+                            : trainer.levelsLeft() <= 0 ? Component.translatable("caricraft.cc.trainer_no_levels")
+                            : Component.translatable("caricraft.cc.trainer_button", picked.level() + 1, PhoneText.number(price));
+                    int bw = Math.max(150, s.ui.buttonWidth(label));
+                    String uuid = picked.uuid();
+                    s.ui.button(x + (w - bw) / 2, y, bw, 18, label, ready ? Style.GOOD : Style.DISABLED, () -> {
+                        if (ready) {
+                            s.send(PhoneAction.CV_TRAIN, uuid);
+                        }
+                    });
+                    y += 26;
+                }
+            }
+        }
+
+        // Mejoras del CobbleCentro (se compran con Carins y son de todo el dúo)
+        y += 4;
+        y += s.sectionTitle(Component.translatable("caricraft.cc.workshop_upgrades_title"), null, x, y, w);
+        y += s.ui.wrapped(Component.translatable("caricraft.cc.workshop_upgrades_help"), x, y, w, t.textDim()) + 6;
+        if (snap != null) {
+            for (String id : UPGRADES) {
+                PhoneSnapshot.AppView app = snap.apps().stream().filter(a -> a.id().equals(id)).findFirst().orElse(null);
+                if (app != null) {
+                    y += upgradeCard(app, carins, x, y, w) + 6;
+                }
+            }
+        }
+        return y - top;
+    }
+
+    private int upgradeCard(PhoneSnapshot.AppView app, long carins, int x, int y, int w) {
+        PhoneTheme t = CobbleCentroScreen.THEME;
+        boolean maxed = app.level() >= app.maxLevel();
+        Component effect = Component.translatable("caricraft.cc.upgrade." + app.id() + "." + Math.min(app.level(), app.maxLevel()));
+        Component next = maxed ? null : Component.translatable("caricraft.cc.upgrade." + app.id() + "." + (app.level() + 1));
+        Component label = maxed ? Component.translatable("caricraft.cc.upgrade_max")
+                : Component.translatable("caricraft.cc.upgrade_buy", PhoneText.number(app.price()));
+        int bw = Math.max(96, s.ui.buttonWidth(label));
+        int textW = w - 40 - bw;
+        Component line = next == null ? effect : Component.translatable("caricraft.cc.upgrade_next", effect, next);
+        int h = Math.max(42, 20 + s.ui.wrappedHeight(line, textW) + 6);
+        s.ui.round(x, y, x + w, y + h, maxed ? PhoneTheme.mix(t.good(), t.card(), 0.75f) : t.card());
+        s.ui.round(x + 5, y + (h - 24) / 2, x + 29, y + (h - 24) / 2 + 24, PhoneTheme.mix(app.color(), t.card(), 0.4f));
+        s.ui.item(app.icon(), x + 9, y + (h - 16) / 2);
+        Component title = PhoneText.appName(app.id()).copy().append(Component.literal("  " + app.level() + "/" + app.maxLevel()))
+                .withStyle(ChatFormatting.BOLD);
+        s.ui.textClipped(title, x + 36, y + 7, textW, t.text());
+        s.ui.wrapped(line, x + 36, y + 19, textW, t.textDim());
+        boolean ready = !maxed && "AVAILABLE".equals(app.state()) || (!maxed && "OWNED".equals(app.state()));
+        boolean affordable = carins >= app.price();
+        String id = app.id();
+        s.ui.button(x + w - bw - 8, y + (h - 16) / 2, bw, 16, label, maxed ? Style.DISABLED : ready && affordable ? Style.GOOD : Style.DISABLED, () -> {
+            if (!maxed && affordable) {
+                s.send(PhoneAction.BUY_ITEM, id);
+            }
+        });
+        return h;
     }
 }

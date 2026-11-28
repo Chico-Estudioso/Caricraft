@@ -156,7 +156,9 @@ public final class DuoPokemonManager {
         if (balance.isEmpty()) {
             return ActionResult.fail("cv_no_cobbledollars");
         }
-        ActionResult check = service.canHeal(profile, backend.partyNeedsHeal(player), backend.inBattle(player), balance.getAsLong());
+        Party healParty = mod.core().partyOf(player.getUUID());
+        int upgrade = healParty == null ? 0 : healParty.upgradeLevel(com.chicoestudioso.caricraft.core.shop.AppCatalog.CC_HEAL);
+        ActionResult check = service.canHeal(profile, backend.partyNeedsHeal(player), backend.inBattle(player), balance.getAsLong(), upgrade);
         if (!check.success()) {
             return check;
         }
@@ -182,6 +184,66 @@ public final class DuoPokemonManager {
         return ActionResult.ok("cv_healed", price);
     }
 
+    // ------------------------------------------------------------------ entrenador personal
+
+    /** Sube un nivel al Pokémon con experiencia de verdad (aprende movimientos y puede evolucionar), por Carins. */
+    public static ActionResult train(CaricraftServer mod, ServerPlayer player, String pokemonId) {
+        if (!CobbleverseManager.active(mod)) {
+            return ActionResult.fail("cv_disabled");
+        }
+        java.util.UUID uuid;
+        try {
+            uuid = java.util.UUID.fromString(pokemonId);
+        } catch (IllegalArgumentException e) {
+            return ActionResult.fail("invalid_request");
+        }
+        CobbleverseService service = mod.core().cobbleverse();
+        PokemonBackend backend = CobblemonCompat.backend();
+        PokemonBackend.PartyMon mon = backend.party(player).stream().filter(m -> m.uuid().equals(uuid)).findFirst().orElse(null);
+        if (mon == null) {
+            return ActionResult.fail("cv_pokemon_gone");
+        }
+        PlayerProfile profile = mod.core().onPlayerJoin(player.getUUID(), player.getGameProfile().getName());
+        Party party = mod.core().partyOf(player.getUUID());
+        long day = service.day();
+        int cap = com.chicoestudioso.caricraft.integration.rct.RctBridge.levelCap(player).orElse(0);
+        ActionResult check = service.canTrain(profile, day, mon.level(), cap, backend.inBattle(player), party.wallet().balance());
+        if (!check.success()) {
+            return check;
+        }
+        long price = service.trainerPrice(mon.level());
+        if (mod.core().economy().debit(party.wallet(), price, "trainer", mon.species()) != EconomyService.Result.OK) {
+            return ActionResult.fail("insufficient_funds", price - party.wallet().balance());
+        }
+        int level;
+        try {
+            level = backend.trainLevel(player, uuid);
+        } catch (RuntimeException e) {
+            level = -1;
+            CaricraftMod.LOGGER.error("No se pudo entrenar al Pokémon de {}", player.getGameProfile().getName(), e);
+        }
+        if (level <= mon.level()) {
+            // No subió (p. ej. RCT bloquea la experiencia en el level cap): se devuelve el dinero.
+            mod.core().economy().credit(party.wallet(), price, "trainer_refund", mon.species(), null);
+            return ActionResult.fail(level < 0 ? "internal_error" : "cv_train_blocked");
+        }
+        service.recordTrain(profile, day);
+        party.incrementStat("pokemon_trained", 1);
+        player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7f, 1.2f);
+        mod.markDirty();
+        return ActionResult.ok("cv_trained", mon.species(), level, price);
+    }
+
+    static PhoneSnapshot.TrainerView trainerView(CaricraftServer mod, ServerPlayer player, PlayerProfile profile) {
+        CobbleverseService service = mod.core().cobbleverse();
+        if (!service.trainerEnabled()) {
+            return null;
+        }
+        int cap = com.chicoestudioso.caricraft.integration.rct.RctBridge.levelCap(player).orElse(0);
+        return new PhoneSnapshot.TrainerView(mod.core().config().cobbleverse.trainerBasePrice, service.trainerLevelsLeft(profile, service.day()),
+                mod.core().config().cobbleverse.trainerLevelsPerDay, cap);
+    }
+
     // ------------------------------------------------------------------ vistas
 
     static PhoneSnapshot.HealView healView(CaricraftServer mod, ServerPlayer player, PlayerProfile profile) {
@@ -190,7 +252,9 @@ public final class DuoPokemonManager {
             return null;
         }
         PokemonBackend backend = CobblemonCompat.backend();
-        return new PhoneSnapshot.HealView(service.healPrice(), service.healReadyAt(profile), backend.partyNeedsHeal(player),
+        Party party = mod.core().partyOf(player.getUUID());
+        int upgrade = party == null ? 0 : party.upgradeLevel(com.chicoestudioso.caricraft.core.shop.AppCatalog.CC_HEAL);
+        return new PhoneSnapshot.HealView(service.healPrice(), service.healReadyAt(profile, upgrade), backend.partyNeedsHeal(player),
                 backend.inBattle(player));
     }
 

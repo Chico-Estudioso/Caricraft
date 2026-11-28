@@ -46,6 +46,7 @@ public class CobbleCentroScreen extends Screen {
         HUNT("hunt", "cobblemon:great_ball"),
         DEX("dex", "cobblemon:pokedex_red"),
         EXPEDITION("expedition", "minecraft:compass"),
+        WORKSHOP("workshop", "cobblemon:exp_candy_l"),
         SHOP("shop", "cobblemon:poke_ball"),
         CRATES("crates", "cobblemon:gilded_chest"),
         SLOTS("slots", "cobblemon:lucky_egg"),
@@ -283,6 +284,7 @@ public class CobbleCentroScreen extends Screen {
                 case HUNT -> duo.hunt(cv, cx, cy - scroll, cw, partialTick);
                 case DEX -> duo.dex(cv, cx, cy - scroll, cw, partialTick);
                 case EXPEDITION -> duo.expedition(cv, cx, cy - scroll, cw, partialTick);
+                case WORKSHOP -> duo.workshop(cv, cx, cy - scroll, cw, partialTick);
                 case SHOP -> shop(cv, cx, cy - scroll, cw, partialTick);
                 case CRATES -> luck.crates(cv, cx, cy - scroll, cw);
                 case SLOTS -> luck.slots(cv, cx, cy - scroll, cw);
@@ -318,6 +320,8 @@ public class CobbleCentroScreen extends Screen {
             case HUNT -> cv.hunt() != null;
             case DEX -> cv.dex() != null;
             case EXPEDITION -> cv.expedition() != null;
+            case WORKSHOP -> cv.trainer() != null || (ClientPhoneState.snapshot() != null
+                    && ClientPhoneState.snapshot().apps().stream().anyMatch(a -> a.id().startsWith("cc_")));
             default -> true;
         };
     }
@@ -329,7 +333,8 @@ public class CobbleCentroScreen extends Screen {
         return switch (each) {
             case HOME -> cv.giftEnabled() && cv.giftAvailable() ? String.valueOf(Math.max(1, cv.giftsLeft())) : "";
             case WONDER -> cv.wonderEnabled() && cv.wondersLeft() > 0 ? String.valueOf(cv.wondersLeft()) : "";
-            case EXPEDITION -> cv.expedition() != null && cv.expedition().away() != null && cv.expedition().away().ready() ? "!" : "";
+            case EXPEDITION -> cv.expedition() != null && cv.expedition().away() != null
+                    && cv.expedition().away().stream().anyMatch(PhoneSnapshot.AwayView::ready) ? "!" : "";
             default -> "";
         };
     }

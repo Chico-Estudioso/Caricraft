@@ -31,6 +31,11 @@ public final class AppCatalog {
     public static final String MARKET = "market";
     public static final String COBBLECENTRO = "cobblecentro";
     public static final String SHOWCASE = "showcase";
+    public static final String SAVINGS = "savings";
+    /** Mejoras del CobbleCentro (Carins). */
+    public static final String CC_HEAL = "cc_heal";
+    public static final String CC_EXPEDITION = "cc_expedition";
+    public static final String CC_RADAR = "cc_radar";
 
     private final Map<String, ShopItem> items = new LinkedHashMap<>();
 
@@ -47,6 +52,12 @@ public final class AppCatalog {
         }
         if (config.cobbleverse.enabled) {
             catalog.register(builtin(COBBLECENTRO, "cobblemon:poke_ball", 0xFF1B998B));
+            catalog.register(new ShopItem(CC_HEAL, Kind.UPGRADE, Ownership.PARTY, 300, false, false, List.of(COBBLECENTRO),
+                    "cobblemon:hyper_potion", 0xFFE5484D, 2));
+            catalog.register(new ShopItem(CC_EXPEDITION, Kind.UPGRADE, Ownership.PARTY, 400, false, false, List.of(COBBLECENTRO),
+                    "minecraft:compass", 0xFF3A86FF, 2));
+            catalog.register(new ShopItem(CC_RADAR, Kind.UPGRADE, Ownership.PARTY, 250, false, false, List.of(COBBLECENTRO),
+                    "minecraft:nether_star", 0xFFFFD166, 2));
         }
         if (config.challenge.enabled) {
             catalog.register(builtin(CHALLENGE, "minecraft:skeleton_skull", 0xFF9D0208));
@@ -63,6 +74,9 @@ public final class AppCatalog {
         catalog.register(app(TPDUO, 300, "minecraft:ender_pearl", 0xFF7209B7));
         catalog.register(app(CARICAMP, 400, "minecraft:campfire", 0xFFFB5607));
         catalog.register(app(CARIBOX, 400, "minecraft:ender_chest", 0xFF3D5A80));
+        if (config.savings.enabled) {
+            catalog.register(app(SAVINGS, 300, "minecraft:decorated_pot", 0xFFE76F51));
+        }
         catalog.register(new ShopItem(CARIBOX_ROWS, Kind.UPGRADE, Ownership.PARTY, 250, false, false, List.of(CARIBOX),
                 "minecraft:chest", 0xFF5C7AA6, 3));
         catalog.register(theme("theme_sunset", "minecraft:orange_dye", 0xFFFF7B54));

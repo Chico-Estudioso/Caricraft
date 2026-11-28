@@ -56,7 +56,8 @@ public final class ExpeditionData extends SavedData {
         }
     }
 
-    private final Map<UUID, Away> away = new HashMap<>();
+    /** Por jugador, sus Pokémon de expedición (más de uno con la mejora «Más expediciones»). */
+    private final Map<UUID, List<Away>> away = new HashMap<>();
 
     public static ExpeditionData get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(FACTORY, NAME);
@@ -68,7 +69,7 @@ public final class ExpeditionData extends SavedData {
         for (int i = 0; i < list.size(); i++) {
             CompoundTag e = list.getCompound(i);
             if (e.hasUUID("player") && e.contains("pokemon", Tag.TAG_COMPOUND)) {
-                data.away.put(e.getUUID("player"), new Away(e.getString("destination"), e.getInt("hours"), e.getLong("start"),
+                data.away.computeIfAbsent(e.getUUID("player"), k -> new ArrayList<>()).add(new Away(e.getString("destination"), e.getInt("hours"), e.getLong("start"),
                         e.getLong("end"), e.getCompound("pokemon"), e.getString("species"), e.getInt("level"), e.getBoolean("shiny"),
                         strings(e.getList("aspects", Tag.TAG_STRING)), strings(e.getList("types", Tag.TAG_STRING)), e.getBoolean("notified")));
             }
@@ -92,8 +93,8 @@ public final class ExpeditionData extends SavedData {
 
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
-        ListTag list = new ListTag();
-        away.forEach((player, a) -> {
+        ListTag out = new ListTag();
+        away.forEach((player, list) -> list.forEach(a -> {
             CompoundTag e = new CompoundTag();
             e.putUUID("player", player);
             e.putString("destination", a.destination);
@@ -107,30 +108,43 @@ public final class ExpeditionData extends SavedData {
             e.put("aspects", tags(a.aspects));
             e.put("types", tags(a.types));
             e.putBoolean("notified", a.notified);
-            list.add(e);
-        });
-        tag.put("away", list);
+            out.add(e);
+        }));
+        tag.put("away", out);
         return tag;
     }
 
-    public Away get(UUID player) {
-        return away.get(player);
+    /** Expediciones del jugador (puede estar vacía). */
+    public List<Away> of(UUID player) {
+        return away.getOrDefault(player, List.of());
     }
 
-    public Map<UUID, Away> all() {
+    public Map<UUID, List<Away>> all() {
         return away;
     }
 
-    void put(UUID player, Away entry) {
-        away.put(player, entry);
+    void add(UUID player, Away entry) {
+        away.computeIfAbsent(player, k -> new ArrayList<>()).add(entry);
         setDirty();
     }
 
-    Away remove(UUID player) {
-        Away removed = away.remove(player);
-        if (removed != null) {
-            setDirty();
+    /** Vuelve a poner una expedición en su sitio (si falla la devolución del Pokémon). */
+    void put(UUID player, int index, Away entry) {
+        List<Away> list = away.computeIfAbsent(player, k -> new ArrayList<>());
+        list.add(Math.min(index, list.size()), entry);
+        setDirty();
+    }
+
+    Away remove(UUID player, int index) {
+        List<Away> list = away.get(player);
+        if (list == null || index < 0 || index >= list.size()) {
+            return null;
         }
+        Away removed = list.remove(index);
+        if (list.isEmpty()) {
+            away.remove(player);
+        }
+        setDirty();
         return removed;
     }
 }

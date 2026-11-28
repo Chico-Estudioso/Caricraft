@@ -93,7 +93,8 @@ public final class CobbleverseManager {
                 safe("dex", () -> DuoPokemonManager.dexView(mod, partyOf)),
                 partyOf == null || !config.shinyAlerts ? List.of() : ShinyAlerts.views(partyOf), profile.shinyCompass(),
                 com.chicoestudioso.caricraft.integration.rct.RctBridge.levelCap(player).orElse(0),
-                config.levelCapSpawns && com.chicoestudioso.caricraft.integration.rct.RctBridge.available(), config.legendaryMinLevelCap);
+                config.levelCapSpawns && com.chicoestudioso.caricraft.integration.rct.RctBridge.available(), config.legendaryMinLevelCap,
+                safe("trainer", () -> DuoPokemonManager.trainerView(mod, player, profile)));
     }
 
     private static final java.util.Set<String> FAILED_VIEWS = new java.util.HashSet<>();

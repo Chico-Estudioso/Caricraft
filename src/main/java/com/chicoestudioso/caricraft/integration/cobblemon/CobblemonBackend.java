@@ -86,6 +86,20 @@ final class CobblemonBackend implements PokemonBackend {
     }
 
     @Override
+    public int trainLevel(ServerPlayer player, UUID uuid) {
+        Pokemon pokemon = find(player, uuid);
+        if (pokemon == null) {
+            return -1;
+        }
+        int xp = pokemon.getExperienceToNextLevel();
+        if (xp > 0) {
+            pokemon.addExperienceWithPlayer(player,
+                    new com.cobblemon.mod.common.api.pokemon.experience.SidemodExperienceSource(com.chicoestudioso.caricraft.CaricraftConstants.MOD_ID), xp);
+        }
+        return pokemon.getLevel();
+    }
+
+    @Override
     public void hurtParty(ServerPlayer player) {
         for (Pokemon pokemon : store(player)) {
             pokemon.setCurrentHealth(Math.max(1, pokemon.getMaxHealth() / 2));

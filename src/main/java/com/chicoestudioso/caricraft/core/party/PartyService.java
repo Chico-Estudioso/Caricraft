@@ -193,6 +193,7 @@ public final class PartyService {
         target.photos().sort(java.util.Comparator.comparingLong(com.chicoestudioso.caricraft.core.lens.Photo::time).reversed());
         target.pokemon().mergeFrom(source.pokemon());
         target.routine().mergeFrom(source.routine());
+        target.savings().mergeFrom(source.savings());
         chronicle.mergeInto(target, source.chronicle());
     }
 
@@ -246,6 +247,8 @@ public final class PartyService {
         solo.photos().addAll(party.photos());
         solo.pokemon().copyDexFrom(party.pokemon());
         solo.routine().copyFrom(party.routine());
+        com.chicoestudioso.caricraft.core.savings.SavingsState savingsHalf = party.savings().split();
+        solo.savings().restore(savingsHalf.balance(), savingsHalf.day(), savingsHalf.minToday(), 0, 0);
         chronicle.mergeInto(solo, party.chronicle());
 
         String suffix = "@" + player;

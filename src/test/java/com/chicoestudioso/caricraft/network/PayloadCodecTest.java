@@ -96,12 +96,12 @@ class PayloadCodecTest {
                                 java.util.Map.of("Alice", 2, "Bob", 1), 3, true, false, false, 1, 4, false, 1500, 20, 2500, 30, 6000, 80),
                         new PhoneSnapshot.ExpeditionView(List.of(new PhoneSnapshot.DestinationView("cave", "minecraft:iron_pickaxe",
                                 List.of("rock"), List.of("minecraft:coal"))), List.of(1, 4, 8), 3, 1,
-                                new PhoneSnapshot.AwayView("cobblemon:geodude", List.of("male"), false, 20, "cave", 4, 77L, false)),
+                                List.of(new PhoneSnapshot.AwayView("cobblemon:geodude", List.of("male"), false, 20, "cave", 4, 77L, false)), 2),
                         new PhoneSnapshot.DexView(12, 40, 1, 0, List.of(new PhoneSnapshot.DexEntryView("cobblemon:magikarp", "Bob", 7, true, 255, 3L)),
                                 List.of(), List.of(), List.of(new PhoneSnapshot.GoalView("shinies_1", "SHINIES", null, 1, 1, true, 50, 2000)),
                                 java.util.Map.of("water", 9)),
                         List.of(new PhoneSnapshot.ShinyAlertView("cobblemon:gible", 22, "minecraft:overworld", 1.5, 70, -8.25, 99L, "Alice")),
-                        true, 25, true, 60),
+                        true, 25, true, 60, new PhoneSnapshot.TrainerView(10, 4, 5, 25)),
                 new PhoneSnapshot.CampView(new PhoneSnapshot.PositionView("", "", "minecraft:overworld", "", 1.5, 64, 2.5), 0, 30, false, 0),
                 new PhoneSnapshot.DuoTravelView(List.of(new PhoneSnapshot.PositionView("b0b", "Bob", "minecraft:the_nether",
                         "minecraft:crimson_forest", 10, 70, -3)), 0, 50, false,
@@ -112,7 +112,8 @@ class PayloadCodecTest {
                         new PhoneSnapshot.StreakView(4, 9, true, true, false, true, true, false, 30, 15, 5, List.of(15L, 20L, 25L, 30L, 40L, 50L, 100L), 86_400_000L),
                         new PhoneSnapshot.WeeklyView("miners", "minecraft:diamond_pickaxe", "blocks_mined", 1500, 820, 1, 100, 300, 604_800_000L, 1.5, "MISSIONS"),
                         List.of(new PhoneSnapshot.MedalView("miner", "minecraft:iron_pickaxe", 2, 12_000, List.of(1_000L, 10_000L, 50_000L), List.of(25L, 75L, 200L))),
-                        List.of(new PhoneSnapshot.BossRecordView(5, "zombie_king", 7L, "Alice & Bob"))));
+                        List.of(new PhoneSnapshot.BossRecordView(5, "zombie_king", 7L, "Alice & Bob"))),
+                new PhoneSnapshot.SavingsView(1_020, 0.02, 40, 20, 30, 20, 100_000));
         PhoneSnapshot decoded = PhoneSnapshot.fromJson(snapshot.toJson());
         assertEquals(snapshot, decoded);
     }

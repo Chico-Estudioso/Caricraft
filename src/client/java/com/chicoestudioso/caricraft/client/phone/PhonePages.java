@@ -71,6 +71,7 @@ final class PhonePages {
             case CARILENS -> hasApp(snap, "carilens") ? carilens(s, snap, x, y, w) : locked(s, snap, x, y, w, "carilens");
             case CARIBOX -> hasApp(snap, "caribox") ? caribox(s, snap, x, y, w) : locked(s, snap, x, y, w, "caribox");
             case SHOWCASE -> RoutinePages.showcase(s, snap, x, y, w);
+            case SAVINGS -> hasApp(snap, "savings") ? RoutinePages.savings(s, snap, x, y, w) : locked(s, snap, x, y, w, "savings");
             case LOCKED -> locked(s, snap, x, y, w, s.lockedAppId);
         };
     }
@@ -82,7 +83,7 @@ final class PhonePages {
     }
 
     private static final List<HomeSection> HOME_SECTIONS = List.of(
-            new HomeSection("daily", List.of("missions", "wallet", "market", "shop", "cobblecentro")),
+            new HomeSection("daily", List.of("missions", "wallet", "savings", "market", "shop", "cobblecentro")),
             new HomeSection("duo", List.of("duo", "tpduo", "caribox", "chronicles", "showcase")),
             new HomeSection("adventure", List.of("challenge", "explorer", "caricamp", "carilens")),
             new HomeSection("system", List.of("stats", "settings")));
