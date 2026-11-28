@@ -1,7 +1,7 @@
 # Cobbleverse: CobbleCentro y pestaña del Mercado
 
 La parte Cobbleverse aparece con `cobbleverse.enabled` (desactivado por defecto) y Cobblemon instalado. La tienda y la venta de Pokémon usan **CobbleDollars**, la moneda del modpack, no Carins. Se puede usar de dos formas:
-- **CobbleCentro:** app del CariPhone que abre una pantalla grande con los **modelos 3D de los Pokémon**, como en el PC de Cobblemon. Tiene pestañas Inicio, Caza del día, Pokédex dúo, Expediciones, Tienda, Cajas, Suerte, Prodigioso, Mejoras y Vender.
+- **CobbleCentro:** app del CariPhone que abre una pantalla grande con los **modelos 3D de los Pokémon**, como en el PC de Cobblemon. Tiene pestañas Inicio, Caza del día, Pokédex dúo, Expediciones, Taller, Tienda, Cajas, Suerte, Prodigioso, Mejoras y Vender.
 - **Pestaña Cobbleverse del Mercado:** lo mismo en formato teléfono, con un botón para abrir el CobbleCentro.
 
 ## CobbleCentro
@@ -187,9 +187,23 @@ No sustituye a la Pokédex de Cobblemon. Guarda lo especial de los dos:
 
 - Un Pokémon del equipo se va **1, 4 u 8 horas reales** al Bosque, la Cueva o la Costa y vuelve con algo de ₽ y objetos del destino (bayas, Poké Balls, caramelos de experiencia, carbón, hierro, piedras evolutivas, alguna vez un diamante…).
 - Es un ingreso **pasivo y pequeño** a propósito: menos de ₽600 por hora en el mejor caso, y las largas rinden menos por hora (1 h → 1 tirada, 4 h → 3, 8 h → 5). Más nivel (hasta ×1,5) y un tipo afín al destino (×1,25) dan un poco más.
-- Mientras está fuera **no está en tu equipo** (se guarda en `data/caricraft_expeditions.dat`). Una a la vez por jugador y `expeditionsPerDay` (3) al día.
+- Mientras está fuera **no está en tu equipo** (se guarda en `data/caricraft_expeditions.dat`). Una a la vez por jugador (más con la mejora «Más expediciones») y `expeditionsPerDay` (3) al día.
 - Al volver llega un aviso. Se recoge en el CobbleCentro y vuelve al equipo (o al PC). «Hacer volver» antes de tiempo lo trae sin botín y la expedición cuenta para el límite del día.
 - No se puede mandar al último Pokémon sano, a uno debilitado ni en combate.
+
+### Taller: entrenador personal y mejoras (Carins)
+- **Entrenador personal:** eliges un Pokémon del equipo y le das la experiencia justa para subir un nivel, como un caramelo. Aprende sus movimientos y puede evolucionar como siempre.
+  - Cuesta `trainerBasePrice` (10) + su nivel en Carins (de nivel 20 a 21: 30 Carins).
+  - Como mucho `trainerLevelsPerDay` (5) niveles al día por jugador.
+  - **Nunca pasa del level cap de RCT.** El botón se apaga en el cap y, por si acaso, RCT también bloquea la experiencia; si eso pasara, se devuelven los Carins.
+  - No funciona en combate.
+- **Mejoras del CobbleCentro**, compradas una vez para todo el dúo (también salen en la Tienda del CariPhone):
+
+| Mejora | Precio | Nivel 1 | Nivel 2 |
+|---|---|---|---|
+| Centro rápido | 300 cada nivel | Espera del Centro Pokémon de bolsillo de 10 min | 5 min |
+| Más expediciones | 400 cada nivel | 2 expediciones a la vez y 4 al día | 3 a la vez y 5 al día |
+| Radar variocolor | 250 cada nivel | Aviso a 240 bloques y 8 min | 320 bloques y 12 min |
 
 ## Nivel de los salvajes y level cap
 - Por defecto **no se cambia nada**: los niveles son los de Cobbleverse. Cobblemon elige el nivel dentro del rango de la especie acercándolo al Pokémon de más nivel de tu equipo (±5). El level cap de los entrenadores (RCT) no frena apariciones ni capturas: frena la experiencia y los combates contra entrenadores.
