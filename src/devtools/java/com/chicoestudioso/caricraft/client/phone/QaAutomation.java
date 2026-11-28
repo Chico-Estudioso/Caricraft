@@ -1369,6 +1369,7 @@ public final class QaAutomation implements ClientModInitializer {
             cmd("tp @s 0 -60 0 0 10");
             cmd("clear @s");
             cmd("carins give Dev1 5000");
+            cmd("cobbledollars give @s 50000");
             cmd("pokegive pidgey level=10");
             cmd("pokegive geodude level=18");
             cmd("pokegive magikarp level=8");
@@ -1456,6 +1457,7 @@ public final class QaAutomation implements ClientModInitializer {
         then(5, () -> cmd("caricraft cobbleverse herir"));
         then(20, () -> cc().send(PhoneAction.CV_HEAL, ""));
         then(40, () -> {
+            logRecentNotices(1);
             var heal = snap().cobbleverse().heal();
             log("CURA con mejora: espera " + Math.round((heal.readyAt() - snap().serverTime()) / 60000.0) + " min");
         });

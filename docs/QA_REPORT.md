@@ -239,6 +239,18 @@ Por defecto `levelCapSpawns` está desactivado y los niveles de los salvajes son
 | Morir en (40, 40) y dejar hierro allí y oro a 28 bloques | Tras limpiar, el hierro junto a la muerte sigue y el oro lejano no |
 | Limpieza automática | Aviso del CariPhone y en la barra de acción a 60 y 30 s, cuenta atrás y «Limpieza del suelo: 4 objetos retirados»; en el registro del servidor, el resumen con los protegidos |
 
+**Hucha, Taller y mejoras del CobbleCentro con Cobblemon real** (`tools/cobblemon_qa.py`, rol H, 2026-11-28):
+
+| Paso | Resultado |
+|---|---|
+| Comprar la Hucha (5.000 C en el monedero) | «¡Comprado!» por 300 |
+| Meter 500 y sacar 100 | En la hucha 400 y en el monedero 4.300; «Mañana: +0 C», porque hoy empezó en 0 y no cuenta hasta un día entero |
+| Sacar 9.999 | Rechazado: «En la hucha solo hay 400 Carins» |
+| Centro rápido ×3, Más expediciones y Radar variocolor | Centro rápido 2/2 (la tercera compra, «ya comprado»), Más expediciones 1/2 y Radar 1/2; monedero 4.300 → 3.050 |
+| Taller: entrenar a Pidgey dos veces | Nv. 10 → 11 por 20 C y 11 → 12 por 21 C; quedan 3 de 5 niveles hoy |
+| Mandar a Geodude y a Magikarp de expedición | Las dos a la vez («Expediciones hoy 2/4»), dos tarjetas con su cuenta atrás; recoger la segunda deja la primera en marcha |
+| Curar con Centro rápido 2/2 | HEAL_RESULT |
+
 ## Errores encontrados y corregidos durante la QA
 1. **Teléfono borroso (alto):** en 1.21 `Screen.render` vuelve a pintar el fondo desenfocado encima. Corregido en `PhoneScreen`.
 2. **Pestañas de misiones cortadas (bajo):** se quitaron los contadores y se añadió un punto rojo si hay misiones para reclamar.
@@ -258,6 +270,7 @@ Por defecto `levelCapSpawns` está desactivado y los niveles de los salvajes son
 16. **Jefe con el doble de vida (medio):** el refuerzo de vida por nivel del equipo del desafío se sumaba a la del jefe (317 en vez de 144 el primero). Ahora la vida final es la de la tabla.
 17. **Tarjeta del evento (bajo):** el progreso y los premios se pisaban; «1 días». Corregido, y los trofeos van antes que las medallas en la Vitrina.
 18. **Jefe zombi bebé o araña con jinete (bajo):** se crean sin la aparición aleatoria de Minecraft; el equipo lo pone el desafío.
+19. **Textos de la pestaña Mejoras pisados (bajo):** al añadir el Taller se reutilizaron dos claves de texto de la pestaña Mejoras (CobbleDollars). Restauradas; el Taller usa las suyas.
 
 ## Pendiente (priorizado)
 1. **Medio:** probar captura, evolución y combate con un cliente COBBLEVERSE completo.
