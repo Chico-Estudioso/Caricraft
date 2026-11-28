@@ -36,7 +36,8 @@ public record PhoneSnapshot(
         DuoTravelView tpduo,
         LensView lens,
         BoxView box,
-        RoutineView routine) {
+        RoutineView routine,
+        SavingsView savings) {
 
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
 
@@ -176,6 +177,11 @@ public record PhoneSnapshot(
     public record BossFightView(String boss, int level, float health, float maxHealth, double x, double y, double z) {
     }
 
+    /** Hucha del dúo ({@code null} si está desactivada). {@code preview}: lo que crecerá mañana si no se saca nada. */
+    public record SavingsView(long balance, double dailyRate, long dailyCap, long preview, long totalInterest, long lastInterest,
+                              long maxBalance) {
+    }
+
     /** Racha diaria, evento semanal y vitrina de medallas. */
     public record RoutineView(StreakView streak, WeeklyView weekly, List<MedalView> medals, List<BossRecordView> trophies) {
     }
@@ -222,7 +228,15 @@ public record PhoneSnapshot(
                                   int wondersPerDay, int wonderPool, WonderView lastWonder, LuckView luck, int giftsLeft,
                                   int giftsPerDay, HealView heal, HuntView hunt, ExpeditionView expedition, DexView dex,
                                   List<ShinyAlertView> shinyAlerts, boolean shinyCompass, int levelCap, boolean levelCapSpawns,
-                                  int legendaryMinLevelCap) {
+                                  int legendaryMinLevelCap, TrainerView trainer) {
+    }
+
+    /**
+     * Entrenador personal: cada nivel cuesta {@code basePrice + nivel} Carins.
+     *
+     * @param cap level cap de RCT (0 si no hay)
+     */
+    public record TrainerView(long basePrice, int levelsLeft, int levelsPerDay, int cap) {
     }
 
     /** Centro Pokémon de bolsillo ({@code null} si está desactivado). {@code readyAt}: hora del servidor. */
@@ -244,7 +258,8 @@ public record PhoneSnapshot(
     }
 
     /** Expediciones ({@code null} si están desactivadas). {@code away}: la que está en marcha, o {@code null}. */
-    public record ExpeditionView(List<DestinationView> destinations, List<Integer> hours, int perDay, int startedToday, AwayView away) {
+    public record ExpeditionView(List<DestinationView> destinations, List<Integer> hours, int perDay, int startedToday, List<AwayView> away,
+                                 int slots) {
     }
 
     public record DestinationView(String id, String icon, List<String> types, List<String> loot) {

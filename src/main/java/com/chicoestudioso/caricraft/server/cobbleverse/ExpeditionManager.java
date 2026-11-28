@@ -61,7 +61,9 @@ public final class ExpeditionManager {
         ExpeditionData data = ExpeditionData.get(mod.server());
         PlayerProfile profile = mod.core().onPlayerJoin(player.getUUID(), player.getGameProfile().getName());
         long day = mod.core().cobbleverse().day();
-        ActionResult check = service.canStart(profile, day, data.get(player.getUUID()) != null, destinationId, hours);
+        Party party = mod.core().partyOf(player.getUUID());
+        int upgrade = party == null ? 0 : party.upgradeLevel(com.chicoestudioso.caricraft.core.shop.AppCatalog.CC_EXPEDITION);
+        ActionResult check = service.canStart(profile, day, data.of(player.getUUID()).size(), upgrade, destinationId, hours);
         if (!check.success()) {
             return check;
         }
@@ -86,12 +88,12 @@ public final class ExpeditionManager {
         }
         long now = System.currentTimeMillis();
         try {
-            data.put(player.getUUID(), new ExpeditionData.Away(destinationId, hours, now, now + hours * HOUR_MS,
+            data.add(player.getUUID(), new ExpeditionData.Away(destinationId, hours, now, now + hours * HOUR_MS,
                     backend.save(taken.get(), mod.server().registryAccess()), mon.species(), mon.level(), mon.info().shiny(),
                     mon.aspects(), mon.types(), false));
             saveNow(mod.server());
         } catch (RuntimeException e) {
-            data.remove(player.getUUID());
+            data.remove(player.getUUID(), data.of(player.getUUID()).size() - 1);
             backend.restore(player, taken.get());
             CaricraftMod.LOGGER.error("No se pudo mandar de expedición al Pokémon de {}; se devuelve.", player.getGameProfile().getName(), e);
             return ActionResult.fail("internal_error");
@@ -102,23 +104,33 @@ public final class ExpeditionManager {
         return ActionResult.ok("cv_exp_started", mon.species(), "caricraft.phone.cv.exp." + destinationId, hours);
     }
 
-    public static ActionResult claim(CaricraftServer mod, ServerPlayer player) {
-        return finish(mod, player, false);
+    /** {@code slot}: cuál de sus expediciones (0, 1…); vacío = la primera. */
+    public static ActionResult claim(CaricraftServer mod, ServerPlayer player, String slot) {
+        return finish(mod, player, slot(slot), false);
     }
 
-    public static ActionResult cancel(CaricraftServer mod, ServerPlayer player) {
-        return finish(mod, player, true);
+    public static ActionResult cancel(CaricraftServer mod, ServerPlayer player, String slot) {
+        return finish(mod, player, slot(slot), true);
     }
 
-    private static ActionResult finish(CaricraftServer mod, ServerPlayer player, boolean cancel) {
+    private static int slot(String raw) {
+        try {
+            return raw == null || raw.isBlank() ? 0 : Math.max(0, Integer.parseInt(raw.trim()));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    private static ActionResult finish(CaricraftServer mod, ServerPlayer player, int slot, boolean cancel) {
         if (!CobbleverseManager.active(mod)) {
             return ActionResult.fail("cv_disabled");
         }
         ExpeditionData data = ExpeditionData.get(mod.server());
-        ExpeditionData.Away away = data.get(player.getUUID());
-        if (away == null) {
+        List<ExpeditionData.Away> mine = data.of(player.getUUID());
+        if (slot < 0 || slot >= mine.size()) {
             return ActionResult.fail("cv_exp_none");
         }
+        ExpeditionData.Away away = mine.get(slot);
         long now = System.currentTimeMillis();
         if (!cancel && now < away.end) {
             return ActionResult.fail("cv_exp_not_ready", Math.max(1, (away.end - now + 59_999) / 60_000));
@@ -132,11 +144,11 @@ public final class ExpeditionManager {
                     player.getGameProfile().getName(), e);
             return ActionResult.fail("internal_error");
         }
-        data.remove(player.getUUID());
+        data.remove(player.getUUID(), slot);
         try {
             backend.restore(player, pokemon);
         } catch (RuntimeException e) {
-            data.put(player.getUUID(), away);
+            data.put(player.getUUID(), slot, away);
             CaricraftMod.LOGGER.error("No se pudo devolver el Pokémon de expedición a {}", player.getGameProfile().getName(), e);
             return ActionResult.fail("internal_error");
         }
@@ -179,16 +191,21 @@ public final class ExpeditionManager {
         }
         ExpeditionData data = ExpeditionData.get(server);
         long now = System.currentTimeMillis();
-        for (Map.Entry<UUID, ExpeditionData.Away> entry : data.all().entrySet()) {
-            ExpeditionData.Away away = entry.getValue();
-            if (away.notified || now < away.end) {
+        for (Map.Entry<UUID, List<ExpeditionData.Away>> entry : data.all().entrySet()) {
+            ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
+            if (player == null) {
                 continue;
             }
-            ServerPlayer player = server.getPlayerList().getPlayer(entry.getKey());
-            if (player != null) {
-                away.notified = true;
+            boolean changed = false;
+            for (ExpeditionData.Away away : entry.getValue()) {
+                if (!away.notified && now >= away.end) {
+                    away.notified = true;
+                    changed = true;
+                    mod.notify(player, true, "caricraft.notify.expedition_back", List.of("cobblemon:" + plain(away.species)));
+                }
+            }
+            if (changed) {
                 data.setDirty();
-                mod.notify(player, true, "caricraft.notify.expedition_back", List.of("cobblemon:" + plain(away.species)));
                 mod.sendSnapshot(player);
             }
         }
@@ -199,9 +216,11 @@ public final class ExpeditionManager {
         ExpeditionData data = ExpeditionData.get(server);
         long now = System.currentTimeMillis();
         int n = 0;
-        for (Map.Entry<UUID, ExpeditionData.Away> entry : data.all().entrySet()) {
-            entry.setValue(entry.getValue().withEnd(now - 1));
-            n++;
+        for (List<ExpeditionData.Away> list : data.all().values()) {
+            for (int i = 0; i < list.size(); i++) {
+                list.set(i, list.get(i).withEnd(now - 1));
+                n++;
+            }
         }
         data.setDirty();
         return n;
@@ -230,10 +249,13 @@ public final class ExpeditionManager {
             destinations.add(new PhoneSnapshot.DestinationView(d.id(), d.icon(), d.types(),
                     d.loot().stream().map(ExpeditionService.Loot::item).toList()));
         }
-        ExpeditionData.Away away = ExpeditionData.get(mod.server()).get(player.getUUID());
-        PhoneSnapshot.AwayView awayView = away == null ? null : new PhoneSnapshot.AwayView(away.species, away.aspects, away.shiny,
-                away.level, away.destination, away.hours, away.end, System.currentTimeMillis() >= away.end);
-        return new PhoneSnapshot.ExpeditionView(destinations, ExpeditionService.HOURS, service.perDay(),
-                service.startedToday(profile, mod.core().cobbleverse().day()), awayView);
+        long now = System.currentTimeMillis();
+        List<PhoneSnapshot.AwayView> away = ExpeditionData.get(mod.server()).of(player.getUUID()).stream()
+                .map(a -> new PhoneSnapshot.AwayView(a.species, a.aspects, a.shiny, a.level, a.destination, a.hours, a.end, now >= a.end))
+                .toList();
+        Party party = mod.core().partyOf(player.getUUID());
+        int upgrade = party == null ? 0 : party.upgradeLevel(com.chicoestudioso.caricraft.core.shop.AppCatalog.CC_EXPEDITION);
+        return new PhoneSnapshot.ExpeditionView(destinations, ExpeditionService.HOURS, service.perDay(upgrade),
+                service.startedToday(profile, mod.core().cobbleverse().day()), away, ExpeditionService.slots(upgrade));
     }
 }

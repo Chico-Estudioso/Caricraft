@@ -37,6 +37,9 @@ public final class Party {
     /** Caza del día y Pokédex del dúo (Cobbleverse). */
     private final com.chicoestudioso.caricraft.core.cobbleverse.DuoPokemonState pokemon =
             new com.chicoestudioso.caricraft.core.cobbleverse.DuoPokemonState();
+    /** Hucha del dúo. */
+    private final com.chicoestudioso.caricraft.core.savings.SavingsState savings =
+            new com.chicoestudioso.caricraft.core.savings.SavingsState();
     /** Racha diaria, evento semanal y medallas. */
     private final com.chicoestudioso.caricraft.core.routine.RoutineState routine =
             new com.chicoestudioso.caricraft.core.routine.RoutineState();
@@ -130,6 +133,10 @@ public final class Party {
 
     public ChallengeState challenge() {
         return challenge;
+    }
+
+    public com.chicoestudioso.caricraft.core.savings.SavingsState savings() {
+        return savings;
     }
 
     public com.chicoestudioso.caricraft.core.routine.RoutineState routine() {

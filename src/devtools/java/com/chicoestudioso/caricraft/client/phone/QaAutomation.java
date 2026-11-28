@@ -65,6 +65,8 @@ public final class QaAutomation implements ClientModInitializer {
             scriptRoutine();
         } else if ("Z".equals(role)) {
             scriptCleaner();
+        } else if ("H".equals(role)) {
+            scriptSavingsTrainer();
         } else {
             scriptB();
         }
@@ -1345,6 +1347,120 @@ public final class QaAutomation implements ClientModInitializer {
             log("LIMPIEZA automática después: " + groundAt(4, 4, 4));
         });
         shot("z02_limpieza_hecha");
+        then(20, () -> Minecraft.getInstance().stop());
+    }
+
+    // ------------------------------------------------------------------ hucha, entrenador y mejoras del CobbleCentro (rol H)
+
+    private static void logSavings(String label) {
+        log("HUCHA " + label + ": " + snap().savings() + " monedero=" + snap().balance());
+    }
+
+    private static String upgrades() {
+        return snap().apps().stream().filter(a -> a.id().startsWith("cc_")).map(a -> a.id() + ":" + a.level() + "/" + a.maxLevel()).toList()
+                .toString();
+    }
+
+    private void scriptSavingsTrainer() {
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("time set 6000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("tp @s 0 -60 0 0 10");
+            cmd("clear @s");
+            cmd("carins give Dev1 5000");
+            cmd("cobbledollars give @s 50000");
+            cmd("pokegive pidgey level=10");
+            cmd("pokegive geodude level=18");
+            cmd("pokegive magikarp level=8");
+        });
+        then(60, () -> {
+            logSavings("inicio");
+            act(PhoneAction.BUY_ITEM, "savings");
+        });
+        then(30, () -> {
+            logRecentNotices(1);
+            act(PhoneAction.SAVINGS_DEPOSIT, "500");
+        });
+        then(30, () -> {
+            logRecentNotices(1);
+            act(PhoneAction.SAVINGS_WITHDRAW, "100");
+        });
+        then(30, () -> {
+            logRecentNotices(1);
+            act(PhoneAction.SAVINGS_WITHDRAW, "9999");
+        });
+        then(30, () -> {
+            logRecentNotices(1);
+            logSavings("tras meter 500 y sacar 100");
+        });
+        page(PhonePage.SAVINGS, 0);
+        shot("h01_hucha");
+        // Mejoras del CobbleCentro
+        then(5, () -> {
+            log("MEJORAS antes: " + upgrades());
+            act(PhoneAction.BUY_ITEM, "cc_heal");
+        });
+        then(20, () -> act(PhoneAction.BUY_ITEM, "cc_heal"));
+        then(20, () -> act(PhoneAction.BUY_ITEM, "cc_heal"));
+        then(20, () -> act(PhoneAction.BUY_ITEM, "cc_expedition"));
+        then(20, () -> act(PhoneAction.BUY_ITEM, "cc_radar"));
+        then(30, () -> {
+            logRecentNotices(3);
+            log("MEJORAS después: " + upgrades() + " monedero=" + snap().balance());
+        });
+        then(5, () -> phone().openCobbleCentro());
+        then(30, () -> cc().select(CobbleCentroScreen.Tab.WORKSHOP));
+        then(20, () -> log("ENTRENADOR vista: " + snap().cobbleverse().trainer() + " equipo=" + snap().cobbleverse().party().stream()
+                .map(m -> m.species() + ":" + m.level()).toList()));
+        shot("h02_taller");
+        then(5, () -> {
+            var pidgey = snap().cobbleverse().party().stream().filter(m -> m.species().endsWith("pidgey")).findFirst().orElseThrow();
+            cc().send(PhoneAction.CV_TRAIN, pidgey.uuid());
+        });
+        then(30, () -> {
+            logRecentNotices(1);
+            var pidgey = snap().cobbleverse().party().stream().filter(m -> m.species().endsWith("pidgey")).findFirst().orElseThrow();
+            cc().send(PhoneAction.CV_TRAIN, pidgey.uuid());
+        });
+        then(30, () -> {
+            logRecentNotices(1);
+            log("ENTRENADOR después: " + snap().cobbleverse().trainer() + " equipo=" + snap().cobbleverse().party().stream()
+                    .map(m -> m.species() + ":" + m.level()).toList() + " monedero=" + snap().balance());
+        });
+        shot("h03_entrenado");
+        // Dos expediciones a la vez
+        then(5, () -> {
+            cc().select(CobbleCentroScreen.Tab.EXPEDITION);
+            var geodude = snap().cobbleverse().party().stream().filter(m -> m.species().endsWith("geodude")).findFirst().orElseThrow();
+            cc().send(PhoneAction.CV_EXP_START, "cave:1", geodude.uuid());
+        });
+        then(30, () -> {
+            logRecentNotices(1);
+            var magikarp = snap().cobbleverse().party().stream().filter(m -> m.species().endsWith("magikarp")).findFirst().orElseThrow();
+            cc().send(PhoneAction.CV_EXP_START, "coast:1", magikarp.uuid());
+        });
+        then(40, () -> {
+            logRecentNotices(1);
+            var exp = snap().cobbleverse().expedition();
+            log("EXPEDICIONES: plazas=" + exp.slots() + " fuera=" + exp.away().stream().map(a -> a.species() + "@" + a.destination()).toList()
+                    + " hoy=" + exp.startedToday() + "/" + exp.perDay());
+        });
+        shot("h04_dos_expediciones");
+        then(5, () -> cmd("caricraft cobbleverse expediciones"));
+        then(50, () -> cc().send(PhoneAction.CV_EXP_CLAIM, "1"));
+        then(30, () -> {
+            logRecentNotices(1);
+            log("EXPEDICIONES tras recoger la 2.ª: " + snap().cobbleverse().expedition().away().stream().map(a -> a.species()).toList());
+        });
+        // Centro Pokémon con la mejora a tope: espera de 5 min
+        then(5, () -> cmd("caricraft cobbleverse herir"));
+        then(20, () -> cc().send(PhoneAction.CV_HEAL, ""));
+        then(40, () -> {
+            logRecentNotices(1);
+            var heal = snap().cobbleverse().heal();
+            log("CURA con mejora: espera " + Math.round((heal.readyAt() - snap().serverTime()) / 60000.0) + " min");
+        });
         then(20, () -> Minecraft.getInstance().stop());
     }
 

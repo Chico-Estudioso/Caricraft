@@ -56,7 +56,7 @@ Con `phone.personal: false` vuelve el comportamiento anterior: un teléfono de r
 
 | Sección | Apps |
 |---|---|
-| Día a día | Misiones, Cartera, Mercado, Tienda |
+| Día a día | Misiones, Cartera, Hucha, Mercado, Tienda |
 | Dúo | Dúo, TP Dúo, CariBox, Crónicas, Vitrina |
 | Aventura | Desafío Dúo, Exploración, CariCamp, CariLens |
 | Sistema | Estadísticas, Ajustes |
@@ -113,6 +113,7 @@ Tres secciones (apps, mejoras y temas), cada una con un contador `compradas/tota
 | Ajustes | Gratis | Elegir tema del teléfono. |
 | Mercado | Gratis | Ofertas diarias de objetos por Carins (`docs/MARKET.md`). Con Cobbleverse activado tiene una segunda pestaña: regalo misterioso, tienda y venta de Pokémon en CobbleDollars (`docs/COBBLEVERSE.md`). |
 | Desafío Dúo | Gratis | Estado de la noche de desafío, nivel, jefes, historial y botón para adelantarla (`docs/CHALLENGE.md`). |
+| Hucha | 300 | Carins apartados que crecen un 2 % al día (máx. 40) con lo que hubo todo el día (`docs/ECONOMY.md`). |
 | Vitrina | Gratis | Medallas del dúo (bronce, plata y oro) y trofeos de los jefes del desafío (`docs/ROUTINE.md`). |
 | Crónicas | 250 | Diario compartido y notas. |
 | Exploración | 400 | Biomas descubiertos + bonificación por bioma nuevo. |

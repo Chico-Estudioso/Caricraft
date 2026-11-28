@@ -110,7 +110,8 @@ public final class SnapshotBuilder {
                 duoTravelView(mod, party, player), lensView(core, party),
                 new PhoneSnapshot.BoxView(core.box().hasApp(party), core.box().rows(party),
                         com.chicoestudioso.caricraft.server.box.CariBoxManager.usedSlots(mod, party)),
-                com.chicoestudioso.caricraft.server.routine.RoutineManager.view(mod, party, viewer));
+                com.chicoestudioso.caricraft.server.routine.RoutineManager.view(mod, party, viewer),
+                com.chicoestudioso.caricraft.server.savings.SavingsManager.view(mod, party));
     }
 
     /** Si la parte de Cobbleverse falla, se oculta; el resto del teléfono sigue funcionando. */

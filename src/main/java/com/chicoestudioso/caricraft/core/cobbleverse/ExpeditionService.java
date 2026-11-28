@@ -57,7 +57,17 @@ public final class ExpeditionService {
     }
 
     public int perDay() {
-        return config.cobbleverse.expeditionsPerDay;
+        return perDay(0);
+    }
+
+    /** Expediciones al día con la mejora «Más expediciones» (+1 por nivel). */
+    public int perDay(int upgrade) {
+        return config.cobbleverse.expeditionsPerDay + Math.max(0, Math.min(2, upgrade));
+    }
+
+    /** Pokémon que pueden estar fuera a la vez: 1, y uno más por nivel de la mejora. */
+    public static int slots(int upgrade) {
+        return 1 + Math.max(0, Math.min(2, upgrade));
     }
 
     public static Destination destination(String id) {
@@ -102,17 +112,21 @@ public final class ExpeditionService {
     }
 
     public ActionResult canStart(PlayerProfile profile, long day, boolean alreadyAway, String destinationId, int hours) {
+        return canStart(profile, day, alreadyAway ? 1 : 0, 0, destinationId, hours);
+    }
+
+    public ActionResult canStart(PlayerProfile profile, long day, int away, int upgrade, String destinationId, int hours) {
         if (!enabled()) {
             return ActionResult.fail("cv_disabled");
         }
         if (destination(destinationId) == null || !HOURS.contains(hours)) {
             return ActionResult.fail("invalid_request");
         }
-        if (alreadyAway) {
+        if (away >= slots(upgrade)) {
             return ActionResult.fail("cv_exp_busy");
         }
-        if (startedToday(profile, day) >= perDay()) {
-            return ActionResult.fail("cv_exp_limit", perDay());
+        if (startedToday(profile, day) >= perDay(upgrade)) {
+            return ActionResult.fail("cv_exp_limit", perDay(upgrade));
         }
         return ActionResult.ok("ok");
     }

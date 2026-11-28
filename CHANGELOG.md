@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+- **Hucha del dúo** (app de 300 Carins, ver `docs/ECONOMY.md`): se meten y sacan Carins cuando se quiera, y cada día crecen un 2 % de lo que hubo todo el día (como mucho 40). Protocolo de red 12.
+- **Taller del CobbleCentro** (ver `docs/COBBLEVERSE.md`):
+  - **Entrenador personal:** sube un nivel a un Pokémon con experiencia de verdad por 10 + su nivel en Carins, hasta 5 al día y nunca por encima del level cap de RCT.
+  - **Mejoras del CobbleCentro** con Carins: Centro rápido (espera de 10 y 5 min), Más expediciones (2 y 3 a la vez) y Radar variocolor (240 y 320 bloques).
 - **Limpieza del suelo contra el lag** (ver `docs/CLEANER.md`): cada 15 minutos (configurable: 10, 20…) se retiran los objetos tirados, los orbes de experiencia y las flechas sueltas de las zonas cargadas. Avisa un minuto antes, a los 30 s y con cuenta atrás en la barra de acción.
   - No toca lo que suelta un jugador al morir (Lenient Death lo guarda 15 minutos), lo recién tirado, los objetos con nombre ni la lista protegida (CariPhone, trofeos, élitros, netherita, cajas de shulker…).
   - Comandos `/caricraft limpieza [ahora]`.

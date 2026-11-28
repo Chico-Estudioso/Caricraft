@@ -1,5 +1,6 @@
 package com.chicoestudioso.caricraft.client.phone;
 
+import com.chicoestudioso.caricraft.network.PhoneAction;
 import com.chicoestudioso.caricraft.network.PhoneSnapshot;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -231,5 +232,70 @@ final class RoutinePages {
         }
         y += h + 6;
         return y - top;
+    }
+
+    // ================================================================ hucha del dúo
+
+    private static final long[] AMOUNTS = {10, 50, 100, 500};
+    private static final int POT = 0xFFE76F51;
+
+    static int savings(PhoneScreen s, PhoneSnapshot snap, int x, int y, int w) {
+        PhoneUi ui = s.ui;
+        PhoneTheme t = ui.theme;
+        int top = y;
+        PhoneSnapshot.SavingsView sv = snap.savings();
+        if (sv == null) {
+            return ui.wrapped(Component.translatable("caricraft.phone.savings.off"), x, y, w, t.textDim());
+        }
+        // Tarjeta principal
+        int h = 46;
+        ui.round(x, y, x + w, y + h, PhoneTheme.mix(POT, t.card(), 0.35f));
+        ui.g.pose().pushPose();
+        ui.g.pose().translate(x + 6, y + 7, 0);
+        ui.g.pose().scale(2f, 2f, 1f);
+        ui.item("minecraft:decorated_pot", 0, 0);
+        ui.g.pose().popPose();
+        ui.text(Component.translatable("caricraft.phone.savings.balance").copy().withStyle(ChatFormatting.BOLD), x + 44, y + 7, 0xFFFFFFFF);
+        ui.text(Component.literal(PhoneText.number(sv.balance()) + " C").withStyle(ChatFormatting.BOLD), x + 44, y + 19, 0xFFFFF1D6);
+        ui.text(Component.translatable("caricraft.phone.savings.tomorrow", sv.preview()), x + 44, y + 31, 0xFFFFE3D3);
+        y += h + 5;
+        String rate = String.format(java.util.Locale.ROOT, "%.1f", sv.dailyRate() * 100).replace('.', ',').replace(",0", "");
+        y += ui.wrapped(Component.translatable("caricraft.phone.savings.help", rate, sv.dailyCap()), x, y, w, t.textDim()) + 3;
+        if (sv.totalInterest() > 0) {
+            y += ui.wrapped(Component.translatable("caricraft.phone.savings.earned", PhoneText.number(sv.totalInterest()), sv.lastInterest()),
+                    x, y, w, t.good()) + 3;
+        }
+        y += 4;
+        // Meter
+        ui.text(Component.translatable("caricraft.phone.savings.deposit", PhoneText.number(snap.balance())).copy().withStyle(ChatFormatting.BOLD),
+                x, y, t.text());
+        y += 12;
+        y += amountButtons(s, x, y, w, PhoneAction.SAVINGS_DEPOSIT, snap.balance()) + 6;
+        // Sacar
+        ui.text(Component.translatable("caricraft.phone.savings.withdraw").copy().withStyle(ChatFormatting.BOLD), x, y, t.text());
+        y += 12;
+        y += amountButtons(s, x, y, w, PhoneAction.SAVINGS_WITHDRAW, sv.balance()) + 6;
+        return y - top;
+    }
+
+    private static int amountButtons(PhoneScreen s, int x, int y, int w, PhoneAction action, long available) {
+        PhoneUi ui = s.ui;
+        int columns = 5;
+        int gap = 3;
+        int bw = (w - gap * (columns - 1)) / columns;
+        for (int i = 0; i < columns; i++) {
+            boolean all = i == AMOUNTS.length;
+            long amount = all ? available : AMOUNTS[i];
+            Component label = all ? Component.translatable("caricraft.phone.savings.all") : Component.literal(String.valueOf(AMOUNTS[i]));
+            boolean ready = available > 0 && (all || available >= amount);
+            String arg = all ? "all" : String.valueOf(amount);
+            ui.button(x + i * (bw + gap), y, bw, 14, label, ready ? (action == PhoneAction.SAVINGS_DEPOSIT ? PhoneUi.Style.PRIMARY
+                    : PhoneUi.Style.SECONDARY) : PhoneUi.Style.DISABLED, () -> {
+                if (ready) {
+                    s.send(action, arg);
+                }
+            });
+        }
+        return 14;
     }
 }

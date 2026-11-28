@@ -53,6 +53,7 @@ public final class CaricraftCore {
     private final com.chicoestudioso.caricraft.core.routine.StreakService streak;
     private final com.chicoestudioso.caricraft.core.routine.WeeklyEventService weekly;
     private final com.chicoestudioso.caricraft.core.routine.MedalService medals;
+    private final com.chicoestudioso.caricraft.core.savings.SavingsService savings;
 
     public CaricraftCore(CaricraftState state, CaricraftConfig config, MissionCatalog missionCatalog, Clock clock) {
         this(state, config, missionCatalog, MarketCatalog.of(java.util.List.of(), source -> true, item -> true), clock);
@@ -88,10 +89,15 @@ public final class CaricraftCore {
         this.streak = new com.chicoestudioso.caricraft.core.routine.StreakService(config, economy);
         this.weekly = new com.chicoestudioso.caricraft.core.routine.WeeklyEventService(config, economy);
         this.medals = new com.chicoestudioso.caricraft.core.routine.MedalService(config, economy, challenge);
+        this.savings = new com.chicoestudioso.caricraft.core.savings.SavingsService(config, economy, shop);
         // Ventajas del evento semanal
         missions.setRewardBonus(def -> weekly.missionMultiplier(def, week()));
         challenge.setXpMultiplier(() -> weekly.challengeXpMultiplier(week()));
         hunt.setBonus(() -> weekly.huntMultiplier(week()));
+    }
+
+    public com.chicoestudioso.caricraft.core.savings.SavingsService savings() {
+        return savings;
     }
 
     public com.chicoestudioso.caricraft.core.routine.StreakService streak() {

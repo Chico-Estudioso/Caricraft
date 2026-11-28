@@ -85,6 +85,7 @@ public final class RoutineManager {
         }
         for (Party party : online.values()) {
             UUID anyone = party.members().iterator().next();
+            com.chicoestudioso.caricraft.server.savings.SavingsManager.accrue(mod, party, day);
             boolean changed = false;
             int reached = core.weekly().check(party, week);
             if (reached > 0) {
