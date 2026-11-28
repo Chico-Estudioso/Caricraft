@@ -192,6 +192,8 @@ No sustituye a la Pokédex de Cobblemon. Guarda lo especial de los dos:
 - No se puede mandar al último Pokémon sano, a uno debilitado ni en combate.
 
 ### Taller: entrenador personal y mejoras (Carins)
+![Taller](img/cobblecentro_taller.png)
+
 - **Entrenador personal:** eliges un Pokémon del equipo y le das la experiencia justa para subir un nivel, como un caramelo. Aprende sus movimientos y puede evolucionar como siempre.
   - Cuesta `trainerBasePrice` (10) + su nivel en Carins (de nivel 20 a 21: 30 Carins).
   - Como mucho `trainerLevelsPerDay` (5) niveles al día por jugador.
@@ -204,6 +206,8 @@ No sustituye a la Pokédex de Cobblemon. Guarda lo especial de los dos:
 | Centro rápido | 300 cada nivel | Espera del Centro Pokémon de bolsillo de 10 min | 5 min |
 | Más expediciones | 400 cada nivel | 2 expediciones a la vez y 4 al día | 3 a la vez y 5 al día |
 | Radar variocolor | 250 cada nivel | Aviso a 240 bloques y 8 min | 320 bloques y 12 min |
+
+![Dos expediciones a la vez](img/cobblecentro_dos_expediciones.png)
 
 ## Nivel de los salvajes y level cap
 - Por defecto **no se cambia nada**: los niveles son los de Cobbleverse. Cobblemon elige el nivel dentro del rango de la especie acercándolo al Pokémon de más nivel de tu equipo (±5). El level cap de los entrenadores (RCT) no frena apariciones ni capturas: frena la experiencia y los combates contra entrenadores.

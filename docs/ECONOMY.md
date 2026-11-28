@@ -39,6 +39,8 @@ Apps del grupo, cosméticos personales y el **Mercado** (objetos por Carins con 
 Todos los precios y recompensas se pueden cambiar en `config/caricraft.json`.
 
 ## Hucha del dúo
+![Hucha](img/hucha.png)
+
 App de pago (300) en la sección Día a día del CariPhone.
 - Se meten y se sacan Carins del monedero cuando se quiera (10, 50, 100, 500 o todo).
 - Cada día crece un **2 %** (`savings.dailyRate`) de lo que hubo en ella **todo el día**, es decir, de su saldo más bajo ese día. Meter justo antes de medianoche no da nada hasta el día siguiente, y sacar a media tarde baja lo que se gana. Como mucho **40 Carins al día** (`dailyCap`) y hasta **100.000** dentro (`maxBalance`).

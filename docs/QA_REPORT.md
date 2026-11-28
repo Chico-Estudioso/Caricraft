@@ -249,7 +249,7 @@ Por defecto `levelCapSpawns` está desactivado y los niveles de los salvajes son
 | Centro rápido ×3, Más expediciones y Radar variocolor | Centro rápido 2/2 (la tercera compra, «ya comprado»), Más expediciones 1/2 y Radar 1/2; monedero 4.300 → 3.050 |
 | Taller: entrenar a Pidgey dos veces | Nv. 10 → 11 por 20 C y 11 → 12 por 21 C; quedan 3 de 5 niveles hoy |
 | Mandar a Geodude y a Magikarp de expedición | Las dos a la vez («Expediciones hoy 2/4»), dos tarjetas con su cuenta atrás; recoger la segunda deja la primera en marcha |
-| Curar con Centro rápido 2/2 | HEAL_RESULT |
+| Curar con Centro rápido 2/2 | «¡Equipo curado! (₽1.500)» y la siguiente cura en **5 min** (sin la mejora, 15) |
 
 ## Errores encontrados y corregidos durante la QA
 1. **Teléfono borroso (alto):** en 1.21 `Screen.render` vuelve a pintar el fondo desenfocado encima. Corregido en `PhoneScreen`.
