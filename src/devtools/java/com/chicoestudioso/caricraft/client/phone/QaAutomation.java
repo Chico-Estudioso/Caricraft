@@ -67,6 +67,8 @@ public final class QaAutomation implements ClientModInitializer {
             scriptCleaner();
         } else if ("H".equals(role)) {
             scriptSavingsTrainer();
+        } else if ("Q".equals(role)) {
+            scriptQuests();
         } else {
             scriptB();
         }
@@ -1461,6 +1463,38 @@ public final class QaAutomation implements ClientModInitializer {
             var heal = snap().cobbleverse().heal();
             log("CURA con mejora: espera " + Math.round((heal.readyAt() - snap().serverTime()) / 60000.0) + " min");
         });
+        then(20, () -> Minecraft.getInstance().stop());
+    }
+
+    // ------------------------------------------------------------------ libro de misiones de FTB Quests (rol Q)
+
+    private void scriptQuests() {
+        String mode = System.getProperty("caricraft.qa.quests", "reference");
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("time set 6000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("tp @s 0 -60 0 0 10");
+            cmd("clear @s");
+        });
+        if ("reference".equals(mode)) {
+            then(40, () -> {
+                cmd("give @s minecraft:diamond 3");
+                cmd("give @s cobblemon:poke_ball 5");
+                cmd("give @s minecraft:oak_log 16");
+            });
+            then(40, () -> cmd("ftbquests generate_chapter from_inventory"));
+            then(60, () -> cmd("ftbquests open_book"));
+            then(60, () -> {
+            });
+            shot("q00_referencia");
+            then(20, () -> Minecraft.getInstance().stop());
+            return;
+        }
+        then(60, () -> cmd("ftbquests open_book"));
+        then(80, () -> {
+        });
+        shot("q01_libro");
         then(20, () -> Minecraft.getInstance().stop());
     }
 

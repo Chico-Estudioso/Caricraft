@@ -31,7 +31,10 @@ import uuid
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODS = ("Cobblemon-fabric-", "fabric-api-", "fabric-language-kotlin-", "CobbleDollars-fabric-", "architectury-")
 # Mods extra por rol: el D prueba también el level cap de los entrenadores (RCT y sus dependencias).
-ROLE_MODS = {"D": ("rctmod-", "rctapi-", "ForgeConfigAPIPort-")}
+ROLE_MODS = {"D": ("rctmod-", "rctapi-", "ForgeConfigAPIPort-"), "Q": ("rctmod-", "rctapi-", "ForgeConfigAPIPort-")}
+# Jars extra para el servidor y el cliente (p. ej. FTB Quests y Cobblemon Quests) y libro de misiones a instalar.
+EXTRA_JARS = os.environ.get("CARICRAFT_QA_EXTRA_JARS", "")
+QUESTS_DIR = os.environ.get("CARICRAFT_QA_QUESTS", "")
 GRADLE = os.path.expanduser("~/.gradle/caches")
 MC = "1.21.1"
 PORT = 25566
@@ -121,7 +124,12 @@ def prepare(server_source, work, role=""):
         "spawn-monsters=false", "motd=Caricraft QA Cobblemon"]) + "\n")
     ops = [{"uuid": offline_uuid(n), "name": n, "level": 4, "bypassesPlayerLimit": False} for n in ("Dev1", "Dev2")]
     json.dump(ops, open(os.path.join(server, "ops.json"), "w"))
-    copy_mods(server_source, os.path.join(server, "mods"), [mod_jar], prefixes)
+    extra = sorted(glob.glob(os.path.join(EXTRA_JARS, "*.jar"))) if EXTRA_JARS else []
+    copy_mods(server_source, os.path.join(server, "mods"), [mod_jar] + extra, prefixes)
+    if QUESTS_DIR:
+        target = os.path.join(server, "config", "ftbquests", "quests")
+        shutil.rmtree(target, ignore_errors=True)
+        shutil.copytree(QUESTS_DIR, target)
     if role in ROLE_MODS:
         os.makedirs(os.path.join(server, "config"), exist_ok=True)
         for name in ("rctmod-server.toml",):
@@ -144,7 +152,7 @@ def prepare(server_source, work, role=""):
     json.dump(config, open(config_path, "w"), indent=2)
 
     client = os.path.join(work, "client")
-    copy_mods(server_source, os.path.join(client, "mods"), [mod_jar, qa_jar], prefixes)
+    copy_mods(server_source, os.path.join(client, "mods"), [mod_jar, qa_jar] + extra, prefixes)
     options = os.path.join(client, "options.txt")
     lines = open(options).read().splitlines() if os.path.exists(options) else []
     lines = [line for line in lines if not line.startswith(("lang:", "onboardAccessibility:", "tutorialStep:"))]
