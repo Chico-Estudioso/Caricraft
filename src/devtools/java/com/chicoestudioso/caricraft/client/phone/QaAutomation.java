@@ -63,6 +63,8 @@ public final class QaAutomation implements ClientModInitializer {
             scriptDuoCobbleverse();
         } else if ("R".equals(role)) {
             scriptRoutine();
+        } else if ("Z".equals(role)) {
+            scriptCleaner();
         } else {
             scriptB();
         }
@@ -1270,6 +1272,79 @@ public final class QaAutomation implements ClientModInitializer {
         page(PhonePage.SHOWCASE, 0);
         then(10, () -> phone().mouseScrolled(0, 0, 0, -20));
         shot("r07_vitrina_trofeo");
+        then(20, () -> Minecraft.getInstance().stop());
+    }
+
+    // ------------------------------------------------------------------ limpieza del suelo (rol Z)
+
+    private static String groundAt(double x, double z, double radius) {
+        var level = Minecraft.getInstance().level;
+        var box = new net.minecraft.world.phys.AABB(x - radius, -64, z - radius, x + radius, 320, z + radius);
+        var items = level.getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class, box).stream()
+                .map(e -> net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(e.getItem().getItem()).getPath()
+                        + (e.getItem().has(net.minecraft.core.component.DataComponents.CUSTOM_NAME) ? "(nombre)" : "")).sorted().toList();
+        int orbs = level.getEntitiesOfClass(net.minecraft.world.entity.ExperienceOrb.class, box).size();
+        int arrows = level.getEntitiesOfClass(net.minecraft.world.entity.projectile.AbstractArrow.class, box).size();
+        int mobs = level.getEntitiesOfClass(net.minecraft.world.entity.Mob.class, box).size();
+        return "objetos=" + items + " orbes=" + orbs + " flechas=" + arrows + " mobs=" + mobs;
+    }
+
+    private static void summonGround() {
+        cmd("summon item 3 -60 3 {Item:{id:\"minecraft:dirt\",count:64},Age:600}");
+        cmd("summon item 3 -60 4 {Item:{id:\"minecraft:cobblestone\",count:64},Age:600}");
+        cmd("summon item 4 -60 3 {Item:{id:\"minecraft:diamond\",count:1,components:{\"minecraft:custom_name\":'\"Regalo\"'}},Age:600}");
+        cmd("summon item 4 -60 4 {Item:{id:\"minecraft:elytra\",count:1},Age:600}");
+        cmd("summon item 5 -60 5 {Item:{id:\"minecraft:stick\",count:3},Age:0}");
+        cmd("summon experience_orb 3 -60 5 {Value:7}");
+        cmd("summon arrow 5 -59 3");
+        cmd("summon cow 6 -60 6");
+    }
+
+    /** Limpieza del suelo: qué se borra, qué se protege, la zona de una muerte y los avisos de la limpieza automática. */
+    private void scriptCleaner() {
+        then(0, () -> {
+            cmd("gamemode creative");
+            cmd("time set 6000");
+            cmd("gamerule doDaylightCycle false");
+            cmd("gamerule doImmediateRespawn true");
+            cmd("tp @s 0 -60 0 0 30");
+            cmd("clear @s");
+            cmd("caricraft limpieza");
+            summonGround();
+        });
+        then(60, () -> log("LIMPIEZA antes: " + groundAt(4, 4, 4)));
+        then(5, () -> cmd("caricraft limpieza ahora"));
+        then(40, () -> {
+            log("LIMPIEZA después: " + groundAt(4, 4, 4));
+            logRecentNotices(1);
+        });
+        // Zona de una muerte
+        then(5, () -> cmd("tp @s 40 -60 40"));
+        then(30, () -> cmd("kill @s"));
+        then(40, () -> {
+            cmd("tp @s 0 -60 0 0 30");
+            cmd("summon item 41 -60 41 {Item:{id:\"minecraft:iron_ingot\",count:20},Age:600}");
+            cmd("summon item 60 -60 60 {Item:{id:\"minecraft:gold_ingot\",count:20},Age:600}");
+        });
+        then(40, () -> log("LIMPIEZA muerte antes: junto a la muerte " + groundAt(41, 41, 3) + " · lejos " + groundAt(60, 60, 3)));
+        then(5, () -> cmd("caricraft limpieza ahora"));
+        then(40, () -> log("LIMPIEZA muerte después: junto a la muerte " + groundAt(41, 41, 3) + " · lejos " + groundAt(60, 60, 3)));
+        // Limpieza automática (en QA cada minuto) con sus avisos
+        then(5, () -> {
+            summonGround();
+            cmd("caricraft limpieza");
+        });
+        when(() -> Minecraft.getInstance().gui.getChat() != null && ClientPhoneState.notifications().stream()
+                .anyMatch(n -> n.key().equals("caricraft.notify.cleaner_soon")), () -> logRecentNotices(1));
+        then(560, () -> {
+        });
+        shot("z01_aviso_limpieza");
+        when(() -> ClientPhoneState.notifications().stream().anyMatch(n -> n.key().equals("caricraft.notify.cleaner_done")
+                && System.currentTimeMillis() - n.createdAt() < 5000), () -> {
+            logRecentNotices(1);
+            log("LIMPIEZA automática después: " + groundAt(4, 4, 4));
+        });
+        shot("z02_limpieza_hecha");
         then(20, () -> Minecraft.getInstance().stop());
     }
 

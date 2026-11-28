@@ -139,6 +139,8 @@ def prepare(server_source, work, role=""):
     config.setdefault("tips", {})["enabled"] = False
     # La opción del level cap viene desactivada; el rol D la enciende para comprobar que funciona.
     config["cobbleverse"]["levelCapSpawns"] = role == "D"
+    # El rol Z prueba la limpieza automática: cada minuto en vez de cada 15.
+    config.setdefault("cleaner", {})["intervalMinutes"] = 1 if role == "Z" else 15
     json.dump(config, open(config_path, "w"), indent=2)
 
     client = os.path.join(work, "client")

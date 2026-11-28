@@ -38,6 +38,7 @@ Guion B: recibir y aceptar la invitación y viajar.
   - Otros roles con el mismo comando:
     - `L`: cajas, tragaperras, mejoras de Pokémon y fusiones del CobbleCentro.
     - `G`: cofres del desafío (emboscada por oleadas, conquista y botín; Pokémon guardián que reaparece y se retira si te vas), limpieza de los mobs del desafío al amanecer (también en zonas descargadas), barra de experiencia y los dos regalos diarios.
+    - `Z`: limpieza del suelo (con la limpieza cada minuto). Qué se borra y qué se protege (objetos con nombre, élitros, recién tirados, mobs) y la zona de una muerte, más los avisos y la limpieza automática.
     - `R`: bloque normal. Racha diaria (misión reclamada), evento semanal (mitad y meta con `/caricraft rutina evento`), medallas y Vitrina, y un jefe del desafío (aparece, barra, se derrota con `/damage … by @s`, trofeo y botín).
     - `D`: bloque del dúo. Centro Pokémon de bolsillo (cobro, espera), caza del día (capturas simuladas con `/caricraft cobbleverse captura`), Pokédex del dúo (vitrina variocolor, legendario, metas), expedición (salida, recogida antes de tiempo rechazada, vuelta y botín), aviso de variocolor con brújula en la barra de acción y, copiando también RCT del servidor, la opción `levelCapSpawns` (que solo este rol enciende).
 - `./gradlew runQaChallenge -DqaRole=S` (con `runServer`): escuadrón con botín. Comprueba la aparición, el aviso y la app, el cofre bloqueado, la derrota (Carins y botín) y que al amanecer el cofre abierto se queda y el no ganado desaparece.

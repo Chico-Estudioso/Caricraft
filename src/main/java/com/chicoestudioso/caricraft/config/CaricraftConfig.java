@@ -83,6 +83,46 @@ public final class CaricraftConfig {
     public ChallengeConfig challenge = new ChallengeConfig();
     /** Racha diaria, eventos semanales y vitrina de medallas. */
     public RoutineConfig routine = new RoutineConfig();
+    /** Limpieza periódica de objetos del suelo (contra el lag). */
+    public CleanerConfig cleaner = new CleanerConfig();
+
+    public static final class CleanerConfig {
+        /** Activa la limpieza periódica. */
+        public boolean enabled = true;
+        /** Cada cuántos minutos se limpia (10, 15, 20…). */
+        public int intervalMinutes = 15;
+        /** Avisar antes (60, 30, 10 y los últimos 5 segundos). */
+        public boolean warnings = true;
+        /** También orbes de experiencia sueltos. */
+        public boolean xpOrbs = true;
+        /** También flechas clavadas o perdidas (no tridentes). */
+        public boolean arrows = true;
+        /** Minutos en los que no se toca lo que hay cerca de donde ha muerto un jugador (Lenient Death los guarda 15). */
+        public int protectDeathMinutes = 15;
+        /** Radio (bloques) de esa protección. */
+        public int protectDeathRadius = 10;
+        /** No se tocan los objetos tirados hace menos de estos segundos. */
+        public int protectNewSeconds = 20;
+        /** No se tocan los objetos con nombre puesto en un yunque (o por un mod). */
+        public boolean protectNamed = true;
+        /** Objetos que nunca se borran (ids o {@code #etiquetas}). */
+        public List<String> protectedItems = new ArrayList<>(List.of(
+                "caricraft:cariphone", "caricraft:challenge_trophy", "minecraft:nether_star", "minecraft:elytra",
+                "minecraft:totem_of_undying", "minecraft:dragon_egg", "minecraft:beacon", "minecraft:heavy_core",
+                "minecraft:netherite_ingot", "minecraft:netherite_block", "cobblemon:master_ball", "#minecraft:shulker_boxes",
+                "#c:shulker_boxes"));
+
+        CleanerConfig validate() {
+            intervalMinutes = clamp(intervalMinutes, 1, 240);
+            protectDeathMinutes = clamp(protectDeathMinutes, 0, 120);
+            protectDeathRadius = clamp(protectDeathRadius, 1, 64);
+            protectNewSeconds = clamp(protectNewSeconds, 0, 600);
+            if (protectedItems == null) {
+                protectedItems = new ArrayList<>();
+            }
+            return this;
+        }
+    }
 
     public static final class RoutineConfig {
         /** Racha diaria: cada día en que el dúo reclama una misión. */
@@ -524,6 +564,10 @@ public final class CaricraftConfig {
             routine = new RoutineConfig();
         }
         routine.validate();
+        if (cleaner == null) {
+            cleaner = new CleanerConfig();
+        }
+        cleaner.validate();
         return this;
     }
 
